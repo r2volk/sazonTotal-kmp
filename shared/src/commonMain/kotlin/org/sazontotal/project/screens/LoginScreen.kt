@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.App
 import org.sazontotal.project.components.PinButton
 import org.sazontotal.project.icons.BackspaceIcon
+import org.sazontotal.project.icons.CheckIcon
 import sazontotal.shared.generated.resources.Res
 
 @Composable
@@ -180,16 +181,17 @@ fun LoginScreen( onLogin:(String, String)-> Unit)  {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
+                    // Botón aceptar / entrar
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1.05f)
                             .clip(RoundedCornerShape(20.dp))
-                            .clickable { onLogin(empleadoId, pin)},
+                            .clickable { onLogin(empleadoId, pin) },
                         contentAlignment = Alignment.Center
                     ) {
-                        BackspaceIcon(
-                            color = Color(0xFF8E8E93),
+                        CheckIcon(
+                            color = Color(0xFF22C55E),
                             modifier = Modifier.size(24.dp)
                         )
                     }

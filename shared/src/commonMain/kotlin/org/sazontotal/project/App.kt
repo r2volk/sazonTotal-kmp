@@ -8,7 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
 import org.jetbrains.compose.resources.painterResource
-import org.sazontotal.project.screens.Dashboard
+import org.sazontotal.project.enums.UserRole
+import org.sazontotal.project.models.User
+import org.sazontotal.project.screens.DashboardAdmin
+import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.screens.LoginScreen
 
 import sazontotal.shared.generated.resources.Res
@@ -19,16 +22,29 @@ import sazontotal.shared.generated.resources.compose_multiplatform
 fun App() {
     MaterialTheme {
         var pantallaActual by remember { mutableStateOf("login") }
+        val usuarios = listOf(
+            User("ADM-001", "Karina Castillo", "1234", UserRole.ADMIN),
+            User("EMP-001", "Ricardo Sanchez", "4321", UserRole.COCINERO)
+        )
 
         when (pantallaActual){
             "login" -> LoginScreen(
-                onLogin = {  empleadoId,pin ->
-                    if(empleadoId =="EMP-104"&&pin=="1234"){
-                        pantallaActual = "dashboard"
+                onLogin = { empleadoIdIngresado, pinIngresado ->
+
+                    val usuarioEncontrado = usuarios.find { usuario ->
+                        usuario.id == empleadoIdIngresado.trim() &&
+                        usuario.pin == pinIngresado
+                    }
+
+                    if (usuarioEncontrado?.rol == UserRole.ADMIN) {
+                        pantallaActual = "dashboardAdmin"
+                    } else if (usuarioEncontrado?.rol == UserRole.COCINERO) {
+                        pantallaActual = "dashboardEmpleado"
                     }
                 }
             )
-            "dashboard" -> Dashboard()
+            "dashboardAdmin" -> DashboardAdmin()
+            "dashboardEmpleado" -> DashboardEmpleado()
         }
     }
 }
