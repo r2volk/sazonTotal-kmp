@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -38,12 +40,14 @@ fun SelectedTab(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF000000))
     ) {
 
         // CONTENIDO
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f, fill = true)
         ) {
             when (selectedTab) {
                 0 -> pedidos()
@@ -56,8 +60,10 @@ fun SelectedTab(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(58.dp)
-                .background(Color(0xFF101010)),
+                .background(Color(0xFF101010))
+                .navigationBarsPadding()
+                .padding(vertical = 8.dp)
+                .height(58.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {

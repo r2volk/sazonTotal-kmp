@@ -2,6 +2,7 @@ package org.sazontotal.project.screens.screensEmpleado
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,21 +45,28 @@ import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.enums.EstadoPedido
 
 @Composable
-fun PedidosScreen(){
+fun PedidosScreen(
+    onNuevoPedidoClick: () -> Unit = {},
+    onCarritoClick: () -> Unit = {},
+    onAsistenteClick: () -> Unit = {}
+){
 
     var estado by remember {
         mutableStateOf(EstadoPedido.PENDIENTE)
     }
     var estadoMesa7 by remember {
-        mutableStateOf(EstadoPedido.PREPARANDO)
+        mutableStateOf(EstadoPedido.LISTO)
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF000000))
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 60.dp),
+    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ){
         Row(
@@ -82,25 +93,6 @@ fun PedidosScreen(){
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier.size(40.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = Color(0xFFC7C7CC),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(9.dp)
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-6).dp, y = (6).dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFFF9F0A))
-                    )
-                }
 
                 Box(
                     modifier = Modifier
@@ -143,6 +135,91 @@ fun PedidosScreen(){
                 modifier = Modifier.weight(1f)
             )
         }
+
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFF2B2113))
+                            .border(1.dp, Color(0xFF8A6A2F), RoundedCornerShape(16.dp))
+                            .clickable { onCarritoClick() }
+                            .padding(horizontal = 12.dp, vertical = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = "Ir al carrito",
+                                tint = Color(0xFFFFC266),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Carrito",
+                                color = Color(0xFFFFD791),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .offset(x = (-12).dp, y = (-8).dp)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFF9F0A)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "2",
+                            color = Color.Black,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF2A2350))
+                        .border(1.dp, Color(0xFF6B5FC7), RoundedCornerShape(16.dp))
+                        .clickable { onAsistenteClick() }
+                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Ir al asistente",
+                            tint = Color(0xFFB39DFF),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Asistente IA",
+                            color = Color(0xFFD6C9FF),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -193,6 +270,11 @@ fun PedidosScreen(){
         }
 
         Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = true)
+                .clip(RoundedCornerShape(16.dp))
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             PedidoCard(
@@ -203,8 +285,34 @@ fun PedidosScreen(){
                 estado = estado,
                 onCambiarEstado = {
                     estado = when (estado) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.PREPARANDO
-                        EstadoPedido.PREPARANDO -> EstadoPedido.LISTO
+                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
+                        EstadoPedido.LISTO -> EstadoPedido.LISTO
+                    }
+                }
+            )
+
+            PedidoCard(
+                numeroMesa = "4",
+                esUrgente = true,
+                tiempo = "12 min",
+                nota = "sin cebolla",
+                estado = estado,
+                onCambiarEstado = {
+                    estado = when (estado) {
+                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
+                        EstadoPedido.LISTO -> EstadoPedido.LISTO
+                    }
+                }
+            )
+            PedidoCard(
+                numeroMesa = "4",
+                esUrgente = true,
+                tiempo = "12 min",
+                nota = "sin cebolla",
+                estado = estado,
+                onCambiarEstado = {
+                    estado = when (estado) {
+                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
                         EstadoPedido.LISTO -> EstadoPedido.LISTO
                     }
                 }
@@ -218,14 +326,32 @@ fun PedidosScreen(){
                 estado = estadoMesa7,
                 onCambiarEstado = {
                     estadoMesa7 = when (estadoMesa7) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.PREPARANDO
-                        EstadoPedido.PREPARANDO -> EstadoPedido.LISTO
+                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
                         EstadoPedido.LISTO -> EstadoPedido.LISTO
                     }
                 }
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(72.dp))
+        }
+    }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 16.dp)
+                .size(52.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF5DBF3E))
+                .clickable { onNuevoPedidoClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "+",
+                color = Color.Black,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

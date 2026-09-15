@@ -135,27 +135,7 @@ fun PedidoCard(
                         .fillMaxWidth()
                         .height(52.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF9F0A)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        "Iniciar preparación",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-
-            EstadoPedido.PREPARANDO -> {
-                Button(
-                    onClick = onCambiarEstado,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF30D158)
+                        containerColor = Color(0xFF5DBF3E)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
