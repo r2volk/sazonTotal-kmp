@@ -25,11 +25,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.StatCardAdmin
-import org.sazontotal.project.components.xd
+import org.sazontotal.project.components.AccesoRapidoCard
 import org.sazontotal.project.icons.MenuIcon
 import org.sazontotal.project.icons.PedidosIcon
 import org.sazontotal.project.icons.PersonalIcon
 import org.sazontotal.project.icons.ReportesIcon
+import org.sazontotal.project.screens.screensAdmin.GestionPersonalScreen
 
 @Composable
 fun DashboardAdmin(
@@ -42,7 +43,7 @@ fun DashboardAdmin(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF101010))
+            .background(Color.Black)
             .safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -143,22 +144,22 @@ fun DashboardAdmin(
             Column(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                xd(
+                AccesoRapidoCard(
                     onClick = onPersonalClick,
                     icon = { PersonalIcon() },
                     texto = "Gestionar personal"
                 )
-                xd(
+                AccesoRapidoCard(
                     onClick = onPedidosClick,
                     icon = { PedidosIcon() },
                     texto = "Ver todos los pedidos"
                 )
-                xd(
+                AccesoRapidoCard(
                     onClick = onReportesClick,
                     icon = { ReportesIcon() },
                     texto = "Reportes"
                 )
-                xd(
+                AccesoRapidoCard(
                     onClick = onMenuClick,
                     icon = { MenuIcon() },
                     texto = "Editar menú"

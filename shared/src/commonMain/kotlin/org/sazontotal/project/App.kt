@@ -13,6 +13,7 @@ import org.sazontotal.project.models.User
 import org.sazontotal.project.screens.DashboardAdmin
 import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.screens.LoginScreen
+import org.sazontotal.project.screens.screensAdmin.GestionPersonalScreen
 
 import sazontotal.shared.generated.resources.Res
 import sazontotal.shared.generated.resources.compose_multiplatform
@@ -43,8 +44,11 @@ fun App() {
                     }
                 }
             )
-            "dashboardAdmin" -> DashboardAdmin()
+            "dashboardAdmin" -> DashboardAdmin(
+                onPersonalClick = {pantallaActual = "gestionPersonal"}
+            )
             "dashboardEmpleado" -> DashboardEmpleado()
+            "gestionPersonal" -> GestionPersonalScreen()
         }
     }
 }

@@ -20,7 +20,7 @@ fun DashboardEmpleado(){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(Color.Black)
     ) {
         SelectedTab(
             pedidos = {PedidosScreen()},

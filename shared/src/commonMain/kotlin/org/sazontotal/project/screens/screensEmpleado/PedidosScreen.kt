@@ -40,7 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.PedidoCard
-import org.sazontotal.project.components.StatCardEmpleado
+import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.enums.EstadoPedido
 
@@ -61,7 +61,7 @@ fun PedidosScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(Color.Black)
     ) {
     Column(
         modifier = Modifier
@@ -116,19 +116,19 @@ fun PedidosScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ){
-            StatCardEmpleado(
+            StatCardCentrado(
                 textoSuperior = "2",
                 textoInferior = "Pendientes",
                 colorSuperior = Color(0xFFFF9F0A),
                 modifier = Modifier.weight(1f)
             )
-            StatCardEmpleado(
+            StatCardCentrado(
                 textoSuperior = "1",
                 textoInferior = "En prep.",
                 colorSuperior = Color(0xFFB39DFF),
                 modifier = Modifier.weight(1f)
             )
-            StatCardEmpleado(
+            StatCardCentrado(
                 textoSuperior = "9",
                 textoInferior = "Completado",
                 colorSuperior = Color(0xFF30D158),
@@ -339,7 +339,7 @@ fun PedidosScreen(
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 16.dp)
+                .padding(end = 18.dp, bottom = 18.dp)
                 .size(52.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF5DBF3E))

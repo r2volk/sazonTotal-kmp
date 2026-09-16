@@ -8,19 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidedValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun StatCardEmpleado(
+fun StatCardCentrado(
     textoSuperior: String,
     textoInferior: String,
     colorSuperior: Color,
@@ -28,28 +26,28 @@ fun StatCardEmpleado(
 ) {
     Column(
         modifier = modifier
-            .heightIn(min = 70.dp)
+            .heightIn(min = 72.dp)
             .background(
                 color = Color(0xFF1C1C1E),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(12.dp)
             )
             .padding(
                 horizontal = 20.dp,
-                vertical = 10.dp
+                vertical = 12.dp
             ),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = textoSuperior,
             color = colorSuperior,
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = textoInferior,
             color = Color(0xFF8E8E93),
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Normal
         )
     }
@@ -59,7 +57,7 @@ fun StatCardEmpleado(
 @Composable
 @Preview
 fun PreviewStat(){
-    StatCardEmpleado(
+    StatCardCentrado(
         textoSuperior = "2",
         textoInferior = "Pendientes",
         colorSuperior = Color.White
