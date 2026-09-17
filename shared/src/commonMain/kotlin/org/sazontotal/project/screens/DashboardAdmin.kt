@@ -136,7 +136,7 @@ fun DashboardAdmin(
             Text(
                 text = "Accesos rápidos",
                 fontSize = 17.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF8E8E93),
                 modifier = Modifier.padding(top = 24.dp, bottom = 14.dp)
             )

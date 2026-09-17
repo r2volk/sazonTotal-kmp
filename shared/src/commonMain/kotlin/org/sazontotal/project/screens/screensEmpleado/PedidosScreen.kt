@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.PedidoCard
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.screens.DashboardEmpleado
@@ -225,48 +226,21 @@ fun PedidosScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ){
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF2C2C2E))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Todos",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Pendientes",
-                    color = Color(0xFF8E8E93),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Listos",
-                    color = Color(0xFF8E8E93),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal
-                )
-            }
+            FiltroButton(
+                texto = "Todos",
+                activo = true,
+                onClick = {}
+            )
+            FiltroButton(
+                texto = "Pendientes",
+                activo = false,
+                onClick = {}
+            )
+            FiltroButton(
+                texto = "Listos",
+                activo = false,
+                onClick = {}
+            )
         }
 
         Column(

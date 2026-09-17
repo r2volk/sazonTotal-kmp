@@ -14,6 +14,9 @@ import org.sazontotal.project.screens.DashboardAdmin
 import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.screens.LoginScreen
 import org.sazontotal.project.screens.screensAdmin.GestionPersonalScreen
+import org.sazontotal.project.screens.screensAdmin.ReportesScreen
+import org.sazontotal.project.screens.screensAdmin.TodosLosPedidosScreen
+import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 
 import sazontotal.shared.generated.resources.Res
 import sazontotal.shared.generated.resources.compose_multiplatform
@@ -45,10 +48,16 @@ fun App() {
                 }
             )
             "dashboardAdmin" -> DashboardAdmin(
-                onPersonalClick = {pantallaActual = "gestionPersonal"}
+                onPersonalClick = {pantallaActual = "gestionPersonal"},
+                onPedidosClick = {pantallaActual = "todosLosPedidos"},
+                onReportesClick = {pantallaActual = "reportesAdmin"},
+                onMenuClick = {pantallaActual = "editarMenu"}
             )
+            "reportesAdmin" -> ReportesScreen()
             "dashboardEmpleado" -> DashboardEmpleado()
             "gestionPersonal" -> GestionPersonalScreen()
+            "todosLosPedidos" -> TodosLosPedidosScreen()
+            "editarMenu" -> EditarMenuScreen()
         }
     }
 }

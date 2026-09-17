@@ -38,7 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.EmpleadoCard
+import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 
 @Composable
@@ -108,85 +110,33 @@ fun GestionPersonalScreen(){
                     modifier = Modifier.weight(1f)
                 )
             }
-            TextField(
-                value = nombreBuscado,
-                onValueChange = { nombreBuscado = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                placeholder = {
-                    Text(
-                        "Buscar por nombre",
-                        color = Color(0xFF8E8E93),
-                        fontSize = 15.sp
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = Color(0xFF8E8E93),
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF1C1C1E),
-                    unfocusedContainerColor = Color(0xFF1C1C1E),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.White
-                )
+            BuscadorTextField(
+                nombreBuscado = nombreBuscado,
+                onNombreChanged = { nuevoTexto ->
+                    nombreBuscado = nuevoTexto },
+                texto = "Buscar por nombre"
             )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(Color(0xFF2C2C2E))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Todos",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(50))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Meseros",
-                        color = Color(0xFF8E8E93),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(50))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Cocina",
-                        color = Color(0xFF8E8E93),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-                }
+
+                FiltroButton(
+                    texto = "Todos",
+                    activo = true,
+                    onClick = {}
+                )
+                FiltroButton(
+                    texto = "Meseros",
+                    activo = false,
+                    onClick = {}
+                )
+                FiltroButton(
+                    texto = "Cocina",
+                    activo = false,
+                    onClick = {}
+                )
             }
 
             Column(

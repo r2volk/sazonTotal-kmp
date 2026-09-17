@@ -26,13 +26,13 @@ fun StatCardCentrado(
 ) {
     Column(
         modifier = modifier
-            .heightIn(min = 72.dp)
+            .heightIn(min = 60.dp)
             .background(
                 color = Color(0xFF1C1C1E),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(
-                horizontal = 20.dp,
+                horizontal = 10.dp,
                 vertical = 12.dp
             ),
         verticalArrangement = Arrangement.spacedBy(2.dp),
