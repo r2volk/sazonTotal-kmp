@@ -17,11 +17,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EmojiFoodBeverage
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,12 +41,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
+import org.sazontotal.project.components.SwitchButton
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun EditarMenuScreen(){
     var textoBusqueda by remember { mutableStateOf("") }
     var cantidadPlatos by remember { mutableStateOf(18) }
+
+    var mostrarFormulario by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -161,7 +171,9 @@ fun EditarMenuScreen(){
                 .size(52.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF5DBF3E))
-                .clickable {  },
+                .clickable {
+                    mostrarFormulario = true
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -170,6 +182,15 @@ fun EditarMenuScreen(){
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+
+        if (mostrarFormulario){
+            ModalBottomSheet(
+                onDismissRequest = { mostrarFormulario = false },
+                sheetState = sheetState
+            ) {
+                EditarPlato()
+            }
         }
 
     }
@@ -279,20 +300,7 @@ private fun menuCard(
             )
         }
 
-        // Switch
-        Switch(
-            checked = isActive,
-            onCheckedChange = null,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color(0xFF000000),
-                checkedTrackColor = Color(0xFF30D158),
+        SwitchButton(isActive = isActive)
 
-                uncheckedThumbColor = Color(0xFF000000),
-                uncheckedTrackColor = Color(0xFF3A3A3C),
-
-                checkedBorderColor = Color.Transparent,
-                uncheckedBorderColor = Color.Transparent
-            )
-        )
     }
 }

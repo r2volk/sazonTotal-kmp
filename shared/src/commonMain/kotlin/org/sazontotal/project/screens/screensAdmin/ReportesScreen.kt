@@ -36,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.sazontotal.project.components.EmpleadoCard
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import androidx.compose.foundation.background
