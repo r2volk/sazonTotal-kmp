@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.PedidoCard
 import org.sazontotal.project.components.StatCardCentrado
+import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.screens.DashboardEmpleado
 import org.sazontotal.project.enums.EstadoPedido
 
@@ -49,7 +50,8 @@ import org.sazontotal.project.enums.EstadoPedido
 fun PedidosScreen(
     onNuevoPedidoClick: () -> Unit = {},
     onCarritoClick: () -> Unit = {},
-    onAsistenteClick: () -> Unit = {}
+    onAsistenteClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {}
 ){
 
     var estado by remember {
@@ -94,7 +96,10 @@ fun PedidosScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
+                LogoutButton(
+                    onLogout = onLogoutClick,
+                    size = 44.dp
+                )
                 Box(
                     modifier = Modifier
                         .size(44.dp)

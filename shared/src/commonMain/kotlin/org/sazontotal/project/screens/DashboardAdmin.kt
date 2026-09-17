@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.StatCardAdmin
 import org.sazontotal.project.components.AccesoRapidoCard
+import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.icons.MenuIcon
 import org.sazontotal.project.icons.PedidosIcon
 import org.sazontotal.project.icons.PersonalIcon
 import org.sazontotal.project.icons.ReportesIcon
-import org.sazontotal.project.screens.screensAdmin.GestionPersonalScreen
 
 @Composable
 fun DashboardAdmin(
@@ -38,7 +38,8 @@ fun DashboardAdmin(
     onPersonalClick: () -> Unit = {},
     onPedidosClick: () -> Unit = {},
     onReportesClick: () -> Unit = {},
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -52,12 +53,13 @@ fun DashboardAdmin(
                 .widthIn(max = 520.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .padding(horizontal = 20.dp, vertical = 30.dp)
         ) {
-            // Header: textos + avatar AG
+            // Header: textos + logout + avatar KC
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
@@ -76,16 +78,20 @@ fun DashboardAdmin(
                         color = Color.White
                     )
                 }
+                LogoutButton(
+                    onLogout = onLogoutClick,
+                    size = 48.dp
+                )
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF1C2E22)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "KC",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF00E676)
                     )

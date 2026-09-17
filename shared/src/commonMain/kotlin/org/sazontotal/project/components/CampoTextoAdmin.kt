@@ -23,7 +23,8 @@ fun CampoTextoAdmin(
     minLines: Int = 1,
     maxLines: Int = if (singleLine) 1 else 4,
     readOnly: Boolean = false,
-    trailing: @Composable (() -> Unit)? = null
+    trailing: @Composable (() -> Unit)? = null,
+    leading: @Composable (() -> Unit)? = null
 ) {
     TextField(
         value = valor,
@@ -32,11 +33,12 @@ fun CampoTextoAdmin(
         placeholder = {
             Text(
                 text = placeholder,
-                color = Color(0xFF8E8E93),
+                color = Color(0xFF5A5A5E),
                 fontSize = 15.sp
             )
         },
         trailingIcon = trailing,
+        leadingIcon = leading,
         singleLine = singleLine,
         minLines = minLines,
         maxLines = maxLines,

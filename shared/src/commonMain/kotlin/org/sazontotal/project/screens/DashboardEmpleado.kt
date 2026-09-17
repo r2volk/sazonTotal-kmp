@@ -15,7 +15,9 @@ import org.sazontotal.project.screens.screensEmpleado.PerfilScreen
 
 @Composable
 @Preview
-fun DashboardEmpleado(){
+fun DashboardEmpleado(
+    onLogoutClick: () -> Unit = {}
+){
 
     Column(
         modifier = Modifier
@@ -23,7 +25,9 @@ fun DashboardEmpleado(){
             .background(Color.Black)
     ) {
         SelectedTab(
-            pedidos = {PedidosScreen()},
+            pedidos = {PedidosScreen(
+                onLogoutClick = onLogoutClick
+            )},
             historial = {HistorialScreen()},
             perfil = {PerfilScreen()}
         )
