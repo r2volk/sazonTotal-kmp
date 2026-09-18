@@ -31,7 +31,9 @@ fun FiltroButton(
             .background(if (activo) fondoTextoColor else Color.Transparent)
             .then(
                 if (!activo) {
-                    Modifier.border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(50))
+                    Modifier.border(1.dp
+                        , Color(0xFF2C2C2E),
+                        RoundedCornerShape(50))
                 } else {
                     Modifier
                 }

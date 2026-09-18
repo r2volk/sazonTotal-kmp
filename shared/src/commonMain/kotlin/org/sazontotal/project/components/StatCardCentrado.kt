@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 fun StatCardCentrado(
     textoSuperior: String,
     textoInferior: String,
-    colorSuperior: Color,
+    colorSuperior: Color = Color.White,
     modifier: Modifier = Modifier
 ) {
     Column(
