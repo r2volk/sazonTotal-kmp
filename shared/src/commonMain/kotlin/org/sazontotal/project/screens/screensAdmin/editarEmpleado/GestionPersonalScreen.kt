@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -38,15 +40,27 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.components.SwitchButton
-import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarPlato
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
-@Preview
-fun GestionPersonalScreen(){
+fun GestionPersonalScreen(
+    backGestionPersonal: () -> Unit,
+    repositorio: SazonRepository? = null
+){
 
     var nombreBuscado by remember { mutableStateOf("") }
-
     var mostrarFormulario by remember { mutableStateOf(false) }
+    var filtroRol by remember { mutableStateOf("Todos") }
+    val scope = rememberCoroutineScope()
+
+    val empleados = repositorio?.observarEmpleados()
+        ?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val total = empleados.size
+    val activos = empleados.count { it.activo }
+    val inactivos = total - activos
 
 
     Box(
@@ -68,7 +82,7 @@ fun GestionPersonalScreen(){
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 IconButton(
-                    onClick = { },
+                    onClick = { backGestionPersonal()},
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -93,19 +107,19 @@ fun GestionPersonalScreen(){
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 StatCardCentrado(
-                    textoSuperior = "14",
+                    textoSuperior = total.toString(),
                     textoInferior = "Total",
                     colorSuperior = Color.White,
                     modifier = Modifier.weight(1f)
                 )
                 StatCardCentrado(
-                    textoSuperior = "11",
+                    textoSuperior = activos.toString(),
                     textoInferior = "Activos",
                     colorSuperior = Color(0xFF30D158),
                     modifier = Modifier.weight(1f)
                 )
                 StatCardCentrado(
-                    textoSuperior = "3",
+                    textoSuperior = inactivos.toString(),
                     textoInferior = "Inactivos",
                     colorSuperior = Color(0xFF8E8E93),
                     modifier = Modifier.weight(1f)
@@ -125,30 +139,41 @@ fun GestionPersonalScreen(){
 
                 FiltroButton(
                     texto = "Todos",
-                    activo = true,
-                    onClick = {}
+                    activo = filtroRol == "Todos",
+                    onClick = { filtroRol = "Todos" }
                 )
                 FiltroButton(
                     texto = "Meseros",
-                    activo = false,
-                    onClick = {}
+                    activo = filtroRol == "Meseros",
+                    onClick = { filtroRol = "Meseros" }
                 )
                 FiltroButton(
                     texto = "Cocina",
-                    activo = false,
-                    onClick = {}
+                    activo = filtroRol == "Cocina",
+                    onClick = { filtroRol = "Cocina" }
                 )
             }
 
             Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                EmpleadoCard(
-                    nombre = "Jose Paredes",
-                    trabajo = "Mesero",
-                    isActive = true,
-                    id = "1212"
-                )
+                val filtrados = empleados.filter { empleado ->
+                    val coincideNombre = nombreBuscado.isBlank() ||
+                        empleado.nombre.contains(nombreBuscado, ignoreCase = true)
+                    val coincideRol = filtroRol == "Todos" ||
+                        (filtroRol == "Meseros" && empleado.rol == "Mesero") ||
+                        (filtroRol == "Cocina" && empleado.rol == "Cocina")
+                    coincideNombre && coincideRol
+                }
+                filtrados.forEach { empleado ->
+                    EmpleadoCard(
+                        nombre = empleado.nombre,
+                        trabajo = empleado.rol,
+                        isActive = empleado.activo,
+                        id = empleado.id
+                    )
+                }
             }
         }
 
@@ -175,7 +200,14 @@ fun GestionPersonalScreen(){
             AdminBottomSheet(
                 onDismiss = { mostrarFormulario = false }
             ) {
-                CrearEmpleado()
+                CrearEmpleado(
+                    onGuardar = { nuevo ->
+                        scope.launch {
+                            repositorio?.guardarEmpleado(nuevo)
+                            mostrarFormulario = false
+                        }
+                    }
+                )
             }
         }
     }
@@ -294,4 +326,14 @@ private fun EmpleadoCard(
         // Switch
         SwitchButton(isActive = isActive)
     }
+}
+
+
+@Preview
+@Composable
+fun GestionPersonalScreenPreview(){
+    GestionPersonalScreen(
+        backGestionPersonal = {},
+        repositorio = null
+    )
 }

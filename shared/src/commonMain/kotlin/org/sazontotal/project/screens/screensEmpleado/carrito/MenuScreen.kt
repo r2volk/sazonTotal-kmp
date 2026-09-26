@@ -46,8 +46,10 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 
 @Composable
-@Preview
-fun MenuScreen() {
+fun MenuScreen(
+    backMenuScreen: () -> Unit,
+    verCarrito: () -> Unit
+) {
     var textoBusqueda by remember { mutableStateOf("") }
 
     Column(
@@ -64,7 +66,9 @@ fun MenuScreen() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             IconButton(
-                onClick = { },
+                onClick = {
+                    backMenuScreen()
+                },
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
@@ -254,7 +258,7 @@ fun MenuScreen() {
                     .height(52.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFF5DBF3E))
-                    .clickable { },
+                    .clickable { verCarrito() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -395,4 +399,13 @@ private fun PlatoCard(
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun MenuScreenPreview(){
+    MenuScreen(
+        backMenuScreen = {},
+        verCarrito = {}
+    )
 }

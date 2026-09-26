@@ -32,8 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-@Preview
-fun PedidoConcretadoScreen() {
+fun PedidoConcretadoScreen(
+    volverDashboard: () -> Unit,
+    otroPedido: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -239,7 +241,9 @@ fun PedidoConcretadoScreen() {
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF5DBF3E))
-                .clickable { },
+                .clickable {
+                        volverDashboard()
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -255,7 +259,9 @@ fun PedidoConcretadoScreen() {
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(12.dp))
-                .clickable { },
+                .clickable {
+                    otroPedido()
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -288,4 +294,13 @@ private fun ResumenRow(
             fontSize = 15.sp
         )
     }
+}
+
+@Composable
+@Preview
+fun PedidoConcretadoPreview(){
+    PedidoConcretadoScreen(
+        volverDashboard = {},
+        otroPedido = {}
+    )
 }

@@ -41,10 +41,12 @@ import org.sazontotal.project.components.StatCardCentrado
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.unit.Dp
+import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 
 @Composable
-@Preview
-fun ReportesScreen(){
+fun ReportesScreen(
+    backReportes: () -> Unit
+){
 
     var ganancias by remember { mutableStateOf( 5900.0) }
     var porcentaje by remember { mutableStateOf( 12) }
@@ -71,7 +73,9 @@ fun ReportesScreen(){
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        backReportes()
+                    },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -347,4 +351,12 @@ private fun graficoStatReporte(periodo: String = "week") {
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun ReportesScreenPreview(){
+    ReportesScreen(
+        backReportes = {}
+    )
 }

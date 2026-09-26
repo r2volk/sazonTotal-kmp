@@ -14,9 +14,9 @@ import org.sazontotal.project.screens.screensEmpleado.PedidosScreen
 import org.sazontotal.project.screens.screensEmpleado.PerfilScreen
 
 @Composable
-@Preview
 fun DashboardEmpleado(
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit,
+    onCarritoClick: () -> Unit
 ){
 
     Column(
@@ -26,11 +26,24 @@ fun DashboardEmpleado(
     ) {
         SelectedTab(
             pedidos = {PedidosScreen(
-                onLogoutClick = onLogoutClick
+                onCarritoClick = onCarritoClick
             )},
             historial = {HistorialScreen()},
-            perfil = {PerfilScreen()}
+            perfil = {PerfilScreen(
+                onLogoutClick = onLogoutClick
+            )}
         )
     }
 
 }
+
+@Composable
+@Preview
+fun DashboardEmpleadoPreview(){
+    DashboardEmpleado(
+        onLogoutClick = {},
+        onCarritoClick = {}
+    )
+}
+
+

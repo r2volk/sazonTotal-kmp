@@ -46,8 +46,10 @@ import org.sazontotal.project.components.CampoTextoAdmin
 import org.sazontotal.project.components.CantidadStepper
 
 @Composable
-@Preview
-fun CarritoScreen() {
+fun CarritoScreen(
+    backCarritoScreen: () -> Unit,
+    confirmarCarrito: () -> Unit
+) {
     var cantidadCeviche by remember { mutableStateOf(1) }
     var cantidadLomo by remember { mutableStateOf(2) }
     var cantidadPisco by remember { mutableStateOf(1) }
@@ -67,7 +69,7 @@ fun CarritoScreen() {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             IconButton(
-                onClick = { },
+                onClick = { backCarritoScreen()},
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
@@ -210,7 +212,7 @@ fun CarritoScreen() {
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF5DBF3E))
-                .clickable { },
+                .clickable {confirmarCarrito() },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -304,4 +306,13 @@ private fun CarritoItemCard(
             )
         }
     }
+}
+
+@Composable
+@Preview
+fun CarritoPreviewScreen(){
+    CarritoScreen(
+        backCarritoScreen = {},
+        confirmarCarrito = {}
+    )
 }

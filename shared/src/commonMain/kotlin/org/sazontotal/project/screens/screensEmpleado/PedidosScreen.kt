@@ -48,10 +48,8 @@ import org.sazontotal.project.enums.EstadoPedido
 
 @Composable
 fun PedidosScreen(
-    onNuevoPedidoClick: () -> Unit = {},
-    onCarritoClick: () -> Unit = {},
-    onAsistenteClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {}
+    onCarritoClick: () -> Unit,
+    onAsistenteClick: () -> Unit = {}
 ){
 
     var estado by remember {
@@ -96,13 +94,9 @@ fun PedidosScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                LogoutButton(
-                    onLogout = onLogoutClick,
-                    size = 44.dp
-                )
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(50.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF2C2C2E)),
                     contentAlignment = Alignment.Center
@@ -110,7 +104,7 @@ fun PedidosScreen(
                     Text(
                         text = "RS",
                         color = Color(0xFF7DD3FC),
-                        fontSize = 16.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -322,7 +316,7 @@ fun PedidosScreen(
                 .size(52.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF5DBF3E))
-                .clickable { onNuevoPedidoClick() },
+                .clickable { onCarritoClick() },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -339,5 +333,8 @@ fun PedidosScreen(
 @Preview
 @Composable
 fun PedidosPreview(){
-    DashboardEmpleado()
+    DashboardEmpleado(
+        onLogoutClick = {},
+        onCarritoClick = {}
+    )
 }

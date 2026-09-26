@@ -39,10 +39,12 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.enums.EstadoPedido
 import org.sazontotal.project.enums.EstadoTodosLosPedidos
+import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 
 @Composable
-@Preview
-fun TodosLosPedidosScreen(){
+fun TodosLosPedidosScreen(
+    backTodosLosPedidos: () -> Unit
+){
 
     var textoBusqueda by remember { mutableStateOf("") }
     Box(
@@ -63,7 +65,7 @@ fun TodosLosPedidosScreen(){
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 IconButton(
-                    onClick = { },
+                    onClick = { backTodosLosPedidos() },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -250,4 +252,12 @@ private fun CardPedido(
             )
         }
     }
+}
+
+@Composable
+@Preview
+fun TodosLosPedidosScreenPreview(){
+    TodosLosPedidosScreen(
+        backTodosLosPedidos = {}
+    )
 }

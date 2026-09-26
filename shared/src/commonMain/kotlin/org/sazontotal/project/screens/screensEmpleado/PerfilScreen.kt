@@ -42,7 +42,9 @@ import org.sazontotal.project.components.SwitchButton
 
 @Composable
 @Preview
-fun PerfilScreen() {
+fun PerfilScreen(
+    onLogoutClick: () -> Unit = {}
+) {
     var notificaciones by remember { mutableStateOf(true) }
 
     Column(
@@ -167,7 +169,9 @@ fun PerfilScreen() {
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0xFF3A1A1A), RoundedCornerShape(12.dp))
-                .clickable { },
+                .clickable {
+                    onLogoutClick()
+                },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {

@@ -40,8 +40,9 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.SwitchButton
 
 @Composable
-@Preview
-fun EditarMenuScreen(){
+fun EditarMenuScreen(
+    backEditarMenu: () -> Unit
+){
     var textoBusqueda by remember { mutableStateOf("") }
     var cantidadPlatos by remember { mutableStateOf(18) }
 
@@ -66,7 +67,9 @@ fun EditarMenuScreen(){
             )
             {
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        backEditarMenu()
+                    },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -296,4 +299,12 @@ private fun menuCard(
         SwitchButton(isActive = isActive)
 
     }
+}
+
+@Composable
+@Preview
+fun EditarMenuScreenPreview(){
+    EditarMenuScreen(
+        backEditarMenu = {}
+    )
 }

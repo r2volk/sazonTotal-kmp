@@ -36,10 +36,14 @@ import org.sazontotal.project.components.CampoTextoAdmin
 import org.sazontotal.project.components.FotoEmpleadoAvatar
 import org.sazontotal.project.components.RolOptionButton
 import org.sazontotal.project.components.SwitchButton
+import org.sazontotal.project.data.db.EmpleadoEntity
+import kotlin.random.Random
 
 @Composable
 @Preview
-fun CrearEmpleado() {
+fun CrearEmpleado(
+    onGuardar: (EmpleadoEntity) -> Unit = {}
+) {
 
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
@@ -202,7 +206,20 @@ fun CrearEmpleado() {
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF5DF08A))
-                .clickable { }
+                .clickable {
+                    if (nombre.isNotBlank() && pin.isNotBlank()) {
+                        onGuardar(
+                            EmpleadoEntity(
+                                id = "EMP-${Random.nextInt(100, 999)}",
+                                nombre = nombre.trim(),
+                                pin = pin,
+                                rol = rol,
+                                telefono = telefono,
+                                activo = activo
+                            )
+                        )
+                    }
+                }
                 .padding(bottom = 0.dp),
             contentAlignment = Alignment.Center
         ) {
