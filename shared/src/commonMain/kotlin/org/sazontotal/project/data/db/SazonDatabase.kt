@@ -5,11 +5,16 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 
-@Database(entities = [EmpleadoEntity::class, PlatoEntity::class], version = 3, exportSchema = false)
+@Database(
+    entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class],
+    version = 4,
+    exportSchema = false)
 @ConstructedBy(SazonDatabaseConstructor::class)
 abstract class SazonDatabase : RoomDatabase() {
     abstract fun empleadoDao(): EmpleadoDao
     abstract fun platoDao(): PlatoDao
+    abstract fun pedidoDao(): PedidoDao
+    abstract fun pedidoItemDao(): PedidoItemDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

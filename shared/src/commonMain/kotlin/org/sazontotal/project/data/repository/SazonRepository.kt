@@ -2,6 +2,8 @@ package org.sazontotal.project.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.db.SazonDatabase
 
@@ -37,6 +39,36 @@ class SazonRepository(private val db: SazonDatabase) {
 
     suspend fun cambiarActivoEmpleado(id: String, activo: Boolean) {
         db.empleadoDao().cambiarActivo(id, activo)
+    }
+
+    suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
+        // 1. Guardamos la cabecera (mesa, mesero, estado).
+        // La base le da un número y nos lo devuelve.
+        val numeroPedido = db.pedidoDao().insertar(pedido)
+
+        // 2. Recorremos los renglones y a cada uno le anotamos el número de su pedido.
+        // .copy() = fotocopia del renglón cambiando solo ese número.
+        val renglonesMarcados = items.map { renglon ->
+            renglon.copy(pedidoId = numeroPedido)
+        }
+
+        // 3. Guardamos todos los renglones ya marcados, de un solo viaje.
+        db.pedidoItemDao().insertarTodos(renglonesMarcados)
+
+        // 4. Devolvemos el número, por si la pantalla lo necesita (ej: mostrar "Ticket #5").
+        return numeroPedido
+    }
+
+    fun observarPedidos(): Flow<List<PedidoEntity>> {
+        return db.pedidoDao().observarTodos()
+    }
+
+    fun observarItems(pedidoId: Long): Flow<List<PedidoItemEntity>> {
+        return db.pedidoItemDao().observarPorPedido(pedidoId)
+    }
+
+    suspend fun cambiarEstadoPedido(id: Long, estado: String) {
+        db.pedidoDao().cambiarEstado(id, estado)
     }
 
     suspend fun seedIfEmpty() {
