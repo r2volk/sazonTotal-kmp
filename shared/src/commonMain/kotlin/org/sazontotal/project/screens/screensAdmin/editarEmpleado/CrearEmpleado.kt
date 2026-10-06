@@ -194,7 +194,7 @@ fun CrearEmpleado(
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
-            SwitchButton(isActive = activo)
+            SwitchButton(isActive = activo, onCambio = {activo = it})
         }
 
         Spacer(modifier = Modifier.height(28.dp))

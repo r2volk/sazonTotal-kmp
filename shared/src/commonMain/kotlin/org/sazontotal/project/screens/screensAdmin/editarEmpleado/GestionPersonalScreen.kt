@@ -171,7 +171,14 @@ fun GestionPersonalScreen(
                         nombre = empleado.nombre,
                         trabajo = empleado.rol,
                         isActive = empleado.activo,
-                        id = empleado.id
+                        id = empleado.id,
+                        onActivoChange = { prendido ->
+                            scope.launch {
+                                repositorio?.cambiarActivoEmpleado(empleado.id,prendido)
+                            }
+
+                        }
+
                     )
                 }
             }
@@ -220,7 +227,8 @@ private fun EmpleadoCard(
     isActive: Boolean,
     trabajo: String,
     id: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onActivoChange: (Boolean) -> Unit
 ) {
     val isCocina = trabajo.equals("Cocina", ignoreCase = true)
     val badgeBg = when {
@@ -324,7 +332,7 @@ private fun EmpleadoCard(
         }
 
         // Switch
-        SwitchButton(isActive = isActive)
+        SwitchButton(isActive = isActive, onCambio = onActivoChange)
     }
 }
 

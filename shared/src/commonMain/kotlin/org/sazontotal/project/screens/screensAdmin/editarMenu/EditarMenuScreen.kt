@@ -38,16 +38,44 @@ import org.sazontotal.project.components.AdminBottomSheet
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.SwitchButton
+import org.sazontotal.project.data.repository.SazonRepository
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun EditarMenuScreen(
-    backEditarMenu: () -> Unit
+    backEditarMenu: () -> Unit,
+    repositorio: SazonRepository? = null
 ){
     var textoBusqueda by remember { mutableStateOf("") }
-    var cantidadPlatos by remember { mutableStateOf(18) }
+    var filtroCategoria by remember { mutableStateOf("Todos") }
+
+    // 1. Pedimos la lista viva de platos a la base
+    // Si no hay base (vista previa), esto es nulo
+    val platosEnVivo = repositorio?.observarTodosLosPlatos()
+
+    // 2. Convertimos esa lista viva en una lista normal que la pantalla puede dibujar
+    // Si no hay nada, empezamos con una lista vacía.
+    val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Nos quedamos solo con los que pasan el buscador
+    // Si el buscador está vacío, pasan todos
+    val porNombre = platos.filter { plato ->
+        textoBusqueda.isBlank() || plato.nombre.contains(textoBusqueda, ignoreCase = true)
+    }
+
+    // 4. De esos, nos quedamos con los de la categoría elegida
+    // Si dice "Todos", pasan todos
+    val filtrados = porNombre.filter { plato ->
+        filtroCategoria == "Todos" || plato.categoria == filtroCategoria
+    }
 
     var mostrarFormulario by remember { mutableStateOf(false) }
-
+    val scope = rememberCoroutineScope() //evita que el app se congele al guardar un dato en la bd
 
     Box(
         modifier = Modifier
@@ -87,7 +115,7 @@ fun EditarMenuScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "$cantidadPlatos platos",
+                    text = "${platos.size} platos",
                     color = Color.Gray,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -108,56 +136,54 @@ fun EditarMenuScreen(
             )
             {
                 FiltroButton(
+                    texto = "Todos",
+                    activo = filtroCategoria == "Todos",
+                    onClick = { filtroCategoria = "Todos" },
+                    textoColor = Color.Green,
+                    fondoTextoColor = Color(0xFF0D3B20)
+                )
+                FiltroButton(
                     texto = "Platos",
-                    activo = true,
-                    onClick = {},
+                    activo = filtroCategoria == "Platos",
+                    onClick = { filtroCategoria = "Platos" },
                     textoColor = Color.Green,
                     fondoTextoColor = Color(0xFF0D3B20)
                 )
                 FiltroButton(
                     texto = "Bebidas",
-                    activo = false,
-                    onClick = {},
+                    activo = filtroCategoria == "Bebidas",
+                    onClick = { filtroCategoria = "Bebidas" },
                     textoColor = Color.Green,
                     fondoTextoColor = Color(0xFF0D3B20)
                 )
                 FiltroButton(
                     texto = "Postres",
-                    activo = false,
-                    onClick = {},
+                    activo = filtroCategoria == "Postres",
+                    onClick = { filtroCategoria = "Postres" },
                     textoColor = Color.Green,
                     fondoTextoColor = Color(0xFF0D3B20)
                 )
             }
 
-            menuCard(
-                nombrePlato = "Ceviche Clasico",
-                isActive = true,
-                precio = 12.0,
-                descipcion = "Sin Gluten",
-                editar = {}
-            )
-            menuCard(
-                nombrePlato = "Lomo Saltado",
-                isActive = true,
-                precio = 18.0,
-                descipcion = "Picante Leve",
-                editar = {}
-            )
-            menuCard(
-                nombrePlato = "Causa Limeña",
-                isActive = false,
-                precio = 14.0,
-                descipcion = "Sin Gluten",
-                editar = {}
-            )
-            menuCard(
-                nombrePlato = "Suspiro Limeño",
-                isActive = true,
-                precio = 13.0,
-                descipcion = "Contiene Lacteos",
-                editar = {}
-            )
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                filtrados.forEach { plato ->
+                    menuCard(
+                        nombrePlato = plato.nombre,
+                        isActive = plato.activo,
+                        precio = plato.precio,
+                        descipcion = plato.descripcion,
+                        editar = {},
+                        onActivoChange = { prendido ->
+                            scope.launch {
+                                repositorio?.cambiarActivoPlato(plato.id, prendido)
+                            }
+                        }
+                    )
+                }
+            }
 
         }
 
@@ -185,7 +211,14 @@ fun EditarMenuScreen(
             AdminBottomSheet(
                 onDismiss = { mostrarFormulario = false }
             ) {
-                EditarPlato()
+                EditarPlato(
+                    onGuardar = { nuevoPlato ->
+                        scope.launch {
+                            repositorio?.guardarPlato(nuevoPlato)
+                            mostrarFormulario = false
+                        }
+                    }
+                )
             }
         }
 
@@ -200,7 +233,8 @@ private fun menuCard(
     isActive: Boolean,
     precio: Double,
     descipcion: String,
-    editar: () ->Unit
+    editar: () -> Unit,
+    onActivoChange: (Boolean) -> Unit
 )
 {
     Row(
@@ -296,7 +330,7 @@ private fun menuCard(
             )
         }
 
-        SwitchButton(isActive = isActive)
+        SwitchButton(isActive = isActive, onCambio = onActivoChange)
 
     }
 }

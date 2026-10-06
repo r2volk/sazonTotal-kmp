@@ -44,8 +44,8 @@ import sazontotal.shared.generated.resources.Res
 @Composable
 fun LoginScreen( onLogin:(String, String)-> Unit)  {
 
-    var empleadoId by remember { mutableStateOf("EMP-104") }
-    var pin by remember { mutableStateOf("12") }
+    var empleadoId by remember { mutableStateOf("ADM-001") }
+    var pin by remember { mutableStateOf("") }
 
     val onNumberClick: (Int) -> Unit = { number ->
         if (pin.length < 4) {

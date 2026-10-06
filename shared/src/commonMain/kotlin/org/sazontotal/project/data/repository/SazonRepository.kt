@@ -23,8 +23,20 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.platoDao().observarActivos()
     }
 
+    fun observarTodosLosPlatos(): Flow<List<PlatoEntity>>{
+        return db.platoDao().observarTodos()
+    }
+
     suspend fun guardarPlato(plato: PlatoEntity) {
         db.platoDao().guardar(plato)
+    }
+
+    suspend fun cambiarActivoPlato(id: Long, activo: Boolean){
+        db.platoDao().cambiarActivo(id,activo)
+    }
+
+    suspend fun cambiarActivoEmpleado(id: String, activo: Boolean) {
+        db.empleadoDao().cambiarActivo(id, activo)
     }
 
     suspend fun seedIfEmpty() {

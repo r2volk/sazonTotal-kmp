@@ -11,6 +11,9 @@ interface PlatoDao {
     @Query("SELECT * FROM platos WHERE activo = 1 ORDER BY nombre")
     fun observarActivos(): Flow<List<PlatoEntity>>
 
+    @Query("SELECT * FROM platos ORDER BY nombre")
+    fun observarTodos(): Flow<List<PlatoEntity>>
+
     @Query("SELECT * FROM platos WHERE nombre LIKE '%' || :texto || '%'")
     fun buscar(texto: String): Flow<List<PlatoEntity>>
 

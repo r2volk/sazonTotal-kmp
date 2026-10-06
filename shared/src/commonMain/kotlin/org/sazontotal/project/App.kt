@@ -77,11 +77,13 @@ fun App() {
                 backTodosLosPedidos = {pantallaActual = "dashboardAdmin"}
             )
             "editarMenu" -> EditarMenuScreen(
-                backEditarMenu = {pantallaActual = "dashboardAdmin"}
+                backEditarMenu = {pantallaActual = "dashboardAdmin"},
+                repositorio = repositorio
             )
             "menuEmpleado" -> MenuScreen(
                 backMenuScreen = {pantallaActual = "dashboardEmpleado"},
-                verCarrito = {pantallaActual = "carritoEmpleado"}
+                verCarrito = {pantallaActual = "carritoEmpleado"},
+                repositorio = repositorio
             )
             "carritoEmpleado" -> CarritoScreen(
                 backCarritoScreen = {pantallaActual = "menuEmpleado"},

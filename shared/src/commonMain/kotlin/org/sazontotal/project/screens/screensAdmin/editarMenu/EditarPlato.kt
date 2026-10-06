@@ -16,10 +16,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,16 +41,20 @@ import org.sazontotal.project.components.CampoTextoAdmin
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.FotoPlatoBanner
 import org.sazontotal.project.components.SwitchButton
+import org.sazontotal.project.data.db.PlatoEntity
 
 @Composable
 @Preview
-fun EditarPlato() {
+fun EditarPlato(
+    onGuardar: (PlatoEntity) -> Unit = {}
+) {
     // Solo diseño (valores de muestra, sin lógica)
-    var nombre by remember { mutableStateOf("Ceviche clásico") }
+    var nombre by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("Platos") }
-    var precio by remember { mutableStateOf("S/ 12.00") }
-    var descripcion by remember { mutableStateOf("Pescado fresco marinado en limón, cebolla y ají...") }
+    var precio by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
     var disponible by remember { mutableStateOf(true) }
+    var mostrarCategorias by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -97,26 +105,65 @@ fun EditarPlato() {
                     color = Color(0xFF8E8E93),
                     fontSize = 14.sp
                 )
-                CampoTextoAdmin(
-                    valor = categoria,
-                    onValorChange = { categoria = it },
-                    readOnly = true,
-                    trailing = {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = Color(0xFF8E8E93),
-                            modifier = Modifier.size(22.dp)
-                        )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CampoTextoAdmin(
+                        valor = categoria,
+                        onValorChange = { },
+                        readOnly = true,
+                        trailing = {
+                            IconButton(onClick = { mostrarCategorias = !mostrarCategorias }) {
+                                Icon(
+                                    imageVector = Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = "Elegir categoría",
+                                    tint = Color(0xFF8E8E93),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                    )
+                    // Menú flotante nativo: aparece encima del contenido,
+                    // no empuja la pantalla. Se cierra solo al elegir o tocar fuera.
+                    DropdownMenu(
+                        expanded = mostrarCategorias,
+                        onDismissRequest = { mostrarCategorias = false },
+                        offset = DpOffset(0.dp, 4.dp)
+                    ) {
+                        listOf("Platos", "Bebidas", "Postres").forEach { opcion ->
+                            val elegida = opcion == categoria
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = opcion,
+                                        color = Color(0xFF1C1C1E),
+                                        fontSize = 15.sp,
+                                        fontWeight = if (elegida) FontWeight.Bold
+                                        else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    categoria = opcion
+                                    mostrarCategorias = false
+                                },
+                                leadingIcon = {
+                                    if (elegida) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = Color(0xFF30D158)
+                                        )
+                                    }
+                                }
+                            )
+                        }
                     }
-                )
+                }
             }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Precio",
+                    text = "Precio (S/.)",
                     color = Color(0xFF8E8E93),
                     fontSize = 14.sp
                 )
@@ -194,7 +241,7 @@ fun EditarPlato() {
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
-            SwitchButton(isActive = disponible)
+            SwitchButton(isActive = disponible, onCambio = {disponible = it})
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -228,7 +275,23 @@ fun EditarPlato() {
                     .height(52.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFF5DF08A))
-                    .clickable { },
+                    .clickable {
+                        val precioNumero = precio
+                            .trim()
+                            .replace(",", ".")
+                            .toDoubleOrNull()
+                        if (nombre.isNotBlank() && precioNumero != null) {
+                            onGuardar(
+                                PlatoEntity(
+                                    nombre = nombre.trim(),
+                                    precio = precioNumero,
+                                    descripcion = descripcion.trim(),
+                                    categoria = categoria,
+                                    activo = disponible
+                                )
+                            )
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(

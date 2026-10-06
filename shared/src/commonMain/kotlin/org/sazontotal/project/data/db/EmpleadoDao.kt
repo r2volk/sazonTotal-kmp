@@ -15,6 +15,9 @@ interface EmpleadoDao {
     @Query("SELECT * FROM empleados ORDER BY nombre")
     fun observarTodos(): Flow<List<EmpleadoEntity>>
 
+    @Query("UPDATE empleados SET activo = :activo WHERE id = :id")
+    suspend fun cambiarActivo(id: String, activo: Boolean)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardar(empleado: EmpleadoEntity)
 

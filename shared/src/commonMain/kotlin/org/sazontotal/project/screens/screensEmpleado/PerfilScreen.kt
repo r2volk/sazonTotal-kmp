@@ -144,7 +144,7 @@ fun PerfilScreen(
                 texto = "Notificaciones",
                 onClick = {},
                 trailing = {
-                    SwitchButton(isActive = notificaciones)
+                    SwitchButton(isActive = notificaciones , onCambio = {})
                 }
             )
             OpcionPerfilRow(

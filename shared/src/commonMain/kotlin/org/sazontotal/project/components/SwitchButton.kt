@@ -10,11 +10,12 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun SwitchButton(
     isActive: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCambio: (Boolean) -> Unit
 ){
     Switch(
         checked = isActive,
-        onCheckedChange = null,
+        onCheckedChange = onCambio,
         modifier = modifier.scale(0.8f),
         colors = SwitchDefaults.colors(
             checkedThumbColor = Color(0xFF000000),

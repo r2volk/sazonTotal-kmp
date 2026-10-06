@@ -44,13 +44,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
+import androidx.compose.runtime.collectAsState
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 fun MenuScreen(
     backMenuScreen: () -> Unit,
-    verCarrito: () -> Unit
+    verCarrito: () -> Unit,
+    repositorio: SazonRepository? = null
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
+    var filtroCategoria by remember { mutableStateOf("Todos") }
+
+    // 1. Pedimos a la bd los platos que estan ACTIVOS
+    val platosEnVivo = repositorio?.observarPlatos()
+
+    // 2. Convertimos platosEnVivo en una lista dibujable por compose
+    val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Nos quedamos con los que pasan el buscador
+    val porNombre = platos.filter { plato ->
+        textoBusqueda.isBlank() || plato.nombre.contains(textoBusqueda, ignoreCase = true)
+    }
+
+    // 4. De esos, nos quedamos con la categoria elegida
+    val filtrados = porNombre.filter { plato ->
+        filtroCategoria == "Todos" || plato.categoria == filtroCategoria
+    }
 
     Column(
         modifier = Modifier
@@ -115,21 +135,32 @@ fun MenuScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             FiltroButton(
+                texto = "Todos",
+                activo = filtroCategoria == "Todos",
+                onClick = { filtroCategoria = "Todos" },
+                textoColor = Color.Green,
+                fondoTextoColor = Color(0xFF0D3B20)
+            )
+            FiltroButton(
                 texto = "Platos",
-                activo = true,
-                onClick = {},
-                textoColor = Color(0xFF30D158),
+                activo = filtroCategoria == "Platos",
+                onClick = { filtroCategoria = "Platos" },
+                textoColor = Color.Green,
                 fondoTextoColor = Color(0xFF0D3B20)
             )
             FiltroButton(
                 texto = "Bebidas",
-                activo = false,
-                onClick = {}
+                activo = filtroCategoria == "Bebidas",
+                onClick = { filtroCategoria = "Bebidas" },
+                textoColor = Color.Green,
+                fondoTextoColor = Color(0xFF0D3B20)
             )
             FiltroButton(
                 texto = "Postres",
-                activo = false,
-                onClick = {}
+                activo = filtroCategoria == "Postres",
+                onClick = { filtroCategoria = "Postres" },
+                textoColor = Color.Green,
+                fondoTextoColor = Color(0xFF0D3B20)
             )
         }
 
@@ -140,77 +171,29 @@ fun MenuScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PlatoCard(
-                    nombre = "Ceviche clásico",
-                    etiqueta = "Sin gluten",
-                    precio = "S/ 12.00",
-                    icono = Icons.Outlined.SoupKitchen,
-                    fondoImagen = Color(0xFF4A2620),
-                    tintaIcono = Color(0xFFE8935A),
-                    badge = "Más pedido",
-                    modifier = Modifier.weight(1f)
-                )
-                PlatoCard(
-                    nombre = "Lomo saltado",
-                    etiqueta = "Picante leve",
-                    precio = "S/ 18.00",
-                    icono = Icons.Outlined.DinnerDining,
-                    fondoImagen = Color(0xFF3D2E0A),
-                    tintaIcono = Color(0xFFFFB340),
-                    cantidadInicial = 2,
-                    modifier = Modifier.weight(1f)
-                )
+            val filas = filtrados.chunked(2)
+            filas.forEach { fila ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    fila.forEach { plato ->
+                        PlatoCard(
+                            nombre = plato.nombre,
+                            etiqueta = plato.descripcion,
+                            precio = "S/ ${plato.precio}",
+                            icono = iconoSegunCategoria(plato.categoria),
+                            fondoImagen = fondoSegunCategoria(plato.categoria),
+                            tintaIcono = tintaSegunCategoria(plato.categoria),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (fila.size == 1) {
+                        Box(modifier = Modifier.weight(1f))
+                    }
+                }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PlatoCard(
-                    nombre = "Pisco sour",
-                    etiqueta = "Con alcohol",
-                    precio = "S/ 20.00",
-                    icono = Icons.Outlined.LocalBar,
-                    fondoImagen = Color(0xFF0B3820),
-                    tintaIcono = Color(0xFF4ADE80),
-                    modifier = Modifier.weight(1f)
-                )
-                PlatoCard(
-                    nombre = "Suspiro limeño",
-                    etiqueta = "Contiene lácteos",
-                    precio = "S/ 13.00",
-                    icono = Icons.Outlined.Cake,
-                    fondoImagen = Color(0xFF3D1A2E),
-                    tintaIcono = Color(0xFFF48FB1),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PlatoCard(
-                    nombre = "Ceviche clásico",
-                    etiqueta = "Sin gluten",
-                    precio = "S/ 12.00",
-                    icono = Icons.Outlined.SoupKitchen,
-                    fondoImagen = Color(0xFF4A2620),
-                    tintaIcono = Color(0xFFE8935A),
-                    modifier = Modifier.weight(1f)
-                )
-                PlatoCard(
-                    nombre = "Lomo saltado",
-                    etiqueta = "Picante leve",
-                    precio = "S/ 18.00",
-                    icono = Icons.Outlined.DinnerDining,
-                    fondoImagen = Color(0xFF3D2E0A),
-                    tintaIcono = Color(0xFFFFB340),
-                    modifier = Modifier.weight(1f)
-                )
-            }
+
         }
 
         // Barra inferior del carrito
@@ -408,4 +391,22 @@ fun MenuScreenPreview(){
         backMenuScreen = {},
         verCarrito = {}
     )
+}
+
+private fun iconoSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Icons.Outlined.LocalBar
+    "Postres" -> Icons.Outlined.Cake
+    else -> Icons.Outlined.DinnerDining
+}
+
+private fun fondoSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Color(0xFF0B3820)
+    "Postres" -> Color(0xFF3D1A2E)
+    else -> Color(0xFF3D2E0A)
+}
+
+private fun tintaSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Color(0xFF4ADE80)
+    "Postres" -> Color(0xFFF48FB1)
+    else -> Color(0xFFFFB340)
 }
