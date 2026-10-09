@@ -27,10 +27,15 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,14 +54,28 @@ import org.sazontotal.project.enums.EstadoPedido
 @Composable
 fun PedidosScreen(
     onCarritoClick: () -> Unit,
-    onAsistenteClick: () -> Unit = {}
+    onAsistenteClick: () -> Unit = {},
+    repositorio: SazonRepository? = null
 ){
 
-    var estado by remember {
-        mutableStateOf(EstadoPedido.PENDIENTE)
-    }
-    var estadoMesa7 by remember {
-        mutableStateOf(EstadoPedido.LISTO)
+    // 1. Pedimos la lista viva de pedidos a la base (los nuevos primero).
+    val pedidosEnVivo = repositorio?.observarPedidos()
+
+    // 2. La convertimos en lista dibujable (o vacía si no hay base).
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Filtro elegido + contadores calculados desde la lista.
+    var filtroEstado by remember { mutableStateOf("Todos") }
+    val pendientes = pedidos.count { it.estado == "PENDIENTE" }
+    val listos = pedidos.count { it.estado == "LISTO" }
+    val entregados = pedidos.count { it.estado == "ENTREGADO" }
+    val scope = rememberCoroutineScope()
+
+    // 4. Nos quedamos con los del filtro elegido.
+    val filtrados = pedidos.filter { pedido ->
+        filtroEstado == "Todos" ||
+            (filtroEstado == "Pendientes" && pedido.estado == "PENDIENTE") ||
+            (filtroEstado == "Listos" && pedido.estado == "LISTO")
     }
 
     Box(
@@ -83,7 +102,7 @@ fun PedidosScreen(
                     color = Color.White
                 )
                 Text(
-                    text = "Hola Ricardo · 12 pedidos hoy",
+                    text = "Hola Ricardo · ${pedidos.size} pedidos hoy",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF8E8E93)
@@ -117,20 +136,20 @@ fun PedidosScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ){
             StatCardCentrado(
-                textoSuperior = "2",
+                textoSuperior = "$pendientes",
                 textoInferior = "Pendientes",
                 colorSuperior = Color(0xFFFF9F0A),
                 modifier = Modifier.weight(1f)
             )
             StatCardCentrado(
-                textoSuperior = "1",
-                textoInferior = "En prep.",
+                textoSuperior = "$listos",
+                textoInferior = "Listos",
                 colorSuperior = Color(0xFFB39DFF),
                 modifier = Modifier.weight(1f)
             )
             StatCardCentrado(
-                textoSuperior = "9",
-                textoInferior = "Completado",
+                textoSuperior = "$entregados",
+                textoInferior = "Entregados",
                 colorSuperior = Color(0xFF30D158),
                 modifier = Modifier.weight(1f)
             )
@@ -227,18 +246,18 @@ fun PedidosScreen(
         ){
             FiltroButton(
                 texto = "Todos",
-                activo = true,
-                onClick = {}
+                activo = filtroEstado == "Todos",
+                onClick = { filtroEstado = "Todos" }
             )
             FiltroButton(
                 texto = "Pendientes",
-                activo = false,
-                onClick = {}
+                activo = filtroEstado == "Pendientes",
+                onClick = { filtroEstado = "Pendientes" }
             )
             FiltroButton(
                 texto = "Listos",
-                activo = false,
-                onClick = {}
+                activo = filtroEstado == "Listos",
+                onClick = { filtroEstado = "Listos" }
             )
         }
 
@@ -250,60 +269,17 @@ fun PedidosScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            PedidoCard(
-                numeroMesa = "4",
-                esUrgente = true,
-                tiempo = "12 min",
-                nota = "sin cebolla",
-                estado = estado,
-                onCambiarEstado = {
-                    estado = when (estado) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
-                        EstadoPedido.LISTO -> EstadoPedido.LISTO
+            filtrados.forEach { pedido ->
+                PedidoEnCocina(
+                    pedido = pedido,
+                    repositorio = repositorio,
+                    onMarcarListo = { id ->
+                        scope.launch {
+                            repositorio?.cambiarEstadoPedido(id, "LISTO")
+                        }
                     }
-                }
-            )
-
-            PedidoCard(
-                numeroMesa = "4",
-                esUrgente = true,
-                tiempo = "12 min",
-                nota = "sin cebolla",
-                estado = estado,
-                onCambiarEstado = {
-                    estado = when (estado) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
-                        EstadoPedido.LISTO -> EstadoPedido.LISTO
-                    }
-                }
-            )
-            PedidoCard(
-                numeroMesa = "4",
-                esUrgente = true,
-                tiempo = "12 min",
-                nota = "sin cebolla",
-                estado = estado,
-                onCambiarEstado = {
-                    estado = when (estado) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
-                        EstadoPedido.LISTO -> EstadoPedido.LISTO
-                    }
-                }
-            )
-
-            PedidoCard(
-                numeroMesa = "7",
-                esUrgente = false,
-                tiempo = "6 min",
-                nota = "",
-                estado = estadoMesa7,
-                onCambiarEstado = {
-                    estadoMesa7 = when (estadoMesa7) {
-                        EstadoPedido.PENDIENTE -> EstadoPedido.LISTO
-                        EstadoPedido.LISTO -> EstadoPedido.LISTO
-                    }
-                }
-            )
+                )
+            }
 
             Spacer(modifier = Modifier.height(72.dp))
         }
@@ -327,6 +303,37 @@ fun PedidosScreen(
             )
         }
     }
+}
+
+
+@Composable
+private fun PedidoEnCocina(
+    pedido: PedidoEntity,
+    repositorio: SazonRepository?,
+    onMarcarListo: (Long) -> Unit
+) {
+    // 1. Pedimos los renglones de ESTE pedido (se buscan por su número).
+    val itemsEnVivo = repositorio?.observarItems(pedido.id)
+
+    // 2. Los convertimos en lista dibujable (o vacía).
+    val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Armamos las líneas ("Lomo saltado x2") y la primera nota que haya.
+    val lineas = items.map { "${it.nombrePlato} x${it.cantidad}" }
+    val nota = items.firstOrNull { it.nota.isNotBlank() }?.nota ?: ""
+
+    // 4. El texto de la base ("PENDIENTE") se vuelve botón o palomita.
+    val estado = if (pedido.estado == "PENDIENTE") EstadoPedido.PENDIENTE else EstadoPedido.LISTO
+
+    PedidoCard(
+        numeroMesa = pedido.mesa,
+        esUrgente = false,
+        tiempo = "hoy",
+        nota = nota,
+        estado = estado,
+        lineas = lineas,
+        onCambiarEstado = { onMarcarListo(pedido.id) }
+    )
 }
 
 

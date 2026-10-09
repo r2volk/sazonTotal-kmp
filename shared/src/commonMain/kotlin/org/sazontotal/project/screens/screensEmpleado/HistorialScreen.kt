@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,17 +34,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 @Preview
-fun HistorialScreen() {
+fun HistorialScreen(
+    repositorio: SazonRepository? = null
+) {
     var textoBusqueda by remember { mutableStateOf("") }
+
+    // 1. Pedimos la lista viva de pedidos a la base.
+    val pedidosEnVivo = repositorio?.observarPedidos()
+
+    // 2. La convertimos en lista dibujable (o vacía si no hay base).
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Nos quedamos solo con los entregados (los completados),
+    // que además pasen el buscador por mesa.
+    val completados = pedidos.filter { pedido ->
+        pedido.estado == "ENTREGADO" &&
+            (textoBusqueda.isBlank() || pedido.mesa.contains(textoBusqueda, ignoreCase = true))
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Título
@@ -62,7 +83,7 @@ fun HistorialScreen() {
         BuscadorTextField(
             nombreBuscado = textoBusqueda,
             onNombreChanged = { textoBusqueda = it },
-            texto = "Buscar por mesa o plato"
+            texto = "Buscar por mesa"
         )
 
         Row(
@@ -87,41 +108,42 @@ fun HistorialScreen() {
         }
 
         Text(
-            text = "HOY · 9 PEDIDOS",
+            text = "COMPLETADOS · ${completados.size} PEDIDOS",
             color = Color(0xFF8E8E93),
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             letterSpacing = 1.sp
         )
 
-        HistorialCard(
-            mesa = "Mesa 2",
-            hora = "1:42 pm",
-            detalle = "Ceviche clásico x3",
-            precio = "S/ 36"
-        )
-        HistorialCard(
-            mesa = "Mesa 5",
-            hora = "12:58 pm",
-            detalle = "Lomo saltado x2, chicha morada x2",
-            precio = "S/ 52"
-        )
-
-        Text(
-            text = "AYER · 14 PEDIDOS",
-            color = Color(0xFF8E8E93),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            letterSpacing = 1.sp
-        )
-
-        HistorialCard(
-            mesa = "Mesa 8",
-            hora = "8:15 pm",
-            detalle = "Ají de gallina x1, pisco sour x1",
-            precio = "S/ 30"
-        )
+        completados.forEach { pedido ->
+            HistorialDePedido(
+                pedido = pedido,
+                repositorio = repositorio
+            )
+        }
     }
+}
+
+@Composable
+private fun HistorialDePedido(
+    pedido: PedidoEntity,
+    repositorio: SazonRepository?
+) {
+    // 1. Pedimos los renglones de ESTE pedido (se buscan por su número).
+    val itemsEnVivo = repositorio?.observarItems(pedido.id)
+
+    // 2. Los convertimos en lista dibujable (o vacía).
+    val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Armamos el detalle ("Lomo saltado x2, Pisco sour x1").
+    val detalle = items.joinToString(", ") { "${it.nombrePlato} x${it.cantidad}" }
+
+    HistorialCard(
+        mesa = "Mesa ${pedido.mesa}",
+        hora = "hoy",
+        detalle = detalle,
+        precio = "S/ ${pedido.total}"
+    )
 }
 
 @Composable

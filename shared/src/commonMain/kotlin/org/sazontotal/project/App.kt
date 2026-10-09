@@ -62,7 +62,8 @@ fun App() {
 
             "dashboardEmpleado" -> DashboardEmpleado(
                 onLogoutClick = {pantallaActual = "login"},
-                onCarritoClick = {pantallaActual = "menuEmpleado"}
+                onCarritoClick = {pantallaActual = "menuEmpleado"},
+                repositorio = repositorio
             )
 
             "reportesAdmin" -> ReportesScreen(
@@ -74,7 +75,8 @@ fun App() {
                 repositorio = repositorio
             )
             "todosLosPedidos" -> TodosLosPedidosScreen(
-                backTodosLosPedidos = {pantallaActual = "dashboardAdmin"}
+                backTodosLosPedidos = {pantallaActual = "dashboardAdmin"},
+                repositorio = repositorio
             )
             "editarMenu" -> EditarMenuScreen(
                 backEditarMenu = {pantallaActual = "dashboardAdmin"},
@@ -87,7 +89,8 @@ fun App() {
             )
             "carritoEmpleado" -> CarritoScreen(
                 backCarritoScreen = {pantallaActual = "menuEmpleado"},
-                confirmarCarrito = {pantallaActual = "pedidoConcretado"}
+                confirmarCarrito = {pantallaActual = "pedidoConcretado"},
+                repositorio = repositorio
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardEmpleado"},

@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material.icons.outlined.DinnerDining
 import androidx.compose.material.icons.outlined.LocalBar
@@ -25,9 +26,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,18 +45,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.sazontotal.project.components.CampoTextoAdmin
 import org.sazontotal.project.components.CantidadStepper
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.db.PedidoItemEntity
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 fun CarritoScreen(
     backCarritoScreen: () -> Unit,
-    confirmarCarrito: () -> Unit
+    confirmarCarrito: () -> Unit,
+    meseroId: String = "EMP-001",
+    repositorio: SazonRepository? = null
 ) {
-    var cantidadCeviche by remember { mutableStateOf(1) }
-    var cantidadLomo by remember { mutableStateOf(2) }
-    var cantidadPisco by remember { mutableStateOf(1) }
     var codigoPromo by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+
+    val platosEnVivo = repositorio?.observarPlatos() //pedimos los platos a la bd
+
+    // los convertimos en lista dibujable (o vacia).
+    val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // tabla de cantidades: id del plato -> cuantos pidio.
+    var cantidades by remember { mutableStateOf(mapOf<Long, Int>()) }
+
+    // Subtotal = suma de (precio x cantidad) de cada plato. IGV 18%. Total = suma.
+    val subtotal = platos.sumOf { plato -> plato.precio * (cantidades[plato.id] ?: 0) }
+    val igv = subtotal * 0.18
+    val total = subtotal + igv
+
 
     Column(
         modifier = Modifier
@@ -95,39 +116,19 @@ fun CarritoScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            CarritoItemCard(
-                nombre = "Ceviche clásico",
-                precioUnitario = "S/ 12.00 c/u",
-                icono = Icons.Outlined.SoupKitchen,
-                fondoImagen = Color(0xFF4A2620),
-                tintaIcono = Color(0xFFE8935A),
-                cantidad = cantidadCeviche,
-                onMinus = { if (cantidadCeviche > 0) cantidadCeviche-- },
-                onPlus = { cantidadCeviche++ },
-                mostrarAgregarNota = true
-            )
-            CarritoItemCard(
-                nombre = "Lomo saltado",
-                precioUnitario = "S/ 18.00 c/u",
-                icono = Icons.Outlined.DinnerDining,
-                fondoImagen = Color(0xFF3D2E0A),
-                tintaIcono = Color(0xFFFFB340),
-                cantidad = cantidadLomo,
-                onMinus = { if (cantidadLomo > 0) cantidadLomo-- },
-                onPlus = { cantidadLomo++ },
-                nota = "Nota: sin cebolla"
-            )
-            CarritoItemCard(
-                nombre = "Pisco sour",
-                precioUnitario = "S/ 20.00 c/u",
-                icono = Icons.Outlined.LocalBar,
-                fondoImagen = Color(0xFF0B3820),
-                tintaIcono = Color(0xFF4ADE80),
-                cantidad = cantidadPisco,
-                onMinus = { if (cantidadPisco > 0) cantidadPisco-- },
-                onPlus = { cantidadPisco++ }
-            )
-
+            platos.forEach { plato ->
+                val cantidad = cantidades[plato.id] ?: 0
+                CarritoItemCard(
+                    nombre = plato.nombre,
+                    precioUnitario = "S/ ${plato.precio} c/u",
+                    icono = iconoSegunCategoria(plato.categoria),
+                    fondoImagen = fondoSegunCategoria(plato.categoria),
+                    tintaIcono = tintaSegunCategoria(plato.categoria),
+                    cantidad = cantidad,
+                    onMinus = { if (cantidad > 0) cantidades = cantidades + (plato.id to cantidad - 1) },
+                    onPlus = { cantidades = cantidades + (plato.id to cantidad + 1) }
+                )
+            }
 
         }
 
@@ -167,7 +168,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ 68.00",
+                    text = "S/ $subtotal",
                     color = Color.White,
                     fontSize = 15.sp
                 )
@@ -180,7 +181,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ 12.24",
+                    text = "S/ $igv",
                     color = Color.White,
                     fontSize = 15.sp
                 )
@@ -197,7 +198,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ 80.24",
+                    text = "S/ $total",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -212,7 +213,30 @@ fun CarritoScreen(
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF5DBF3E))
-                .clickable {confirmarCarrito() },
+                .clickable {
+                    scope.launch {
+                        // Cabecera: mesa fija "4", estado inicial, total ya calculado
+                        val cabecera = PedidoEntity(
+                            mesa = "4",
+                            meseroID = meseroId,
+                            estado = "PENDIENTE",
+                            total = total
+                        )
+                        // Renglones: solo platos con cantidad mayor a 0, con foto de nombre y precio
+                        val renglones = platos.mapNotNull { plato ->
+                            val cantidad = cantidades[plato.id] ?: 0
+                            if (cantidad == 0) null else PedidoItemEntity(
+                                pedidoId = 0, // se marca solo adentro de crearPedidoConItems
+                                platoId = plato.id,
+                                nombrePlato = plato.nombre,
+                                cantidad = cantidad,
+                                precioUnit = plato.precio
+                            )
+                        }
+                        repositorio?.crearPedidoConItems(cabecera, renglones)
+                        confirmarCarrito()
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -306,6 +330,24 @@ private fun CarritoItemCard(
             )
         }
     }
+}
+
+private fun iconoSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Icons.Outlined.LocalBar
+    "Postres" -> Icons.Outlined.Cake
+    else -> Icons.Outlined.DinnerDining
+}
+
+private fun fondoSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Color(0xFF0B3820)
+    "Postres" -> Color(0xFF3D1A2E)
+    else -> Color(0xFF3D2E0A)
+}
+
+private fun tintaSegunCategoria(categoria: String) = when (categoria) {
+    "Bebidas" -> Color(0xFF4ADE80)
+    "Postres" -> Color(0xFFF48FB1)
+    else -> Color(0xFFFFB340)
 }
 
 @Composable

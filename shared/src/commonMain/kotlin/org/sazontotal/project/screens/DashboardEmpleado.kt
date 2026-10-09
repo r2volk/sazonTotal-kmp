@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.components.SelectedTab
+import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.icons.PedidosIcon
 import org.sazontotal.project.screens.screensEmpleado.HistorialScreen
 import org.sazontotal.project.screens.screensEmpleado.PedidosScreen
@@ -16,7 +17,8 @@ import org.sazontotal.project.screens.screensEmpleado.PerfilScreen
 @Composable
 fun DashboardEmpleado(
     onLogoutClick: () -> Unit,
-    onCarritoClick: () -> Unit
+    onCarritoClick: () -> Unit,
+    repositorio: SazonRepository? = null
 ){
 
     Column(
@@ -26,9 +28,12 @@ fun DashboardEmpleado(
     ) {
         SelectedTab(
             pedidos = {PedidosScreen(
-                onCarritoClick = onCarritoClick
+                onCarritoClick = onCarritoClick,
+                repositorio = repositorio
             )},
-            historial = {HistorialScreen()},
+            historial = {HistorialScreen(
+                repositorio = repositorio
+            )},
             perfil = {PerfilScreen(
                 onLogoutClick = onLogoutClick
             )}

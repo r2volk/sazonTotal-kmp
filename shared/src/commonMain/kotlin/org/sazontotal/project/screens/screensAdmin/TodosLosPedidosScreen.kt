@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,16 +38,46 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.enums.EstadoPedido
 import org.sazontotal.project.enums.EstadoTodosLosPedidos
 import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 
 @Composable
 fun TodosLosPedidosScreen(
-    backTodosLosPedidos: () -> Unit
+    backTodosLosPedidos: () -> Unit,
+    repositorio: SazonRepository? = null
 ){
 
     var textoBusqueda by remember { mutableStateOf("") }
+
+    // 1. Pedimos la lista viva de pedidos a la base (los nuevos primero).
+    val pedidosEnVivo = repositorio?.observarPedidos()
+
+    // 2. La convertimos en lista dibujable (o vacía si no hay base).
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Lista de empleados para mostrar el nombre del mesero de cada pedido.
+    val empleadosEnVivo = repositorio?.observarEmpleados()
+    val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 4. Filtro elegido + contadores calculados desde la lista.
+    var filtroEstado by remember { mutableStateOf("Todos") }
+    val enCurso = pedidos.count { it.estado == "PENDIENTE" || it.estado == "LISTO" }
+    val entregados = pedidos.count { it.estado == "ENTREGADO" }
+    val anulados = pedidos.count { it.estado == "ANULADO" }
+
+    // 5. Nos quedamos con los que pasan el buscador y el filtro.
+    val filtrados = pedidos.filter { pedido ->
+        val coincideTexto = textoBusqueda.isBlank() ||
+            pedido.mesa.contains(textoBusqueda, ignoreCase = true) ||
+            pedido.meseroID.contains(textoBusqueda, ignoreCase = true)
+        val coincideFiltro = filtroEstado == "Todos" ||
+            (filtroEstado == "Pendientes" && pedido.estado == "PENDIENTE") ||
+            (filtroEstado == "Listos" && pedido.estado == "LISTO")
+        coincideTexto && coincideFiltro
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -90,25 +121,25 @@ fun TodosLosPedidosScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ){
                 StatCardCentrado(
-                    textoSuperior = "24",
+                    textoSuperior = "${pedidos.size}",
                     textoInferior = "Hoy",
                     colorSuperior = Color.White,
                     modifier = Modifier.weight(1f)
                 )
                 StatCardCentrado(
-                    textoSuperior = "3",
+                    textoSuperior = "$enCurso",
                     textoInferior = "En Curso",
                     colorSuperior = Color(0xFFFF9F0A),
                     modifier = Modifier.weight(1f)
                 )
                 StatCardCentrado(
-                    textoSuperior = "20",
+                    textoSuperior = "$entregados",
                     textoInferior = "Entregado",
                     colorSuperior = Color.Green,
                     modifier = Modifier.weight(1f)
                 )
                 StatCardCentrado(
-                    textoSuperior = "1",
+                    textoSuperior = "$anulados",
                     textoInferior = "Anulado",
                     colorSuperior = Color.Red,
                     modifier = Modifier.weight(1f)
@@ -129,30 +160,28 @@ fun TodosLosPedidosScreen(
             ){
                 FiltroButton(
                     texto = "Todos",
-                    activo = true,
-                    onClick = {}
+                    activo = filtroEstado == "Todos",
+                    onClick = { filtroEstado = "Todos" }
                 )
                 FiltroButton(
                     texto = "Pendientes",
-                    activo = false,
-                    onClick = {}
+                    activo = filtroEstado == "Pendientes",
+                    onClick = { filtroEstado = "Pendientes" }
                 )
                 FiltroButton(
                     texto = "Listos",
-                    activo = false,
-                    onClick = {}
+                    activo = filtroEstado == "Listos",
+                    onClick = { filtroEstado = "Listos" }
                 )
             }
 
-            CardPedido(
-                estadoTodosLosPedidos = EstadoTodosLosPedidos.PREPARANDO
-            )
-            CardPedido(
-                estadoTodosLosPedidos = EstadoTodosLosPedidos.ENTREGADO
-            )
-            CardPedido(
-                estadoTodosLosPedidos = EstadoTodosLosPedidos.ANULADO
-            )
+            filtrados.forEach { pedido ->
+                PedidoEnAdmin(
+                    pedido = pedido,
+                    repositorio = repositorio,
+                    nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID
+                )
+            }
 
 
 
@@ -160,8 +189,41 @@ fun TodosLosPedidosScreen(
     }
 }
 @Composable
+private fun PedidoEnAdmin(
+    pedido: PedidoEntity,
+    repositorio: SazonRepository?,
+    nombreMesero: String
+) {
+    // 1. Pedimos los renglones de ESTE pedido para contar cuántos items lleva.
+    val itemsEnVivo = repositorio?.observarItems(pedido.id)
+
+    // 2. Los convertimos en lista dibujable (o vacía).
+    val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. El texto de la base se vuelve insignia de colores.
+    // LISTO sigue en curso hasta que alguien lo entregue (eso viene después).
+    val insignia = when (pedido.estado) {
+        "ENTREGADO" -> EstadoTodosLosPedidos.ENTREGADO
+        "ANULADO" -> EstadoTodosLosPedidos.ANULADO
+        else -> EstadoTodosLosPedidos.PREPARANDO
+    }
+
+    CardPedido(
+        estadoTodosLosPedidos = insignia,
+        titulo = "Mesa ${pedido.mesa} • #${pedido.id}",
+        detalle = "Mesero: $nombreMesero • ${items.size} items",
+        hora = "hoy",
+        total = "S/ ${pedido.total}"
+    )
+}
+
+@Composable
 private fun CardPedido(
-    estadoTodosLosPedidos: EstadoTodosLosPedidos
+    estadoTodosLosPedidos: EstadoTodosLosPedidos,
+    titulo: String,
+    detalle: String,
+    hora: String,
+    total: String
 ) {
     val (textoEstado, colorFondo, colorTexto) = when (estadoTodosLosPedidos) {
         EstadoTodosLosPedidos.PREPARANDO -> Triple(
@@ -203,7 +265,7 @@ private fun CardPedido(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Mesa 4 • #0234",
+                text = titulo,
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -228,7 +290,7 @@ private fun CardPedido(
         }
 
         Text(
-            text = "Mesero: Jose P. • 3 items",
+            text = detalle,
             color = Color.Gray,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
@@ -238,14 +300,14 @@ private fun CardPedido(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "2:14 pm",
+                text = hora,
                 color = Color.Gray,
                 fontSize = 15.sp,
                 modifier = Modifier.weight(1f)
             )
 
             Text(
-                text = "S/. 80.24",
+                text = total,
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold

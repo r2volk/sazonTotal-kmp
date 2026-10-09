@@ -34,7 +34,8 @@ fun PedidoCard(
     tiempo: String,
     nota: String,
     estado: EstadoPedido,
-    onCambiarEstado: () -> Unit
+    onCambiarEstado: () -> Unit,
+    lineas: List<String> = emptyList()
 ) {
     Column(
         modifier = Modifier
@@ -95,22 +96,11 @@ fun PedidoCard(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (numeroMesa == "7") {
+            lineas.forEach { linea ->
                 ItemFila(
-                    emoji = "\uD83C\uDF72",
-                    texto = "Ají de gallina x2",
+                    emoji = "\uD83C\uDF7D",
+                    texto = linea,
                     bg = Color(0xFF3B2A18)
-                )
-            } else {
-                ItemFila(
-                    emoji = "\uD83C\uDF57",
-                    texto = "Lomo saltado x1",
-                    bg = Color(0xFF3B2A18)
-                )
-                ItemFila(
-                    emoji = "\uD83C\uDF78",
-                    texto = "Pisco sour x1",
-                    bg = Color(0xFF1E3A2A)
                 )
             }
         }
