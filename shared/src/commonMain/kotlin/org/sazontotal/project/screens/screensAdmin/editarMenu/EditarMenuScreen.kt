@@ -38,6 +38,7 @@ import org.sazontotal.project.components.AdminBottomSheet
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.SwitchButton
+import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -75,6 +76,8 @@ fun EditarMenuScreen(
     }
 
     var mostrarFormulario by remember { mutableStateOf(false) }
+    // Qué plato se está editando. Nulo = se va a crear uno nuevo.
+    var platoEnEdicion by remember { mutableStateOf<PlatoEntity?>(null) }
     val scope = rememberCoroutineScope() //evita que el app se congele al guardar un dato en la bd
 
     Box(
@@ -175,7 +178,10 @@ fun EditarMenuScreen(
                         isActive = plato.activo,
                         precio = plato.precio,
                         descipcion = plato.descripcion,
-                        editar = {},
+                        editar = {
+                            platoEnEdicion = plato
+                            mostrarFormulario = true
+                        },
                         onActivoChange = { prendido ->
                             scope.launch {
                                 repositorio?.cambiarActivoPlato(plato.id, prendido)
@@ -195,6 +201,7 @@ fun EditarMenuScreen(
                 .clip(CircleShape)
                 .background(Color(0xFF5DBF3E))
                 .clickable {
+                    platoEnEdicion = null
                     mostrarFormulario = true
                 },
             contentAlignment = Alignment.Center
@@ -212,9 +219,16 @@ fun EditarMenuScreen(
                 onDismiss = { mostrarFormulario = false }
             ) {
                 EditarPlato(
-                    onGuardar = { nuevoPlato ->
+                    plato = platoEnEdicion,
+                    onGuardar = { platoAGuardar ->
                         scope.launch {
-                            repositorio?.guardarPlato(nuevoPlato)
+                            repositorio?.guardarPlato(platoAGuardar)
+                            mostrarFormulario = false
+                        }
+                    },
+                    onEliminar = { id ->
+                        scope.launch {
+                            repositorio?.borrarPlato(id)
                             mostrarFormulario = false
                         }
                     }

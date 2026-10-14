@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
+import org.sazontotal.project.data.repository.SazonRepository
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.unit.Dp
@@ -45,13 +47,25 @@ import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 
 @Composable
 fun ReportesScreen(
-    backReportes: () -> Unit
+    backReportes: () -> Unit,
+    repositorio: SazonRepository? = null
 ){
 
-    var ganancias by remember { mutableStateOf( 5900.0) }
+    // 1. Ventas totales (lista viva: se mueve sola al vender).
+    val ventasEnVivo = repositorio?.observarVentasTotales()
+    val ganancias = ventasEnVivo?.collectAsState(initial = 0.0)?.value ?: 0.0
+
+    // 2. Pedidos para contar y promediar.
+    val pedidosEnVivo = repositorio?.observarPedidos()
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val pedidosTotales = pedidos.size
+    val promedio = if (pedidosTotales == 0) 0.0 else ganancias / pedidosTotales
+
+    // 3. Top 5 platos más vendidos (lista viva).
+    val topEnVivo = repositorio?.observarTopPlatos()
+    val top = topEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
     var porcentaje by remember { mutableStateOf( 12) }
-    var pedidosTotales by remember { mutableStateOf( 168) }
-    var promedio by remember { mutableStateOf( 35.35) }
     var periodo by remember { mutableStateOf( "year") }
 
     Box(
@@ -134,7 +148,7 @@ fun ReportesScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Ventas de la semana",
+                        text = "Ventas totales",
                         color = Color(0xFF8E8E93),
                         fontSize = 14.sp
                     )
@@ -200,31 +214,13 @@ fun ReportesScreen(
                 color = Color(0xFF8E8E93),
             )
 
-            platosMasVendidos(
-                plato = "Lomo Saltado",
-                puesto = 1,
-                cantidad = 12
-            )
-            platosMasVendidos(
-                plato = "Lomo Saltado",
-                puesto = 2,
-                cantidad = 12
-            )
-            platosMasVendidos(
-                plato = "Lomo Saltado",
-                puesto = 3,
-                cantidad = 12
-            )
-            platosMasVendidos(
-                plato = "Lomo Saltado",
-                puesto = 4,
-                cantidad = 12
-            )
-            platosMasVendidos(
-                plato = "Lomo Saltado",
-                puesto = 5,
-                cantidad = 12
-            )
+            top.forEachIndexed { indice, venta ->
+                platosMasVendidos(
+                    plato = venta.nombrePlato,
+                    puesto = indice + 1,
+                    cantidad = venta.total
+                )
+            }
 
         }
 

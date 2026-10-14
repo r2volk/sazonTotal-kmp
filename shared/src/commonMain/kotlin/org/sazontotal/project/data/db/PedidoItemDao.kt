@@ -14,4 +14,9 @@ interface PedidoItemDao {
     // Los renglones de UN pedido (se buscan por su número)
     @Query("SELECT * FROM pedido_items WHERE pedidoId = :pedidoId")
     fun observarPorPedido(pedidoId: Long): Flow<List<PedidoItemEntity>>
+
+    // Top 5 platos más vendidos: junta los renglones por nombre,
+    // suma cantidades, ordena del mayor y trae 5.
+    @Query("SELECT nombrePlato, SUM(cantidad) AS total FROM pedido_items GROUP BY nombrePlato ORDER BY total DESC LIMIT 5")
+    fun observarTopPlatos(): Flow<List<VentaPlato>>
 }

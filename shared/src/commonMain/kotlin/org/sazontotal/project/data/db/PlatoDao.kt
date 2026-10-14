@@ -25,4 +25,7 @@ interface PlatoDao {
 
     @Query("SELECT COUNT(*) FROM platos")
     suspend fun contar(): Int
+
+    @Query("DELETE FROM platos WHERE id = :id")
+    suspend fun borrarPorId(id: Long)
 }

@@ -5,7 +5,9 @@ import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
+import org.sazontotal.project.data.db.PromoEntity
 import org.sazontotal.project.data.db.SazonDatabase
+import org.sazontotal.project.data.db.VentaPlato
 
 class SazonRepository(private val db: SazonDatabase) {
 
@@ -33,12 +35,23 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().guardar(plato)
     }
 
+    // Borra un plato por su id. Los pedidos viejos no se afectan
+    // porque cada renglón guarda su propia copia de nombre y precio.
+    suspend fun borrarPlato(id: Long) {
+        db.platoDao().borrarPorId(id)
+    }
+
     suspend fun cambiarActivoPlato(id: Long, activo: Boolean){
         db.platoDao().cambiarActivo(id,activo)
     }
 
     suspend fun cambiarActivoEmpleado(id: String, activo: Boolean) {
         db.empleadoDao().cambiarActivo(id, activo)
+    }
+
+    // Trae UN pedido por su numero (no una lista)
+    suspend fun buscarPedidoPorId(id: Long): PedidoEntity? {
+        return db.pedidoDao().buscarPorId(id)
     }
 
     suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
@@ -71,6 +84,22 @@ class SazonRepository(private val db: SazonDatabase) {
         db.pedidoDao().cambiarEstado(id, estado)
     }
 
+    // Suma viva de ventas para el dashboard del admin.
+    fun observarVentasTotales(): Flow<Double> {
+        return db.pedidoDao().observarSumaTotal()
+    }
+
+    // Top 5 platos más vendidos, lista viva para Reportes.
+    fun observarTopPlatos(): Flow<List<VentaPlato>> {
+        return db.pedidoItemDao().observarTopPlatos()
+    }
+
+    // Busca UN código de promo (sin importar mayúsculas/minúsculas).
+    // Devuelve nulo si no existe o está apagado.
+    suspend fun buscarPromo(codigo: String): PromoEntity? {
+        return db.promoDao().buscarPorCodigo(codigo.trim().uppercase())
+    }
+
     suspend fun seedIfEmpty() {
         val dao = db.empleadoDao()
         if (dao.login("ADM-001", "1234") == null) {
@@ -90,6 +119,14 @@ class SazonRepository(private val db: SazonDatabase) {
             platoDao.guardar(PlatoEntity(id = 2, nombre = "Lomo saltado", descripcion = "Picante leve", precio = 18.0, categoria = "Platos"))
             platoDao.guardar(PlatoEntity(id = 3, nombre = "Pisco sour", descripcion = "Con alcohol", precio = 20.0, categoria = "Bebidas"))
             platoDao.guardar(PlatoEntity(id = 4, nombre = "Suspiro limeño", descripcion = "Contiene lácteos", precio = 13.0, categoria = "Postres"))
+        }
+
+        val promoDao = db.promoDao()
+        if (promoDao.buscarPorCodigo("SAZON10") == null) {
+            promoDao.guardar(PromoEntity("SAZON10", 10))
+        }
+        if (promoDao.buscarPorCodigo("MESERO15") == null) {
+            promoDao.guardar(PromoEntity("MESERO15", 15))
         }
     }
 }

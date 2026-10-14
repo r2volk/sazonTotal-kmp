@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.StatCardAdmin
 import org.sazontotal.project.components.AccesoRapidoCard
+import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.icons.MenuIcon
 import org.sazontotal.project.icons.PedidosIcon
@@ -39,8 +41,29 @@ fun DashboardAdmin(
     onPedidosClick: () -> Unit = {},
     onReportesClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    repositorio: SazonRepository? = null
 ) {
+    // 1. Pedimos empleados y pedidos a la base (listas vivas).
+    val empleadosEnVivo = repositorio?.observarEmpleados()
+    val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val pedidosEnVivo = repositorio?.observarPedidos()
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 2. Suma viva de ventas (se mueve sola al vender).
+    val ventasEnVivo = repositorio?.observarVentasTotales()
+    val ventas = ventasEnVivo?.collectAsState(initial = 0.0)?.value ?: 0.0
+
+    // 3. Contadores calculados desde las listas.
+    val empleadosActivos = empleados.count { it.activo }
+    val pendientes = pedidos.count { it.estado == "PENDIENTE" }
+
+    // Iniciales para el avatar ("Karina Castillo" -> "KC").
+    val iniciales = nombreAdmin
+        .split(" ")
+        .mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
+        .take(2)
+        .joinToString("")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -90,7 +113,7 @@ fun DashboardAdmin(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "KC",
+                        text = iniciales,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF00E676)
@@ -108,13 +131,13 @@ fun DashboardAdmin(
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     StatCardAdmin(
-                        textoSuperior = "10",
+                        textoSuperior = "$empleadosActivos",
                         textoInferior = "Empleados activos",
                         colorSuperior = Color.White,
                         modifier = Modifier.weight(1f)
                     )
                     StatCardAdmin(
-                        textoSuperior = "24",
+                        textoSuperior = "${pedidos.size}",
                         textoInferior = "Pedidos hoy",
                         colorSuperior = Color.White,
                         modifier = Modifier.weight(1f)
@@ -125,13 +148,13 @@ fun DashboardAdmin(
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     StatCardAdmin(
-                        textoSuperior = "S/ 842",
+                        textoSuperior = "S/ $ventas",
                         textoInferior = "Ventas del día",
                         colorSuperior = Color(0xFF00E676),
                         modifier = Modifier.weight(1f)
                     )
                     StatCardAdmin(
-                        textoSuperior = "3",
+                        textoSuperior = "$pendientes",
                         textoInferior = "Pedidos pendientes",
                         colorSuperior = Color(0xFFFFA000),
                         modifier = Modifier.weight(1f)

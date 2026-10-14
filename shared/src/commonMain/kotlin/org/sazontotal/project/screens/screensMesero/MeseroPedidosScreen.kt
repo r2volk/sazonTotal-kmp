@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.textoHora
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.PedidoCard
 import org.sazontotal.project.components.StatCardCentrado
+import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.screens.DashboardMesero
 import org.sazontotal.project.enums.EstadoPedido
 
@@ -51,7 +53,8 @@ import org.sazontotal.project.enums.EstadoPedido
 fun MeseroPedidosScreen(
     onCarritoClick: () -> Unit,
     onAsistenteClick: () -> Unit = {},
-    repositorio: SazonRepository? = null
+    repositorio: SazonRepository? = null,
+    empleado: EmpleadoEntity? = null
 ){
 
     // 1. Pedimos la lista viva de pedidos a la base (los nuevos primero).
@@ -59,6 +62,16 @@ fun MeseroPedidosScreen(
 
     // 2. La convertimos en lista dibujable (o vacía si no hay base).
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // Nombre corto del que entró ("Ricardo Sanchez" -> "Ricardo").
+    val primerNombre = empleado?.nombre?.split(" ")?.firstOrNull() ?: "Ricardo"
+
+    // Iniciales para el avatar ("Ricardo Sanchez" -> "RS").
+    val iniciales = empleado?.nombre
+        ?.split(" ")
+        ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
+        ?.take(2)
+        ?.joinToString("") ?: "RS"
 
     // 3. Filtro elegido + contadores calculados desde la lista.
     var filtroEstado by remember { mutableStateOf("Todos") }
@@ -92,13 +105,13 @@ fun MeseroPedidosScreen(
         ){
             Column {
                 Text(
-                    text = "Cocina · Turno tarde",
+                    text = "Mis pedidos",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
-                    text = "Hola Ricardo · ${pedidos.size} pedidos hoy",
+                    text = "Hola $primerNombre · ${pedidos.size} pedidos hoy",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF8E8E93)
@@ -117,7 +130,7 @@ fun MeseroPedidosScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "RS",
+                        text = iniciales,
                         color = Color(0xFF7DD3FC),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -269,9 +282,11 @@ fun MeseroPedidosScreen(
                 PedidoEnCocina(
                     pedido = pedido,
                     repositorio = repositorio,
+                    // El mesero marca ENTREGADO al servir a la mesa.
+                    // Ahí el pedido sale de aquí y entra al Historial.
                     onMarcarListo = { id ->
                         scope.launch {
-                            repositorio?.cambiarEstadoPedido(id, "LISTO")
+                            repositorio?.cambiarEstadoPedido(id, "ENTREGADO")
                         }
                     }
                 )
@@ -319,12 +334,17 @@ private fun PedidoEnCocina(
     val nota = items.firstOrNull { it.nota.isNotBlank() }?.nota ?: ""
 
     // 4. El texto de la base ("PENDIENTE") se vuelve botón o palomita.
-    val estado = if (pedido.estado == "PENDIENTE") EstadoPedido.PENDIENTE else EstadoPedido.LISTO
+    // 4. El texto de la base se vuelve cada momento del card.
+    val estado = when (pedido.estado) {
+        "PENDIENTE" -> EstadoPedido.PENDIENTE
+        "LISTO" -> EstadoPedido.LISTO
+        else -> EstadoPedido.ENTREGADO
+    }
 
     PedidoCard(
         numeroMesa = pedido.mesa,
         esUrgente = false,
-        tiempo = "hoy",
+        tiempo = textoHora(pedido.fecha),
         nota = nota,
         estado = estado,
         lineas = lineas,

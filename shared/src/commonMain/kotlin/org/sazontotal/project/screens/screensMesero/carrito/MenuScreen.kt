@@ -26,6 +26,8 @@ import androidx.compose.material.icons.outlined.LocalBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
+import org.sazontotal.project.data.CarritoCompra
 import androidx.compose.runtime.collectAsState
 import org.sazontotal.project.data.repository.SazonRepository
 
@@ -50,7 +53,11 @@ import org.sazontotal.project.data.repository.SazonRepository
 fun MenuScreen(
     backMenuScreen: () -> Unit,
     verCarrito: () -> Unit,
-    repositorio: SazonRepository? = null
+    repositorio: SazonRepository? = null,
+    carrito: CarritoCompra? = null,
+    mesa: String = "4",
+    onMesaChange: (String) -> Unit = {},
+    nombreMesero: String = "José P."
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
@@ -70,6 +77,9 @@ fun MenuScreen(
     val filtrados = porNombre.filter { plato ->
         filtroCategoria == "Todos" || plato.categoria == filtroCategoria
     }
+
+    // Menú desplegable de mesas (1 a 10). La elegida viaja con el pedido.
+    var mostrarMesas by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -104,11 +114,34 @@ fun MenuScreen(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "Mesa 4 · José P.",
-                    color = Color(0xFF8E8E93),
-                    fontSize = 13.sp
-                )
+                Box {
+                    Text(
+                        text = "Mesa $mesa · $nombreMesero ▾",
+                        color = Color(0xFF8E8E93),
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable { mostrarMesas = true }
+                    )
+                    DropdownMenu(
+                        expanded = mostrarMesas,
+                        onDismissRequest = { mostrarMesas = false }
+                    ) {
+                        (1..10).forEach { numero ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Mesa $numero",
+                                        color = Color(0xFF1C1C1E),
+                                        fontSize = 15.sp
+                                    )
+                                },
+                                onClick = {
+                                    onMesaChange("$numero")
+                                    mostrarMesas = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
             IconButton(
                 onClick = { },
@@ -184,6 +217,9 @@ fun MenuScreen(
                             icono = iconoSegunCategoria(plato.categoria),
                             fondoImagen = fondoSegunCategoria(plato.categoria),
                             tintaIcono = tintaSegunCategoria(plato.categoria),
+                            cantidad = carrito?.cantidadDe(plato.id) ?: 0,
+                            onMinus = { carrito?.restar(plato.id) },
+                            onPlus = { carrito?.sumar(plato.id) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -223,12 +259,12 @@ fun MenuScreen(
                     .padding(start = 4.dp)
             ) {
                 Text(
-                    text = "3 ítems",
+                    text = "${carrito?.totalItems() ?: 0} ítems",
                     color = Color(0xFF8E8E93),
                     fontSize = 13.sp
                 )
                 Text(
-                    text = "S/ 44.00",
+                    text = "S/ ${carrito?.let { it.subtotal(platos) } ?: 0.0}",
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -263,12 +299,12 @@ private fun PlatoCard(
     icono: ImageVector,
     fondoImagen: Color,
     tintaIcono: Color,
+    cantidad: Int,
+    onMinus: () -> Unit,
+    onPlus: () -> Unit,
     modifier: Modifier = Modifier,
-    badge: String? = null,
-    cantidadInicial: Int = 0
+    badge: String? = null
 ) {
-    var cantidad by remember { mutableStateOf(cantidadInicial) }
-
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -339,7 +375,7 @@ private fun PlatoCard(
                         .size(28.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF30D158))
-                        .clickable { cantidad++ },
+                        .clickable { onPlus() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -362,7 +398,7 @@ private fun PlatoCard(
                         text = "−",
                         color = Color(0xFF8E8E93),
                         fontSize = 18.sp,
-                        modifier = Modifier.clickable { if (cantidad > 0) cantidad-- }
+                        modifier = Modifier.clickable { onMinus() }
                     )
                     Text(
                         text = "$cantidad",
@@ -375,7 +411,7 @@ private fun PlatoCard(
                         color = Color(0xFF30D158),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { cantidad++ }
+                        modifier = Modifier.clickable { onPlus() }
                     )
                 }
             }

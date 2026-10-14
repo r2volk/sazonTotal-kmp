@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,10 +43,20 @@ import org.sazontotal.project.icons.CheckIcon
 import sazontotal.shared.generated.resources.Res
 
 @Composable
-fun LoginScreen( onLogin:(String, String)-> Unit)  {
+fun LoginScreen(
+    onLogin:(String, String)-> Unit,
+    mensajeError: String? = null
+) {
 
     var empleadoId by remember { mutableStateOf("ADM-001") }
     var pin by remember { mutableStateOf("") }
+
+    // Si llega un error, se limpia el PIN para reintentar desde cero.
+    LaunchedEffect(mensajeError) {
+        if (mensajeError != null) {
+            pin = ""
+        }
+    }
 
     val onNumberClick: (Int) -> Unit = { number ->
         if (pin.length < 4) {
@@ -135,6 +146,18 @@ fun LoginScreen( onLogin:(String, String)-> Unit)  {
                             .background(if (isFilled) Color(0xFF22C55E) else Color(0xFF2E2E32))
                     )
                 }
+            }
+
+            // Mensaje de error (solo aparece cuando App avisa que falló).
+            if (mensajeError != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = mensajeError,
+                    color = Color(0xFFFF453A),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

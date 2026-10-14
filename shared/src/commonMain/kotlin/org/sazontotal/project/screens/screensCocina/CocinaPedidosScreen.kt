@@ -21,10 +21,13 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,11 +40,48 @@ import org.sazontotal.project.components.CocinaPedidoCard
 import org.sazontotal.project.components.CocinaPlatoVisual
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
+import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.textoHora
 
 @Composable
-fun CocinaPedidosScreen() {
-    // SOLO VISUAL: el filtro solo cambia el pill activo, no filtra nada.
+fun CocinaPedidosScreen(
+    repositorio: SazonRepository? = null,
+    empleado: EmpleadoEntity? = null
+) {
+    // 1. Pedimos la lista viva de pedidos a la base (los nuevos primero).
+    val pedidosEnVivo = repositorio?.observarPedidos()
+
+    // 2. La convertimos en lista dibujable (o vacía si no hay base).
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Empleados para el nombre del mesero y platos para el emoji de cada renglón.
+    val empleadosEnVivo = repositorio?.observarEmpleados()
+    val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val platosEnVivo = repositorio?.observarPlatos()
+    val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val categoriaPorPlato = platos.associate { it.id to it.categoria }
+
+    // 4. Filtro elegido + contadores. La cocina solo trabaja con pendientes y listos.
     var filtro by remember { mutableStateOf("Por preparar") }
+    val porPreparar = pedidos.count { it.estado == "PENDIENTE" }
+    val listosHoy = pedidos.count { it.estado == "LISTO" }
+    val scope = rememberCoroutineScope()
+
+    // Nombre corto e iniciales del que entró ("Joaquin Gutierrez" -> "Joaquin" / "JG").
+    val primerNombre = empleado?.nombre?.split(" ")?.firstOrNull() ?: "María"
+    val iniciales = empleado?.nombre
+        ?.split(" ")
+        ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
+        ?.take(2)
+        ?.joinToString("") ?: "MR"
+
+    // 5. Nos quedamos con los del filtro elegido.
+    val filtrados = pedidos.filter { pedido ->
+        (filtro == "Por preparar" && pedido.estado == "PENDIENTE") ||
+            (filtro == "Listos" && pedido.estado == "LISTO")
+    }
 
     Column(
         modifier = Modifier
@@ -64,7 +104,7 @@ fun CocinaPedidosScreen() {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Hola María · Turno tarde",
+                    text = "Hola $primerNombre · Turno tarde",
                     color = Color(0xFF8E8E93),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal
@@ -103,7 +143,7 @@ fun CocinaPedidosScreen() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "MR",
+                        text = iniciales,
                         color = Color(0xFF8E8E93),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -118,19 +158,19 @@ fun CocinaPedidosScreen() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             StatCardCentrado(
-                textoSuperior = "3",
+                textoSuperior = "$porPreparar",
                 textoInferior = "Por preparar",
                 colorSuperior = Color(0xFFFF9F0A),
                 modifier = Modifier.weight(1f)
             )
             StatCardCentrado(
-                textoSuperior = "11",
+                textoSuperior = "$listosHoy",
                 textoInferior = "Listos hoy",
                 colorSuperior = Color(0xFF7DD3FC),
                 modifier = Modifier.weight(1f)
             )
             StatCardCentrado(
-                textoSuperior = "9m",
+                textoSuperior = "—",
                 textoInferior = "Prom. prep.",
                 colorSuperior = Color.White,
                 modifier = Modifier.weight(1f)
@@ -143,7 +183,7 @@ fun CocinaPedidosScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             FiltroButton(
-                texto = "Por preparar · 3",
+                texto = "Por preparar · $porPreparar",
                 activo = filtro == "Por preparar",
                 onClick = { filtro = "Por preparar" },
                 textoColor = Color(0xFFFF9F0A),
@@ -156,7 +196,7 @@ fun CocinaPedidosScreen() {
             )
         }
 
-        // LISTA (solo visual, datos quemados como la imagen)
+        // LISTA: un card por cada pedido real del filtro elegido.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -164,57 +204,70 @@ fun CocinaPedidosScreen() {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            CocinaPedidoCard(
-                mesa = "4",
-                numeroPedido = "0234",
-                mesero = "José P.",
-                tiempo = "14 min",
-                esUrgente = true,
-                platos = listOf(
-                    CocinaPlatoVisual(
-                        nombre = "Ceviche clásico",
-                        cantidad = 1,
-                        emoji = "🐟",
-                        fondoIcono = Color(0xFF1E3A5F)
-                    ),
-                    CocinaPlatoVisual(
-                        nombre = "Lomo saltado",
-                        cantidad = 2,
-                        emoji = "🥩",
-                        fondoIcono = Color(0xFF3B2A18)
-                    ),
-                    CocinaPlatoVisual(
-                        nombre = "Pisco sour",
-                        cantidad = 1,
-                        emoji = "🍸",
-                        fondoIcono = Color(0xFF1E4A3A)
-                    )
-                ),
-                nota = "Lomo sin cebolla",
-                onListoClick = {}
-            )
-
-            CocinaPedidoCard(
-                mesa = "7",
-                numeroPedido = "0235",
-                mesero = "Luis T.",
-                tiempo = "6 min",
-                esUrgente = false,
-                platos = listOf(
-                    CocinaPlatoVisual(
-                        nombre = "Ají de gallina",
-                        cantidad = 2,
-                        emoji = "🍛",
-                        fondoIcono = Color(0xFF3B2A18)
-                    )
-                ),
-                nota = "",
-                onListoClick = {}
-            )
+            filtrados.forEach { pedido ->
+                PedidoEnCocina(
+                    pedido = pedido,
+                    repositorio = repositorio,
+                    nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
+                    categoriaPorPlato = categoriaPorPlato,
+                    onListoClick = { id ->
+                        scope.launch {
+                            repositorio?.cambiarEstadoPedido(id, "LISTO")
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
+}
+
+@Composable
+private fun PedidoEnCocina(
+    pedido: PedidoEntity,
+    repositorio: SazonRepository?,
+    nombreMesero: String,
+    categoriaPorPlato: Map<Long, String>,
+    onListoClick: (Long) -> Unit
+) {
+    // 1. Pedimos los renglones de ESTE pedido (se buscan por su número).
+    val itemsEnVivo = repositorio?.observarItems(pedido.id)
+
+    // 2. Los convertimos en lista dibujable (o vacía).
+    val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // 3. Cada renglón se vuelve su dibujito con emoji según su categoría.
+    val visuales = items.map { item ->
+        val (emoji, fondo) = emojiYFondo(categoriaPorPlato[item.platoId] ?: "Platos")
+        CocinaPlatoVisual(
+            nombre = "${item.nombrePlato} x${item.cantidad}",
+            cantidad = item.cantidad,
+            emoji = emoji,
+            fondoIcono = fondo
+        )
+    }
+
+    // 4. La primera nota que haya, si hay.
+    val nota = items.firstOrNull { it.nota.isNotBlank() }?.nota ?: ""
+
+    CocinaPedidoCard(
+        mesa = pedido.mesa,
+        numeroPedido = pedido.id.toString().padStart(4, '0'),
+        mesero = nombreMesero,
+        tiempo = textoHora(pedido.fecha),
+        esUrgente = false,
+        platos = visuales,
+        nota = nota,
+        onListoClick = { onListoClick(pedido.id) },
+        yaListo = pedido.estado == "LISTO"
+    )
+}
+
+private fun emojiYFondo(categoria: String): Pair<String, Color> = when (categoria) {
+    "Bebidas" -> "🥤" to Color(0xFF1E4A3A)
+    "Postres" -> "🍰" to Color(0xFF3D1A2E)
+    else -> "🍽️" to Color(0xFF3B2A18)
 }
 
 @Preview

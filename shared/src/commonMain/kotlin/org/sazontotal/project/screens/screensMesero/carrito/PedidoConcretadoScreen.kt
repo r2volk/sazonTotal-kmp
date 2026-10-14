@@ -30,12 +30,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 fun PedidoConcretadoScreen(
     volverDashboard: () -> Unit,
-    otroPedido: () -> Unit
+    otroPedido: () -> Unit,
+    pedidoId: Long = 0L,
+    repositorio: SazonRepository? = null
 ) {
+    // 1. Pedimos el pedido por su número (una sola vez al abrir).
+    var pedido by remember { mutableStateOf<PedidoEntity?>(null) }
+    LaunchedEffect(pedidoId) {
+        pedido = repositorio?.buscarPedidoPorId(pedidoId)
+    }
+
+    // 2. Pedimos sus renglones (lista viva).
+    val itemsEnVivo = repositorio?.observarItems(pedidoId)
+    val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +96,7 @@ fun PedidoConcretadoScreen(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Ticket #0234 · Mesa 4",
+                text = "Ticket #${pedidoId.toString().padStart(4, '0')} · Mesa ${pedido?.mesa ?: "–"}",
                 color = Color(0xFF8E8E93),
                 fontSize = 14.sp
             )
@@ -180,9 +199,12 @@ fun PedidoConcretadoScreen(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ResumenRow(plato = "Ceviche clásico x1", precio = "S/ 12.00")
-            ResumenRow(plato = "Lomo saltado x2", precio = "S/ 36.00")
-            ResumenRow(plato = "Pisco sour x1", precio = "S/ 20.00")
+            items.forEach { item ->
+                ResumenRow(
+                    plato = "${item.nombrePlato} x${item.cantidad}",
+                    precio = "S/ ${item.precioUnit * item.cantidad}"
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -201,7 +223,7 @@ fun PedidoConcretadoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ 80.24",
+                    text = "S/ ${pedido?.total ?: 0.0}",
                     color = Color.White,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold

@@ -4,6 +4,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 
+import org.sazontotal.project.data.CarritoCompra
+import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.buildDatabase
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.screens.DashboardAdmin
@@ -24,6 +26,14 @@ import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScre
 fun App() {
     MaterialTheme {
         var pantallaActual by remember { mutableStateOf("login") }
+        var ultimoPedidoId by remember { mutableStateOf(0L) }
+        // Quién entró con su ID y PIN. Se recuerda para mostrar su nombre
+        // en el perfil y firmar sus pedidos. Se borra al cerrar sesión.
+        var empleadoLogueado by remember { mutableStateOf<EmpleadoEntity?>(null) }
+        // Mesa atendida ahora (se elige en el Menú y viaja con el pedido).
+        var mesaActual by remember { mutableStateOf("4") }
+        // Mensaje de error del login (nulo = todo bien, no se muestra nada).
+        var errorLogin by remember { mutableStateOf<String?>(null) }
         // En la vista previa no hay base de datos (no hay app corriendo),
         // así que se permite que sea nula y se muestran las pantallas sin datos.
         val db = remember {
@@ -31,6 +41,9 @@ fun App() {
         }
         val repositorio = remember(db) { db?.let { SazonRepository(it) } }
         val scope = rememberCoroutineScope()
+        // El carrito vive aquí para que el Menú y el Carrito vean lo mismo.
+        // Se vacía al confirmar cada pedido.
+        val carrito = remember { CarritoCompra() }
 
         LaunchedEffect(db) {
             repositorio?.seedIfEmpty()
@@ -39,11 +52,13 @@ fun App() {
         when (pantallaActual){
             "login" -> LoginScreen(
                 onLogin = { empleadoIdIngresado, pinIngresado ->
+                    errorLogin = null
                     scope.launch {
                         val empleado = repositorio?.login(empleadoIdIngresado, pinIngresado)
                         if (empleado != null) {
                             // El rol dice en qué área trabaja (Mesero/Cocina).
                             // El ID dice si es administrador (ADM-), mesero (MSR-) o cocina (CCN-).
+                            empleadoLogueado = empleado
                             pantallaActual = if (empleado.id.startsWith("ADM-")) {
                                 "dashboardAdmin"
                             } else if (empleado.id.startsWith("MSR-")){
@@ -51,30 +66,48 @@ fun App() {
                             } else {
                                 "dashboardCocina"
                             }
+                        } else {
+                            errorLogin = "ID o PIN incorrectos"
                         }
                     }
-                }
+                },
+                mensajeError = errorLogin
             )
             "dashboardAdmin" -> DashboardAdmin(
                 onPersonalClick = {pantallaActual = "gestionPersonal"},
                 onPedidosClick = {pantallaActual = "todosLosPedidos"},
                 onReportesClick = {pantallaActual = "reportesAdmin"},
                 onMenuClick = {pantallaActual = "editarMenu"},
-                onLogoutClick = {pantallaActual= "login"}
-            )
-
-            "dashboardMesero" -> DashboardMesero(
-                onLogoutClick = {pantallaActual = "login"},
-                onCarritoClick = {pantallaActual = "menuMesero"},
+                onLogoutClick = {
+                    empleadoLogueado = null
+                    pantallaActual = "login"
+                },
+                nombreAdmin = empleadoLogueado?.nombre ?: "Karina Castillo",
                 repositorio = repositorio
             )
 
+            "dashboardMesero" -> DashboardMesero(
+                onLogoutClick = {
+                    empleadoLogueado = null
+                    pantallaActual = "login"
+                },
+                onCarritoClick = {pantallaActual = "menuMesero"},
+                repositorio = repositorio,
+                empleado = empleadoLogueado
+            )
+
             "dashboardCocina" -> DashboardCocina(
-                onLogoutClick = {pantallaActual = "login"},
+                onLogoutClick = {
+                    empleadoLogueado = null
+                    pantallaActual = "login"
+                },
+                repositorio = repositorio,
+                empleado = empleadoLogueado
             )
 
             "reportesAdmin" -> ReportesScreen(
-                backReportes = {pantallaActual = "dashboardAdmin"}
+                backReportes = {pantallaActual = "dashboardAdmin"},
+                repositorio = repositorio
             )
 
             "gestionPersonal" -> GestionPersonalScreen(
@@ -92,16 +125,28 @@ fun App() {
             "menuMesero" -> MenuScreen(
                 backMenuScreen = {pantallaActual = "dashboardMesero"},
                 verCarrito = {pantallaActual = "carritoMesero"},
-                repositorio = repositorio
+                repositorio = repositorio,
+                carrito = carrito,
+                mesa = mesaActual,
+                onMesaChange = { mesaActual = it },
+                nombreMesero = empleadoLogueado?.nombre ?: "José P."
             )
             "carritoMesero" -> CarritoScreen(
                 backCarritoScreen = {pantallaActual = "menuMesero"},
-                confirmarCarrito = {pantallaActual = "pedidoConcretado"},
-                repositorio = repositorio
+                confirmarCarrito = { id ->
+                    ultimoPedidoId = id
+                    pantallaActual = "pedidoConcretado"
+                },
+                meseroId = empleadoLogueado?.id ?: "EMP-001",
+                repositorio = repositorio,
+                carrito = carrito,
+                mesa = mesaActual
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardMesero"},
-                otroPedido = {pantallaActual = "menuMesero"}
+                otroPedido = {pantallaActual = "menuMesero"},
+                pedidoId = ultimoPedidoId,
+                repositorio = repositorio
             )
         }
     }

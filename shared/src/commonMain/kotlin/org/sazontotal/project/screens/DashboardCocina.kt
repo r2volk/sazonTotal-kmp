@@ -8,12 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.components.SelectedTabCocina
+import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.screens.screensCocina.CocinaPedidosScreen
 import org.sazontotal.project.screens.screensCocina.CocinaPerfilScreen
 
 @Composable
 fun DashboardCocina(
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    repositorio: SazonRepository? = null,
+    empleado: EmpleadoEntity? = null
 ) {
 
     Column(
@@ -22,9 +26,11 @@ fun DashboardCocina(
             .background(Color.Black)
     ) {
         SelectedTabCocina(
-            pedidos = { CocinaPedidosScreen() },
+            pedidos = { CocinaPedidosScreen(repositorio = repositorio, empleado = empleado) },
             perfil = { CocinaPerfilScreen(
-                onLogoutClick = onLogoutClick
+                onLogoutClick = onLogoutClick,
+                empleado = empleado,
+                repositorio = repositorio
             ) }
         )
     }

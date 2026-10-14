@@ -117,8 +117,30 @@ fun PedidoCard(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // El card del mesero tiene 3 momentos:
+        // PENDIENTE = esperando a cocina (naranja, bloqueado, no hace nada).
+        // LISTO = cocina terminó (verde, el mesero lo aprieta al entregar).
+        // ENTREGADO = fin del flujo (texto simple).
         when (estado) {
             EstadoPedido.PENDIENTE -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFF9F0A)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Preparando...",
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            EstadoPedido.LISTO -> {
                 Button(
                     onClick = onCambiarEstado,
                     modifier = Modifier
@@ -130,7 +152,7 @@ fun PedidoCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        "Marcar listo",
+                        "Marcar entregado",
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
@@ -138,9 +160,9 @@ fun PedidoCard(
                 }
             }
 
-            EstadoPedido.LISTO -> {
+            EstadoPedido.ENTREGADO -> {
                 Text(
-                    text = "✓ Pedido listo",
+                    text = "✓ Pedido entregado",
                     color = Color(0xFF30D158),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold

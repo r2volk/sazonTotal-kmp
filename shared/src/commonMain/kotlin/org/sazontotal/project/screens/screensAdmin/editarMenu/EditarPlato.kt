@@ -46,14 +46,17 @@ import org.sazontotal.project.data.db.PlatoEntity
 @Composable
 @Preview
 fun EditarPlato(
-    onGuardar: (PlatoEntity) -> Unit = {}
+    plato: PlatoEntity? = null,
+    onGuardar: (PlatoEntity) -> Unit = {},
+    onEliminar: (Long) -> Unit = {}
 ) {
-    // Solo diseño (valores de muestra, sin lógica)
-    var nombre by remember { mutableStateOf("") }
-    var categoria by remember { mutableStateOf("Platos") }
-    var precio by remember { mutableStateOf("") }
-    var descripcion by remember { mutableStateOf("") }
-    var disponible by remember { mutableStateOf(true) }
+    // Si viene un plato, el formulario arranca lleno con sus datos (editar).
+    // Si viene nulo, arranca vacío (crear). Al cambiar de plato se reinicia.
+    var nombre by remember(plato) { mutableStateOf(plato?.nombre ?: "") }
+    var categoria by remember(plato) { mutableStateOf(plato?.categoria ?: "Platos") }
+    var precio by remember(plato) { mutableStateOf(plato?.precio?.toString() ?: "") }
+    var descripcion by remember(plato) { mutableStateOf(plato?.descripcion ?: "") }
+    var disponible by remember(plato) { mutableStateOf(plato?.activo ?: true) }
     var mostrarCategorias by remember { mutableStateOf(false) }
 
     Column(
@@ -67,7 +70,7 @@ fun EditarPlato(
         // Header
         Row(){
             Text(
-                text = "Editar plato",
+                text = if (plato == null) "Nuevo plato" else "Editar plato",
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -253,21 +256,24 @@ fun EditarPlato(
                 .padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, Color(0xFF3A1A1A), RoundedCornerShape(12.dp))
-                    .clickable { },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Eliminar",
-                    color = Color(0xFFE5484D),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+            // Eliminar solo existe al editar (al crear no hay nada que borrar).
+            if (plato != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(1.dp, Color(0xFF3A1A1A), RoundedCornerShape(12.dp))
+                        .clickable { onEliminar(plato.id) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Eliminar",
+                        color = Color(0xFFE5484D),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
             Box(
                 modifier = Modifier
@@ -283,6 +289,8 @@ fun EditarPlato(
                         if (nombre.isNotBlank() && precioNumero != null) {
                             onGuardar(
                                 PlatoEntity(
+                                    // Con el mismo id actualiza (REPLACE); con 0 crea uno nuevo.
+                                    id = plato?.id ?: 0,
                                     nombre = nombre.trim(),
                                     precio = precioNumero,
                                     descripcion = descripcion.trim(),

@@ -42,6 +42,7 @@ fun CocinaPedidoCard(
     platos: List<CocinaPlatoVisual>,
     nota: String = "",
     onListoClick: () -> Unit = {},
+    yaListo: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -171,22 +172,32 @@ fun CocinaPedidoCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = onListoClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(46.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF22C55E)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
+        // Si cocina ya lo marcó, se muestra como preparado (sin botón).
+        if (yaListo) {
             Text(
-                text = "✓  Listo",
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                text = "✓ Listo",
+                color = Color(0xFF30D158),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
             )
+        } else {
+            Button(
+                onClick = onListoClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(46.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF22C55E)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "✓  Listo",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

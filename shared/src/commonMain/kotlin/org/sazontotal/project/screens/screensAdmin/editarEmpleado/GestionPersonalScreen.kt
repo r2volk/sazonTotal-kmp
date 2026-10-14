@@ -152,6 +152,11 @@ fun GestionPersonalScreen(
                     activo = filtroRol == "Cocina",
                     onClick = { filtroRol = "Cocina" }
                 )
+                FiltroButton(
+                    texto = "Admin",
+                    activo = filtroRol == "Admin",
+                    onClick = { filtroRol = "Admin" }
+                )
             }
 
             Column(
@@ -163,7 +168,8 @@ fun GestionPersonalScreen(
                         empleado.nombre.contains(nombreBuscado, ignoreCase = true)
                     val coincideRol = filtroRol == "Todos" ||
                         (filtroRol == "Meseros" && empleado.rol == "Mesero") ||
-                        (filtroRol == "Cocina" && empleado.rol == "Cocina")
+                        (filtroRol == "Cocina" && empleado.rol == "Cocina") ||
+                        (filtroRol == "Admin" && empleado.rol == "Administrador")
                     coincideNombre && coincideRol
                 }
                 filtrados.forEach { empleado ->

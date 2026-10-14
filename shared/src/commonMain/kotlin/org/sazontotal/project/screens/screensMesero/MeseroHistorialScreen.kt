@@ -36,6 +36,7 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.textoHora
 
 @Composable
 @Preview
@@ -140,7 +141,7 @@ private fun HistorialDePedido(
 
     HistorialCard(
         mesa = "Mesa ${pedido.mesa}",
-        hora = "hoy",
+        hora = textoHora(pedido.fecha),
         detalle = detalle,
         precio = "S/ ${pedido.total}"
     )

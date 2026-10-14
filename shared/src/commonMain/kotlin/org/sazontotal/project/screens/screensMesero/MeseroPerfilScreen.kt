@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,13 +40,29 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.OpcionPerfilRow
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.components.SwitchButton
+import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 @Preview
 fun MeseroPerfilScreen(
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    empleado: EmpleadoEntity? = null,
+    repositorio: SazonRepository? = null
 ) {
     var notificaciones by remember { mutableStateOf(true) }
+
+    // Iniciales para el avatar ("Ricardo Sanchez" -> "RS").
+    val iniciales = empleado?.nombre
+        ?.split(" ")
+        ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
+        ?.take(2)
+        ?.joinToString("") ?: "??"
+
+    // Pedidos tomados por este mesero (se buscan por su id).
+    val pedidosEnVivo = repositorio?.observarPedidos()
+    val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+    val misPedidos = pedidos.count { it.meseroID == empleado?.id }
 
     Column(
         modifier = Modifier
@@ -75,27 +92,27 @@ fun MeseroPerfilScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "MR",
+                    text = iniciales,
                     color = Color(0xFF7DD3FC),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
             Text(
-                text = "María Rojas",
+                text = empleado?.nombre ?: "Sin sesión",
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
             FiltroButton(
-                texto = "Mesero",
+                texto = empleado?.rol ?: "—",
                 activo = true,
                 onClick = {},
                 textoColor = Color(0xFF64A8F5),
                 fondoTextoColor = Color(0xFF1A365D)
             )
             Text(
-                text = "ID: MSR-108",
+                text = "ID: ${empleado?.id ?: "—"}",
                 color = Color(0xFF8E8E93),
                 fontSize = 14.sp
             )
@@ -112,7 +129,7 @@ fun MeseroPerfilScreen(
                 modifier = Modifier.weight(1f)
             )
             StatCardCentrado(
-                textoSuperior = "231",
+                textoSuperior = "$misPedidos",
                 textoInferior = "Pedidos",
                 modifier = Modifier.weight(1f)
             )

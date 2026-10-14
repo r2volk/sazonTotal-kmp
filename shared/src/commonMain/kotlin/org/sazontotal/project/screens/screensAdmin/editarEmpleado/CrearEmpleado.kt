@@ -161,6 +161,12 @@ fun CrearEmpleado(
                     onClick = { rol = "Cocina" },
                     modifier = Modifier.weight(1f)
                 )
+                RolOptionButton(
+                    texto = "Admin",
+                    seleccionado = rol == "Administrador",
+                    onClick = { rol = "Administrador" },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
@@ -208,9 +214,16 @@ fun CrearEmpleado(
                 .background(Color(0xFF5DF08A))
                 .clickable {
                     if (nombre.isNotBlank() && pin.isNotBlank()) {
+                        // El panel al que entra se decide por el ID,
+                        // así que el prefijo sale del rol elegido.
+                        val prefijo = when (rol) {
+                            "Administrador" -> "ADM"
+                            "Mesero" -> "MSR"
+                            else -> "CCN"
+                        }
                         onGuardar(
                             EmpleadoEntity(
-                                id = if (rol == "Mesero") "MSR-${Random.nextInt(100, 999)}" else "CCN-${Random.nextInt(100, 999)}",
+                                id = "$prefijo-${Random.nextInt(100, 999)}",
                                 nombre = nombre.trim(),
                                 pin = pin,
                                 rol = rol,

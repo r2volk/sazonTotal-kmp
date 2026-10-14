@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.components.SelectedTabMesero
+import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.screens.screensMesero.MeseroHistorialScreen
 import org.sazontotal.project.screens.screensMesero.MeseroPedidosScreen
@@ -17,7 +18,8 @@ import org.sazontotal.project.screens.screensMesero.MeseroPerfilScreen
 fun DashboardMesero(
     onLogoutClick: () -> Unit,
     onCarritoClick: () -> Unit,
-    repositorio: SazonRepository? = null
+    repositorio: SazonRepository? = null,
+    empleado: EmpleadoEntity? = null
 ){
 
     Column(
@@ -28,13 +30,16 @@ fun DashboardMesero(
         SelectedTabMesero(
             pedidos = {MeseroPedidosScreen(
                 onCarritoClick = onCarritoClick,
-                repositorio = repositorio
+                repositorio = repositorio,
+                empleado = empleado
             )},
             historial = {MeseroHistorialScreen(
                 repositorio = repositorio
             )},
             perfil = {MeseroPerfilScreen(
-                onLogoutClick = onLogoutClick
+                onLogoutClick = onLogoutClick,
+                empleado = empleado,
+                repositorio = repositorio
             )}
         )
     }

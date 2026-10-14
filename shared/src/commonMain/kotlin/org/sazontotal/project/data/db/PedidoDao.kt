@@ -20,4 +20,11 @@ interface PedidoDao {
 
     @Query("UPDATE pedidos SET estado = :estado WHERE id = :id")
     suspend fun cambiarEstado(id: Long, estado: String)
+
+    @Query("SELECT * FROM pedidos WHERE id = :id LIMIT 1")
+    suspend fun buscarPorId(id: Long): PedidoEntity?
+
+    // Suma de todos los totales (0 si no hay pedidos). Es lista viva: cambia sola al vender.
+    @Query("SELECT IFNULL(SUM(total), 0.0) FROM pedidos")
+    fun observarSumaTotal(): Flow<Double>
 }

@@ -26,7 +26,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +42,7 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.textoHora
 import org.sazontotal.project.enums.EstadoPedido
 import org.sazontotal.project.enums.EstadoTodosLosPedidos
 import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
@@ -67,6 +70,7 @@ fun TodosLosPedidosScreen(
     val enCurso = pedidos.count { it.estado == "PENDIENTE" || it.estado == "LISTO" }
     val entregados = pedidos.count { it.estado == "ENTREGADO" }
     val anulados = pedidos.count { it.estado == "ANULADO" }
+    val scope = rememberCoroutineScope()
 
     // 5. Nos quedamos con los que pasan el buscador y el filtro.
     val filtrados = pedidos.filter { pedido ->
@@ -179,7 +183,12 @@ fun TodosLosPedidosScreen(
                 PedidoEnAdmin(
                     pedido = pedido,
                     repositorio = repositorio,
-                    nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID
+                    nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
+                    onAnular = { id ->
+                        scope.launch {
+                            repositorio?.cambiarEstadoPedido(id, "ANULADO")
+                        }
+                    }
                 )
             }
 
@@ -192,7 +201,8 @@ fun TodosLosPedidosScreen(
 private fun PedidoEnAdmin(
     pedido: PedidoEntity,
     repositorio: SazonRepository?,
-    nombreMesero: String
+    nombreMesero: String,
+    onAnular: (Long) -> Unit
 ) {
     // 1. Pedimos los renglones de ESTE pedido para contar cuántos items lleva.
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
@@ -212,8 +222,11 @@ private fun PedidoEnAdmin(
         estadoTodosLosPedidos = insignia,
         titulo = "Mesa ${pedido.mesa} • #${pedido.id}",
         detalle = "Mesero: $nombreMesero • ${items.size} items",
-        hora = "hoy",
-        total = "S/ ${pedido.total}"
+        hora = textoHora(pedido.fecha),
+        total = "S/ ${pedido.total}",
+        // Solo se puede anular lo que aún no se entregó ni se anuló.
+        sePuedeAnular = pedido.estado == "PENDIENTE" || pedido.estado == "LISTO",
+        onAnular = { onAnular(pedido.id) }
     )
 }
 
@@ -223,7 +236,9 @@ private fun CardPedido(
     titulo: String,
     detalle: String,
     hora: String,
-    total: String
+    total: String,
+    sePuedeAnular: Boolean = false,
+    onAnular: () -> Unit = {}
 ) {
     val (textoEstado, colorFondo, colorTexto) = when (estadoTodosLosPedidos) {
         EstadoTodosLosPedidos.PREPARANDO -> Triple(
@@ -311,6 +326,20 @@ private fun CardPedido(
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Solo los pedidos en curso se pueden anular.
+        if (sePuedeAnular) {
+            Text(
+                text = "Anular pedido",
+                color = Color(0xFFFF453A),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAnular() }
+                    .padding(vertical = 4.dp)
             )
         }
     }
