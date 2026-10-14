@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado
+package org.sazontotal.project.screens.screensMesero
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,7 +42,7 @@ import org.sazontotal.project.components.SwitchButton
 
 @Composable
 @Preview
-fun PerfilScreen(
+fun MeseroPerfilScreen(
     onLogoutClick: () -> Unit = {}
 ) {
     var notificaciones by remember { mutableStateOf(true) }
@@ -88,14 +88,14 @@ fun PerfilScreen(
                 fontWeight = FontWeight.Bold
             )
             FiltroButton(
-                texto = "Cocina",
+                texto = "Mesero",
                 activo = true,
                 onClick = {},
                 textoColor = Color(0xFF64A8F5),
                 fondoTextoColor = Color(0xFF1A365D)
             )
             Text(
-                text = "ID: EMP-108",
+                text = "ID: MSR-108",
                 color = Color(0xFF8E8E93),
                 fontSize = 14.sp
             )

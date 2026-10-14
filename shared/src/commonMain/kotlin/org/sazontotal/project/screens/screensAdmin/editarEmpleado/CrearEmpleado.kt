@@ -210,7 +210,7 @@ fun CrearEmpleado(
                     if (nombre.isNotBlank() && pin.isNotBlank()) {
                         onGuardar(
                             EmpleadoEntity(
-                                id = "EMP-${Random.nextInt(100, 999)}",
+                                id = if (rol == "Mesero") "MSR-${Random.nextInt(100, 999)}" else "CCN-${Random.nextInt(100, 999)}",
                                 nombre = nombre.trim(),
                                 pin = pin,
                                 rol = rol,

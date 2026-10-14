@@ -7,16 +7,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.data.db.buildDatabase
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.screens.DashboardAdmin
-import org.sazontotal.project.screens.DashboardEmpleado
+import org.sazontotal.project.screens.DashboardMesero
 import org.sazontotal.project.screens.LoginScreen
 import org.sazontotal.project.screens.screensAdmin.editarEmpleado.GestionPersonalScreen
 import org.sazontotal.project.screens.screensAdmin.ReportesScreen
 import org.sazontotal.project.screens.screensAdmin.TodosLosPedidosScreen
 import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 import kotlinx.coroutines.launch
-import org.sazontotal.project.screens.screensEmpleado.carrito.CarritoScreen
-import org.sazontotal.project.screens.screensEmpleado.carrito.MenuScreen
-import org.sazontotal.project.screens.screensEmpleado.carrito.PedidoConcretadoScreen
+import org.sazontotal.project.screens.DashboardCocina
+import org.sazontotal.project.screens.screensMesero.carrito.CarritoScreen
+import org.sazontotal.project.screens.screensMesero.carrito.MenuScreen
+import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScreen
 
 @Composable
 @Preview
@@ -42,11 +43,13 @@ fun App() {
                         val empleado = repositorio?.login(empleadoIdIngresado, pinIngresado)
                         if (empleado != null) {
                             // El rol dice en qué área trabaja (Mesero/Cocina).
-                            // El ID dice si es administrador (ADM-) o trabajador (EMP-).
+                            // El ID dice si es administrador (ADM-), mesero (MSR-) o cocina (CCN-).
                             pantallaActual = if (empleado.id.startsWith("ADM-")) {
                                 "dashboardAdmin"
+                            } else if (empleado.id.startsWith("MSR-")){
+                                "dashboardMesero"
                             } else {
-                                "dashboardEmpleado"
+                                "dashboardCocina"
                             }
                         }
                     }
@@ -60,10 +63,14 @@ fun App() {
                 onLogoutClick = {pantallaActual= "login"}
             )
 
-            "dashboardEmpleado" -> DashboardEmpleado(
+            "dashboardMesero" -> DashboardMesero(
                 onLogoutClick = {pantallaActual = "login"},
-                onCarritoClick = {pantallaActual = "menuEmpleado"},
+                onCarritoClick = {pantallaActual = "menuMesero"},
                 repositorio = repositorio
+            )
+
+            "dashboardCocina" -> DashboardCocina(
+                onLogoutClick = {pantallaActual = "login"},
             )
 
             "reportesAdmin" -> ReportesScreen(
@@ -82,19 +89,19 @@ fun App() {
                 backEditarMenu = {pantallaActual = "dashboardAdmin"},
                 repositorio = repositorio
             )
-            "menuEmpleado" -> MenuScreen(
-                backMenuScreen = {pantallaActual = "dashboardEmpleado"},
-                verCarrito = {pantallaActual = "carritoEmpleado"},
+            "menuMesero" -> MenuScreen(
+                backMenuScreen = {pantallaActual = "dashboardMesero"},
+                verCarrito = {pantallaActual = "carritoMesero"},
                 repositorio = repositorio
             )
-            "carritoEmpleado" -> CarritoScreen(
-                backCarritoScreen = {pantallaActual = "menuEmpleado"},
+            "carritoMesero" -> CarritoScreen(
+                backCarritoScreen = {pantallaActual = "menuMesero"},
                 confirmarCarrito = {pantallaActual = "pedidoConcretado"},
                 repositorio = repositorio
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
-                volverDashboard = {pantallaActual = "dashboardEmpleado"},
-                otroPedido = {pantallaActual = "menuEmpleado"}
+                volverDashboard = {pantallaActual = "dashboardMesero"},
+                otroPedido = {pantallaActual = "menuMesero"}
             )
         }
     }

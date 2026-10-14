@@ -74,10 +74,14 @@ class SazonRepository(private val db: SazonDatabase) {
     suspend fun seedIfEmpty() {
         val dao = db.empleadoDao()
         if (dao.login("ADM-001", "1234") == null) {
-            dao.guardar(EmpleadoEntity("ADM-001", "Karina Castillo", "1234", "Mesero", "", true))
+            dao.guardar(EmpleadoEntity("ADM-001", "Karina Castillo", "1234", "Administrador", "", true))
         }
-        if (dao.login("EMP-001", "4321") == null) {
-            dao.guardar(EmpleadoEntity("EMP-001", "Ricardo Sanchez", "4321", "Cocina", "", true))
+        if (dao.login("MSR-001", "4321") == null) {
+            dao.guardar(EmpleadoEntity("MSR-001", "Ricardo Sanchez", "4321", "Mesero", "", true))
+        }
+
+        if (dao.login("CCN-001", "4321") == null) {
+            dao.guardar(EmpleadoEntity("CCN-001", "Joaquin Gutierrez", "4321", "Cocina", "", true))
         }
 
         val platoDao = db.platoDao()

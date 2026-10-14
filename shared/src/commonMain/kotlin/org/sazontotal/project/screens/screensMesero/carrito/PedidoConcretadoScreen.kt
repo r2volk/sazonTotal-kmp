@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado.carrito
+package org.sazontotal.project.screens.screensMesero.carrito
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

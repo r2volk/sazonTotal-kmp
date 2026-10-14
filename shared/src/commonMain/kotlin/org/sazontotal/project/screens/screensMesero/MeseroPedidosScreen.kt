@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado
+package org.sazontotal.project.screens.screensMesero
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,14 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -47,12 +44,11 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.PedidoCard
 import org.sazontotal.project.components.StatCardCentrado
-import org.sazontotal.project.icons.LogoutButton
-import org.sazontotal.project.screens.DashboardEmpleado
+import org.sazontotal.project.screens.DashboardMesero
 import org.sazontotal.project.enums.EstadoPedido
 
 @Composable
-fun PedidosScreen(
+fun MeseroPedidosScreen(
     onCarritoClick: () -> Unit,
     onAsistenteClick: () -> Unit = {},
     repositorio: SazonRepository? = null
@@ -340,7 +336,7 @@ private fun PedidoEnCocina(
 @Preview
 @Composable
 fun PedidosPreview(){
-    DashboardEmpleado(
+    DashboardMesero(
         onLogoutClick = {},
         onCarritoClick = {}
     )

@@ -12,7 +12,9 @@ import org.sazontotal.project.screens.screensCocina.CocinaPedidosScreen
 import org.sazontotal.project.screens.screensCocina.CocinaPerfilScreen
 
 @Composable
-fun DashboardCocina() {
+fun DashboardCocina(
+    onLogoutClick: () -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -21,7 +23,9 @@ fun DashboardCocina() {
     ) {
         SelectedTabCocina(
             pedidos = { CocinaPedidosScreen() },
-            perfil = { CocinaPerfilScreen() }
+            perfil = { CocinaPerfilScreen(
+                onLogoutClick = onLogoutClick
+            ) }
         )
     }
 
@@ -30,5 +34,7 @@ fun DashboardCocina() {
 @Composable
 @Preview
 fun DashboardCocinaPreview() {
-    DashboardCocina()
+    DashboardCocina(
+        onLogoutClick = {}
+    )
 }

@@ -7,15 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import org.sazontotal.project.components.SelectedTab
+import org.sazontotal.project.components.SelectedTabMesero
 import org.sazontotal.project.data.repository.SazonRepository
-import org.sazontotal.project.icons.PedidosIcon
-import org.sazontotal.project.screens.screensEmpleado.HistorialScreen
-import org.sazontotal.project.screens.screensEmpleado.PedidosScreen
-import org.sazontotal.project.screens.screensEmpleado.PerfilScreen
+import org.sazontotal.project.screens.screensMesero.MeseroHistorialScreen
+import org.sazontotal.project.screens.screensMesero.MeseroPedidosScreen
+import org.sazontotal.project.screens.screensMesero.MeseroPerfilScreen
 
 @Composable
-fun DashboardEmpleado(
+fun DashboardMesero(
     onLogoutClick: () -> Unit,
     onCarritoClick: () -> Unit,
     repositorio: SazonRepository? = null
@@ -26,15 +25,15 @@ fun DashboardEmpleado(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        SelectedTab(
-            pedidos = {PedidosScreen(
+        SelectedTabMesero(
+            pedidos = {MeseroPedidosScreen(
                 onCarritoClick = onCarritoClick,
                 repositorio = repositorio
             )},
-            historial = {HistorialScreen(
+            historial = {MeseroHistorialScreen(
                 repositorio = repositorio
             )},
-            perfil = {PerfilScreen(
+            perfil = {MeseroPerfilScreen(
                 onLogoutClick = onLogoutClick
             )}
         )
@@ -44,8 +43,8 @@ fun DashboardEmpleado(
 
 @Composable
 @Preview
-fun DashboardEmpleadoPreview(){
-    DashboardEmpleado(
+fun DashboardMeseroPreview(){
+    DashboardMesero(
         onLogoutClick = {},
         onCarritoClick = {}
     )

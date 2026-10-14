@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado
+package org.sazontotal.project.screens.screensMesero
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +39,7 @@ import org.sazontotal.project.data.repository.SazonRepository
 
 @Composable
 @Preview
-fun HistorialScreen(
+fun MeseroHistorialScreen(
     repositorio: SazonRepository? = null
 ) {
     var textoBusqueda by remember { mutableStateOf("") }

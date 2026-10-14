@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado.carrito
+package org.sazontotal.project.screens.screensMesero.carrito
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,12 +16,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material.icons.outlined.DinnerDining
 import androidx.compose.material.icons.outlined.LocalBar
-import androidx.compose.material.icons.outlined.SoupKitchen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -35,11 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,7 +50,7 @@ import org.sazontotal.project.data.repository.SazonRepository
 fun CarritoScreen(
     backCarritoScreen: () -> Unit,
     confirmarCarrito: () -> Unit,
-    meseroId: String = "EMP-001",
+    meseroId: String = "MSR-001",
     repositorio: SazonRepository? = null
 ) {
     var codigoPromo by remember { mutableStateOf("") }

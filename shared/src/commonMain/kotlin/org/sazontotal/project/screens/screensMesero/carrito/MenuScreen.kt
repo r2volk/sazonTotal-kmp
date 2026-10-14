@@ -1,4 +1,4 @@
-package org.sazontotal.project.screens.screensEmpleado.carrito
+package org.sazontotal.project.screens.screensMesero.carrito
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.DinnerDining
 import androidx.compose.material.icons.outlined.LocalBar
-import androidx.compose.material.icons.outlined.SoupKitchen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
