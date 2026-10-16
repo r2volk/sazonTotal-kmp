@@ -1,5 +1,6 @@
 package org.sazontotal.project.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -24,12 +25,21 @@ fun CampoTextoAdmin(
     maxLines: Int = if (singleLine) 1 else 4,
     readOnly: Boolean = false,
     trailing: @Composable (() -> Unit)? = null,
-    leading: @Composable (() -> Unit)? = null
+    leading: @Composable (() -> Unit)? = null,
+    borderColor: Color? = null
 ) {
     TextField(
         value = valor,
         onValueChange = onValorChange,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (borderColor != null) {
+                    Modifier.border(2.dp, borderColor, RoundedCornerShape(12.dp))
+                } else {
+                    Modifier
+                }
+            ),
         placeholder = {
             Text(
                 text = placeholder,

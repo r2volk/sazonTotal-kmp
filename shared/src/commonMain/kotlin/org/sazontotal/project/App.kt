@@ -16,7 +16,9 @@ import org.sazontotal.project.screens.screensAdmin.ReportesScreen
 import org.sazontotal.project.screens.screensAdmin.TodosLosPedidosScreen
 import org.sazontotal.project.screens.screensAdmin.editarMenu.EditarMenuScreen
 import kotlinx.coroutines.launch
+import org.sazontotal.project.screens.CambioPinScreen
 import org.sazontotal.project.screens.DashboardCocina
+import org.sazontotal.project.screens.screensMesero.AsistenteScreen
 import org.sazontotal.project.screens.screensMesero.carrito.CarritoScreen
 import org.sazontotal.project.screens.screensMesero.carrito.MenuScreen
 import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScreen
@@ -90,6 +92,7 @@ fun App() {
                     empleadoLogueado = null
                     pantallaActual = "login"
                 },
+                onAsistenteClick = {pantallaActual ="asistente"},
                 onCarritoClick = {pantallaActual = "menuMesero"},
                 repositorio = repositorio,
                 empleado = empleadoLogueado
@@ -146,6 +149,20 @@ fun App() {
                 otroPedido = {pantallaActual = "menuMesero"},
                 pedidoId = ultimoPedidoId,
                 repositorio = repositorio
+            )
+            "asistente" -> AsistenteScreen(
+                backAsistente = {pantallaActual = "dashboardMesero"}
+            )
+            "cambioPin" -> CambioPinScreen(
+                backCambioPinScreen = {
+                    if (empleadoLogueado?.id?.startsWith("MSR-") == true) {
+                        pantallaActual = "dashboardMesero"
+                    } else if (empleadoLogueado?.id?.startsWith("CCN-") == true) {
+                        pantallaActual = "dashboardCocina"
+                    } else {
+                        pantallaActual = "dashboardAdmin"
+                    }
+                }
             )
         }
     }

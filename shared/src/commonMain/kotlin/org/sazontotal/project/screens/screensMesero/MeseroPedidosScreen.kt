@@ -52,7 +52,7 @@ import org.sazontotal.project.enums.EstadoPedido
 @Composable
 fun MeseroPedidosScreen(
     onCarritoClick: () -> Unit,
-    onAsistenteClick: () -> Unit = {},
+    onAsistenteClick: () -> Unit,
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null
 ){
@@ -295,24 +295,6 @@ fun MeseroPedidosScreen(
             Spacer(modifier = Modifier.height(72.dp))
         }
     }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 18.dp, bottom = 18.dp)
-                .size(52.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF5DBF3E))
-                .clickable { onCarritoClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "+",
-                color = Color.Black,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
     }
 }
 
@@ -359,6 +341,7 @@ private fun PedidoEnCocina(
 fun PedidosPreview(){
     DashboardMesero(
         onLogoutClick = {},
-        onCarritoClick = {}
+        onCarritoClick = {},
+        onAsistenteClick = {}
     )
 }

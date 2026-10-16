@@ -10,6 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.components.SelectedTabMesero
 import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.screens.screensMesero.AsistenteScreen
 import org.sazontotal.project.screens.screensMesero.MeseroHistorialScreen
 import org.sazontotal.project.screens.screensMesero.MeseroPedidosScreen
 import org.sazontotal.project.screens.screensMesero.MeseroPerfilScreen
@@ -18,6 +19,7 @@ import org.sazontotal.project.screens.screensMesero.MeseroPerfilScreen
 fun DashboardMesero(
     onLogoutClick: () -> Unit,
     onCarritoClick: () -> Unit,
+    onAsistenteClick: () -> Unit,
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null
 ){
@@ -30,6 +32,7 @@ fun DashboardMesero(
         SelectedTabMesero(
             pedidos = {MeseroPedidosScreen(
                 onCarritoClick = onCarritoClick,
+                onAsistenteClick = onAsistenteClick,
                 repositorio = repositorio,
                 empleado = empleado
             )},
@@ -51,7 +54,8 @@ fun DashboardMesero(
 fun DashboardMeseroPreview(){
     DashboardMesero(
         onLogoutClick = {},
-        onCarritoClick = {}
+        onCarritoClick = {},
+        onAsistenteClick = {}
     )
 }
 
