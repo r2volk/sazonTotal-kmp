@@ -37,7 +37,7 @@ import org.sazontotal.project.components.FotoEmpleadoAvatar
 import org.sazontotal.project.components.RolOptionButton
 import org.sazontotal.project.components.SwitchButton
 import org.sazontotal.project.data.db.EmpleadoEntity
-import kotlin.random.Random
+import org.sazontotal.project.utils.ahoraMillis
 
 @Composable
 @Preview
@@ -216,6 +216,8 @@ fun CrearEmpleado(
                     if (nombre.isNotBlank() && pin.isNotBlank()) {
                         // El panel al que entra se decide por el ID,
                         // así que el prefijo sale del rol elegido.
+                        // El número sale de la hora actual: único por milisegundo,
+                        // no se repite como el random.
                         val prefijo = when (rol) {
                             "Administrador" -> "ADM"
                             "Mesero" -> "MSR"
@@ -223,7 +225,7 @@ fun CrearEmpleado(
                         }
                         onGuardar(
                             EmpleadoEntity(
-                                id = "$prefijo-${Random.nextInt(100, 999)}",
+                                id = "$prefijo-${ahoraMillis() % 100000}",
                                 nombre = nombre.trim(),
                                 pin = pin,
                                 rol = rol,

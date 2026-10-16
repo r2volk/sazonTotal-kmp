@@ -41,8 +41,7 @@ fun App() {
         }
         val repositorio = remember(db) { db?.let { SazonRepository(it) } }
         val scope = rememberCoroutineScope()
-        // El carrito vive aquí para que el Menú y el Carrito vean lo mismo.
-        // Se vacía al confirmar cada pedido.
+        
         val carrito = remember { CarritoCompra() }
 
         LaunchedEffect(db) {

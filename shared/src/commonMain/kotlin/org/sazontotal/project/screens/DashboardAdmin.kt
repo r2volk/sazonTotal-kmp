@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.StatCardAdmin
 import org.sazontotal.project.components.AccesoRapidoCard
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.icons.MenuIcon
 import org.sazontotal.project.icons.PedidosIcon
@@ -50,11 +52,14 @@ fun DashboardAdmin(
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // 2. Suma viva de ventas (se mueve sola al vender).
-    val ventasEnVivo = repositorio?.observarVentasTotales()
-    val ventas = ventasEnVivo?.collectAsState(initial = 0.0)?.value ?: 0.0
+    // 2. Solo lo de hoy con fecha real: mismo día, mes y año que ahora.
+    val hoyPartes = partesFecha(ahoraMillis())
+    val pedidosHoy = pedidos.filter { it.fecha > 0 && partesFecha(it.fecha) == hoyPartes }
 
-    // 3. Contadores calculados desde las listas.
+    // 3. Ventas del día = suma de lo ENTREGADO de hoy. Lo demás no es venta.
+    val ventas = pedidosHoy.filter { it.estado == "ENTREGADO" }.sumOf { it.total }
+
+    // 4. Contadores calculados desde las listas.
     val empleadosActivos = empleados.count { it.activo }
     val pendientes = pedidos.count { it.estado == "PENDIENTE" }
 
@@ -137,7 +142,7 @@ fun DashboardAdmin(
                         modifier = Modifier.weight(1f)
                     )
                     StatCardAdmin(
-                        textoSuperior = "${pedidos.size}",
+                        textoSuperior = "${pedidosHoy.size}",
                         textoInferior = "Pedidos hoy",
                         colorSuperior = Color.White,
                         modifier = Modifier.weight(1f)

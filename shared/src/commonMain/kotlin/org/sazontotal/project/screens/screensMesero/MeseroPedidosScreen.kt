@@ -338,7 +338,8 @@ private fun PedidoEnCocina(
     val estado = when (pedido.estado) {
         "PENDIENTE" -> EstadoPedido.PENDIENTE
         "LISTO" -> EstadoPedido.LISTO
-        else -> EstadoPedido.ENTREGADO
+        "ENTREGADO" -> EstadoPedido.ENTREGADO
+        else -> EstadoPedido.ANULADO
     }
 
     PedidoCard(

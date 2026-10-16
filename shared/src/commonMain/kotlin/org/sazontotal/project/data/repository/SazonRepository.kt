@@ -54,19 +54,27 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoDao().buscarPorId(id)
     }
 
+    // Crea el pedido con sus renglones, todo junto:
+    // si algo falla a la mitad, se borra la cabecera para no dejarla huérfana.
+    // (Tu Room no da transacciones en código común, este rollback manual logra lo mismo.)
     suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
+        require(items.isNotEmpty()) { "El pedido no tiene renglones" }
         // 1. Guardamos la cabecera (mesa, mesero, estado).
         // La base le da un número y nos lo devuelve.
         val numeroPedido = db.pedidoDao().insertar(pedido)
+        try {
+            // 2. Recorremos los renglones y a cada uno le anotamos el número de su pedido.
+            // .copy() = fotocopia del renglón cambiando solo ese número.
+            val renglonesMarcados = items.map { renglon ->
+                renglon.copy(pedidoId = numeroPedido)
+            }
 
-        // 2. Recorremos los renglones y a cada uno le anotamos el número de su pedido.
-        // .copy() = fotocopia del renglón cambiando solo ese número.
-        val renglonesMarcados = items.map { renglon ->
-            renglon.copy(pedidoId = numeroPedido)
+            // 3. Guardamos todos los renglones ya marcados, de un solo viaje.
+            db.pedidoItemDao().insertarTodos(renglonesMarcados)
+        } catch (e: Exception) {
+            db.pedidoDao().borrarPorId(numeroPedido)
+            throw e
         }
-
-        // 3. Guardamos todos los renglones ya marcados, de un solo viaje.
-        db.pedidoItemDao().insertarTodos(renglonesMarcados)
 
         // 4. Devolvemos el número, por si la pantalla lo necesita (ej: mostrar "Ticket #5").
         return numeroPedido
@@ -102,23 +110,23 @@ class SazonRepository(private val db: SazonDatabase) {
 
     suspend fun seedIfEmpty() {
         val dao = db.empleadoDao()
-        if (dao.login("ADM-001", "1234") == null) {
+        if (dao.buscarPorId("ADM-001") == null) {
             dao.guardar(EmpleadoEntity("ADM-001", "Karina Castillo", "1234", "Administrador", "", true))
         }
-        if (dao.login("MSR-001", "4321") == null) {
+        if (dao.buscarPorId("MSR-001") == null) {
             dao.guardar(EmpleadoEntity("MSR-001", "Ricardo Sanchez", "4321", "Mesero", "", true))
         }
 
-        if (dao.login("CCN-001", "4321") == null) {
+        if (dao.buscarPorId("CCN-001") == null) {
             dao.guardar(EmpleadoEntity("CCN-001", "Joaquin Gutierrez", "4321", "Cocina", "", true))
         }
 
         val platoDao = db.platoDao()
         if (platoDao.contar() == 0) {
-            platoDao.guardar(PlatoEntity(id = 1, nombre = "Ceviche clásico", descripcion = "Sin gluten", precio = 12.0, categoria = "Platos"))
-            platoDao.guardar(PlatoEntity(id = 2, nombre = "Lomo saltado", descripcion = "Picante leve", precio = 18.0, categoria = "Platos"))
+            platoDao.guardar(PlatoEntity(id = 1, nombre = "Ceviche clásico", descripcion = "Sin gluten", precio = 12.0, categoria = "Platos", etiquetas = "Sin Gluten"))
+            platoDao.guardar(PlatoEntity(id = 2, nombre = "Lomo saltado", descripcion = "Picante leve", precio = 18.0, categoria = "Platos", etiquetas = "Picante"))
             platoDao.guardar(PlatoEntity(id = 3, nombre = "Pisco sour", descripcion = "Con alcohol", precio = 20.0, categoria = "Bebidas"))
-            platoDao.guardar(PlatoEntity(id = 4, nombre = "Suspiro limeño", descripcion = "Contiene lácteos", precio = 13.0, categoria = "Postres"))
+            platoDao.guardar(PlatoEntity(id = 4, nombre = "Suspiro limeño", descripcion = "Contiene lácteos", precio = 13.0, categoria = "Postres", etiquetas = "Lácteo"))
         }
 
         val promoDao = db.promoDao()

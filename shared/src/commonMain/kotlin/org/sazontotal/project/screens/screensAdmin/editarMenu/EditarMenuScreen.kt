@@ -177,7 +177,7 @@ fun EditarMenuScreen(
                         nombrePlato = plato.nombre,
                         isActive = plato.activo,
                         precio = plato.precio,
-                        descipcion = plato.descripcion,
+                        descipcion = plato.etiquetas.ifBlank { plato.descripcion },
                         editar = {
                             platoEnEdicion = plato
                             mostrarFormulario = true

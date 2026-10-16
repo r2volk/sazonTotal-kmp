@@ -79,6 +79,10 @@ fun CarritoScreen(
     // Si el carrito está vacío, confirmar no hace nada (ni guarda ni navega).
     val hayAlgo = (carrito?.totalItems() ?: 0) > 0
 
+    // Mientras se guarda, el botón se apaga para que el doble-tap no cree doble pedido.
+    var guardando by remember { mutableStateOf(false) }
+    val puedeConfirmar = hayAlgo && !guardando
+
     // Solo se muestran los platos con cantidad mayor a 0.
     // Al bajar a 0, el card desaparece solo de la lista.
     val platosEnCarrito = platos.filter { plato ->
@@ -276,9 +280,10 @@ fun CarritoScreen(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(if (hayAlgo) Color(0xFF5DBF3E) else Color(0xFF3A3A3C))
+                .background(if (puedeConfirmar) Color(0xFF5DBF3E) else Color(0xFF3A3A3C))
                 .clickable {
-                    if (!hayAlgo) return@clickable
+                    if (!puedeConfirmar) return@clickable
+                    guardando = true
                     scope.launch {
                         // Cabecera: mesa elegida, estado inicial, total y hora ya calculados
                         val cabecera = PedidoEntity(
@@ -307,14 +312,15 @@ fun CarritoScreen(
                         descuentoPorc = 0
                         promoAplicada = ""
                         codigoPromo = ""
+                        guardando = false
                         confirmarCarrito(numeroPedido)
                     }
                 },
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Confirmar y enviar a cocina",
-                color = if (hayAlgo) Color.Black else Color(0xFF8E8E93),
+                text = if (guardando) "Enviando..." else "Confirmar y enviar a cocina",
+                color = if (puedeConfirmar) Color.Black else Color(0xFF8E8E93),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

@@ -168,6 +168,15 @@ fun PedidoCard(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
+            EstadoPedido.ANULADO -> {
+                Text(
+                    text = "Anulado",
+                    color = Color(0xFFFF453A),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
 }

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.OpcionPerfilRow
 import org.sazontotal.project.components.StatCardCentrado
-import org.sazontotal.project.components.SwitchButton
 import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 
@@ -50,7 +48,6 @@ fun MeseroPerfilScreen(
     empleado: EmpleadoEntity? = null,
     repositorio: SazonRepository? = null
 ) {
-    var notificaciones by remember { mutableStateOf(true) }
 
     // Iniciales para el avatar ("Ricardo Sanchez" -> "RS").
     val iniciales = empleado?.nombre
@@ -154,14 +151,6 @@ fun MeseroPerfilScreen(
                         tint = Color(0xFF8E8E93),
                         modifier = Modifier.size(20.dp)
                     )
-                }
-            )
-            OpcionPerfilRow(
-                icono = Icons.Filled.Notifications,
-                texto = "Notificaciones",
-                onClick = {},
-                trailing = {
-                    SwitchButton(isActive = notificaciones , onCambio = {})
                 }
             )
             OpcionPerfilRow(

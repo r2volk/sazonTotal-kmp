@@ -10,5 +10,7 @@ data class PlatoEntity(
     val descripcion: String = "",
     val precio: Double,
     val categoria: String = "Platos", // "Platos", "Bebidas", "Postres" (tus filtros de MenuScreen)
-    val activo: Boolean = true
+    val activo: Boolean = true,
+    // Etiquetas separadas por coma, ej "Sin Gluten,Picante". Vacío = sin etiquetas.
+    val etiquetas: String = ""
 )

@@ -24,7 +24,11 @@ interface PedidoDao {
     @Query("SELECT * FROM pedidos WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: Long): PedidoEntity?
 
-    // Suma de todos los totales (0 si no hay pedidos). Es lista viva: cambia sola al vender.
-    @Query("SELECT IFNULL(SUM(total), 0.0) FROM pedidos")
+    @Query("DELETE FROM pedidos WHERE id = :id")
+    suspend fun borrarPorId(id: Long)
+
+    // Suma solo de lo ENTREGADO (0 si no hay). Lo pendiente/anulado no es venta.
+    // Es lista viva: cambia sola al vender.
+    @Query("SELECT IFNULL(SUM(total), 0.0) FROM pedidos WHERE estado = 'ENTREGADO'")
     fun observarSumaTotal(): Flow<Double>
 }

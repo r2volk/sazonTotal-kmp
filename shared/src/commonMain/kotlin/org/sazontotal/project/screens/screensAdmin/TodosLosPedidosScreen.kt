@@ -3,6 +3,7 @@ package org.sazontotal.project.screens.screensAdmin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -79,7 +82,9 @@ fun TodosLosPedidosScreen(
             pedido.meseroID.contains(textoBusqueda, ignoreCase = true)
         val coincideFiltro = filtroEstado == "Todos" ||
             (filtroEstado == "Pendientes" && pedido.estado == "PENDIENTE") ||
-            (filtroEstado == "Listos" && pedido.estado == "LISTO")
+            (filtroEstado == "Listos" && pedido.estado == "LISTO") ||
+            (filtroEstado == "Entregados" && pedido.estado == "ENTREGADO") ||
+            (filtroEstado == "Anulados" && pedido.estado == "ANULADO")
         coincideTexto && coincideFiltro
     }
     Box(
@@ -159,6 +164,7 @@ fun TodosLosPedidosScreen(
 
 
             Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ){
@@ -177,19 +183,38 @@ fun TodosLosPedidosScreen(
                     activo = filtroEstado == "Listos",
                     onClick = { filtroEstado = "Listos" }
                 )
+                FiltroButton(
+                    texto = "Entregados",
+                    activo = filtroEstado == "Entregados",
+                    onClick = { filtroEstado = "Entregados" }
+                )
+                FiltroButton(
+                    texto = "Anulados",
+                    activo = filtroEstado == "Anulados",
+                    onClick = { filtroEstado = "Anulados" }
+                )
             }
 
-            filtrados.forEach { pedido ->
-                PedidoEnAdmin(
-                    pedido = pedido,
-                    repositorio = repositorio,
-                    nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
-                    onAnular = { id ->
-                        scope.launch {
-                            repositorio?.cambiarEstadoPedido(id, "ANULADO")
+            // Lista con scroll: un card por cada pedido del filtro.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                filtrados.forEach { pedido ->
+                    PedidoEnAdmin(
+                        pedido = pedido,
+                        repositorio = repositorio,
+                        nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
+                        onAnular = { id ->
+                            scope.launch {
+                                repositorio?.cambiarEstadoPedido(id, "ANULADO")
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
 
 

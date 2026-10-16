@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.DinnerDining
 import androidx.compose.material.icons.outlined.LocalBar
@@ -143,17 +142,6 @@ fun MenuScreen(
                     }
                 }
             }
-            IconButton(
-                onClick = { },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Tune,
-                    contentDescription = "Filtros",
-                    tint = Color(0xFF8E8E93),
-                    modifier = Modifier.size(22.dp)
-                )
-            }
         }
 
         BuscadorTextField(
@@ -212,7 +200,7 @@ fun MenuScreen(
                     fila.forEach { plato ->
                         PlatoCard(
                             nombre = plato.nombre,
-                            etiqueta = plato.descripcion,
+                            etiqueta = plato.etiquetas.ifBlank { plato.descripcion },
                             precio = "S/ ${plato.precio}",
                             icono = iconoSegunCategoria(plato.categoria),
                             fondoImagen = fondoSegunCategoria(plato.categoria),
@@ -240,19 +228,19 @@ fun MenuScreen(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF4A2620))
-            )
-            Box(
-                modifier = Modifier
-                    .offset(x = (-10).dp)
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF5A4A12))
-            )
+            // Cuadritos según lo que lleva el carrito: 1, 2 o 3 como máximo.
+            // Si hay más de 3, se queda en 3.
+            val cuadritos = minOf(carrito?.totalItems() ?: 0, 3)
+            val coloresCuadrito = listOf(Color(0xFF4A2620), Color(0xFF5A4A12), Color(0xFF0B3820))
+            repeat(cuadritos) { indice ->
+                Box(
+                    modifier = Modifier
+                        .then(if (indice > 0) Modifier.offset(x = (-10).dp) else Modifier)
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(coloresCuadrito[indice])
+                )
+            }
             Column(
                 modifier = Modifier
                     .weight(1f)

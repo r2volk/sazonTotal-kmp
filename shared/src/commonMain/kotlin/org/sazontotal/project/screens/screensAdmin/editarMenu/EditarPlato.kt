@@ -58,6 +58,16 @@ fun EditarPlato(
     var descripcion by remember(plato) { mutableStateOf(plato?.descripcion ?: "") }
     var disponible by remember(plato) { mutableStateOf(plato?.activo ?: true) }
     var mostrarCategorias by remember { mutableStateOf(false) }
+    // Etiquetas elegidas (pueden ser varias). Al editar se marcan las guardadas.
+    var etiquetasElegidas by remember(plato) {
+        mutableStateOf(
+            plato?.etiquetas
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?.toSet() ?: emptySet()
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -204,27 +214,21 @@ fun EditarPlato(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FiltroButton(
-                    texto = "Sin Gluten",
-                    activo = true,
-                    onClick = {},
-                    textoColor = Color.Green,
-                    fondoTextoColor = Color(0xFF0D3B20)
-                )
-                FiltroButton(
-                    texto = "Picante",
-                    activo = false,
-                    onClick = {},
-                    textoColor = Color.Green,
-                    fondoTextoColor = Color(0xFF0D3B20)
-                )
-                FiltroButton(
-                    texto = "Lacteo",
-                    activo = false,
-                    onClick = {},
-                    textoColor = Color.Green,
-                    fondoTextoColor = Color(0xFF0D3B20)
-                )
+                listOf("Sin Gluten", "Picante", "Lácteo").forEach { opcion ->
+                    FiltroButton(
+                        texto = opcion,
+                        activo = opcion in etiquetasElegidas,
+                        onClick = {
+                            etiquetasElegidas = if (opcion in etiquetasElegidas) {
+                                etiquetasElegidas - opcion
+                            } else {
+                                etiquetasElegidas + opcion
+                            }
+                        },
+                        textoColor = Color.Green,
+                        fondoTextoColor = Color(0xFF0D3B20)
+                    )
+                }
             }
         }
 
@@ -295,7 +299,8 @@ fun EditarPlato(
                                     precio = precioNumero,
                                     descripcion = descripcion.trim(),
                                     categoria = categoria,
-                                    activo = disponible
+                                    activo = disponible,
+                                    etiquetas = etiquetasElegidas.joinToString(",")
                                 )
                             )
                         }

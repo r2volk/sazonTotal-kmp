@@ -36,6 +36,8 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.utils.textoHora
 
 @Composable
@@ -52,10 +54,21 @@ fun MeseroHistorialScreen(
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
     // 3. Nos quedamos solo con los entregados (los completados),
-    // que además pasen el buscador por mesa.
+    // que además pasen el buscador por mesa y el filtro de tiempo.
+    // "Hoy" compara día/mes/año; Semana y Mes miden hacia atrás.
+    // Los pedidos viejos sin fecha quedan fuera de todos.
+    var filtroTiempo by remember { mutableStateOf("Hoy") }
+    val ahora = remember { ahoraMillis() }
+    val DIA = 86_400_000L
     val completados = pedidos.filter { pedido ->
         pedido.estado == "ENTREGADO" &&
-            (textoBusqueda.isBlank() || pedido.mesa.contains(textoBusqueda, ignoreCase = true))
+            pedido.fecha > 0 &&
+            (textoBusqueda.isBlank() || pedido.mesa.contains(textoBusqueda, ignoreCase = true)) &&
+            when (filtroTiempo) {
+                "Semana" -> ahora - pedido.fecha < 7 * DIA
+                "Mes" -> ahora - pedido.fecha < 30 * DIA
+                else -> partesFecha(pedido.fecha) == partesFecha(ahora)
+            }
     }
 
     Column(
@@ -93,18 +106,18 @@ fun MeseroHistorialScreen(
         ) {
             FiltroButton(
                 texto = "Hoy",
-                activo = true,
-                onClick = {}
+                activo = filtroTiempo == "Hoy",
+                onClick = { filtroTiempo = "Hoy" }
             )
             FiltroButton(
                 texto = "Semana",
-                activo = false,
-                onClick = {}
+                activo = filtroTiempo == "Semana",
+                onClick = { filtroTiempo = "Semana" }
             )
             FiltroButton(
                 texto = "Mes",
-                activo = false,
-                onClick = {}
+                activo = filtroTiempo == "Mes",
+                onClick = { filtroTiempo = "Mes" }
             )
         }
 

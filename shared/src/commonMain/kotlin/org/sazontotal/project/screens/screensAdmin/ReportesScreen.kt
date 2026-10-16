@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.partesFecha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.unit.Dp
@@ -51,22 +53,107 @@ fun ReportesScreen(
     repositorio: SazonRepository? = null
 ){
 
-    // 1. Ventas totales (lista viva: se mueve sola al vender).
-    val ventasEnVivo = repositorio?.observarVentasTotales()
-    val ganancias = ventasEnVivo?.collectAsState(initial = 0.0)?.value ?: 0.0
-
-    // 2. Pedidos para contar y promediar.
+    // 1. Pedidos en lista viva.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
-    val pedidosTotales = pedidos.size
+
+    // Solo lo ENTREGADO es venta. Lo pendiente, listo o anulado no suma.
+    val vendidos = pedidos.filter { it.estado == "ENTREGADO" }
+
+    // 2. Período elegido + hora congelada (para que los grupos no bailen al redibujar).
+    var periodo by remember { mutableStateOf("week") }
+    val ahora = remember { ahoraMillis() }
+
+    // Un día en milisegundos. Las ventanas se miden hacia atrás desde ahora.
+    // Solo cuentan pedidos con fecha real (los viejos con fecha 0 quedan fuera).
+    val DIA = 86_400_000L
+    val largoVentana = when (periodo) {
+        "month" -> 28 * DIA
+        "year" -> 360 * DIA
+        else -> 7 * DIA
+    }
+    fun enVentana(fecha: Long, atras: Long): Boolean {
+        return fecha > 0 && ahora - fecha >= atras && ahora - fecha < atras + largoVentana
+    }
+    val pedidosVentana = vendidos.filter { enVentana(it.fecha, 0) }
+    val pedidosAntes = vendidos.filter { enVentana(it.fecha, largoVentana) }
+
+    // 3. Stats del período: ventas, conteo y promedio.
+    val ganancias = pedidosVentana.sumOf { it.total }
+    val pedidosTotales = pedidosVentana.size
     val promedio = if (pedidosTotales == 0) 0.0 else ganancias / pedidosTotales
 
-    // 3. Top 5 platos más vendidos (lista viva).
+    // 4. Comparación con la ventana anterior del mismo largo.
+    val ventasAntes = pedidosAntes.sumOf { it.total }
+    val nombreVentana = if (periodo == "month") "mes" else if (periodo == "year") "año" else "semana"
+    val textoComparacion = if (ventasAntes == 0.0) {
+        "Sin datos previos"
+    } else {
+        val cambio = ((ganancias - ventasAntes) / ventasAntes * 100).toInt()
+        val flecha = if (cambio >= 0) "↑" else "↓"
+        val numero = if (cambio < 0) -cambio else cambio
+        "$flecha $numero% vs $nombreVentana pasada"
+    }
+    val colorComparacion = if (ventasAntes != 0.0 && ganancias < ventasAntes) {
+        Color.Red
+    } else {
+        Color(0xFF30D158)
+    }
+
+    // 5. Barras del gráfico: etiquetas + sumas por grupo, de más viejo a más nuevo.
+    val letrasDia = listOf("D", "L", "M", "M", "J", "V", "S")
+    val inicialesMes = listOf("E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
+    val mesActual = partesFecha(ahora).second
+    val (etiquetas, sumas) = when (periodo) {
+        "month" -> {
+            // Últimas 4 semanas: S1 la más vieja.
+            val grupos = (3 downTo 0).map { atras ->
+                val desde = ahora - (atras + 1) * 7 * DIA
+                val hasta = ahora - atras * 7 * DIA
+                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
+            }
+            listOf("S1", "S2", "S3", "S4") to grupos
+        }
+        "year" -> {
+            // Últimos 12 grupos de 30 días, con la inicial de cada mes.
+            val nombres = (11 downTo 0).map { atras ->
+                inicialesMes[(mesActual - 1 - atras + 120) % 12]
+            }
+            val grupos = (11 downTo 0).map { atras ->
+                val desde = ahora - (atras + 1) * 30 * DIA
+                val hasta = ahora - atras * 30 * DIA
+                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
+            }
+            nombres to grupos
+        }
+        else -> {
+            // Últimos 7 días: la letra sale de matemática simple
+            // (el 1-1-1970 fue jueves, y cada día suma 1).
+            val nombres = (6 downTo 0).map { atras ->
+                val indice = (((ahora - atras * DIA) / DIA) + 4) % 7
+                letrasDia[indice.toInt()]
+            }
+            val grupos = (6 downTo 0).map { atras ->
+                val desde = ahora - (atras + 1) * DIA
+                val hasta = ahora - atras * DIA
+                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
+            }
+            nombres to grupos
+        }
+    }
+
+    // 6. Alturas proporcionales (la mayor en verde).
+    val maximo = sumas.maxOrNull() ?: 0.0
+    val alturas = if (maximo == 0.0) {
+        sumas.map { 0.15f }
+    } else {
+        sumas.map { (it / maximo).toFloat().coerceIn(0.15f, 1f) }
+    }
+    val destacado = if (maximo == 0.0) -1 else sumas.indexOf(maximo)
+
+    // 7. Top 5 platos más vendidos de siempre (lista viva).
     val topEnVivo = repositorio?.observarTopPlatos()
     val top = topEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
-
-    var porcentaje by remember { mutableStateOf( 12) }
-    var periodo by remember { mutableStateOf( "year") }
 
     Box(
         modifier = Modifier
@@ -114,18 +201,18 @@ fun ReportesScreen(
             ) {
                 FiltroButton(
                     texto = "Semana",
-                    activo = true,
-                    onClick = {}
+                    activo = periodo == "week",
+                    onClick = { periodo = "week" }
                 )
                 FiltroButton(
                     texto = "Mes",
-                    activo = false,
-                    onClick = {}
+                    activo = periodo == "month",
+                    onClick = { periodo = "month" }
                 )
                 FiltroButton(
                     texto = "Año",
-                    activo = false,
-                    onClick = {}
+                    activo = periodo == "year",
+                    onClick = { periodo = "year" }
                 )
             }
 
@@ -148,13 +235,13 @@ fun ReportesScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Ventas totales",
+                        text = if (periodo == "month") "Ventas del mes" else if (periodo == "year") "Ventas del año" else "Ventas de la semana",
                         color = Color(0xFF8E8E93),
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "↑ "+ porcentaje +"% vs sem. pasada",
-                        color = Color.Red,
+                        text = textoComparacion,
+                        color = colorComparacion,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -204,7 +291,10 @@ fun ReportesScreen(
             )
 
             graficoStatReporte(
-                periodo = periodo
+                etiquetas = etiquetas,
+                valores = alturas,
+                indiceDestacado = destacado,
+                tipo = periodo
             )
 
             Text(
@@ -269,35 +359,16 @@ private fun platosMasVendidos(
 }
 
 @Composable
-private fun graficoStatReporte(periodo: String = "week") {
-
-    val tipo = if (periodo == "week" || periodo == "month" || periodo == "year") periodo else "week"
-
-    val labels: List<String>
-    val valores: List<Float>
-    val indiceDestacado: Int
+private fun graficoStatReporte(
+    etiquetas: List<String>,
+    valores: List<Float>,
+    indiceDestacado: Int,
+    tipo: String = "week"
+) {
     val anchoBarra = when (tipo) {
         "month" -> 40.dp
         "year" -> 20.dp
         else -> 35.dp // week
-    }
-
-    when (tipo) {
-        "month" -> {
-            labels = listOf("S1", "S2", "S3", "S4")
-            valores = listOf(0.55f, 0.8f, 0.65f, 1f)
-            indiceDestacado = 3
-        }
-        "year" -> {
-            labels = listOf("E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
-            valores = listOf(0.4f, 0.6f, 0.5f, 0.7f, 0.55f, 0.65f, 0.8f, 1f, 0.6f, 0.5f, 0.45f, 0.7f)
-            indiceDestacado = 7
-        }
-        else -> {
-            labels = listOf("L", "M", "M", "J", "V", "S", "D")
-            valores = listOf(0.35f, 0.55f, 0.45f, 0.65f, 1f, 0.4f, 0.3f)
-            indiceDestacado = 4
-        }
     }
 
     val colorBarra = Color(0xFF3A3A3C)
@@ -337,7 +408,7 @@ private fun graficoStatReporte(periodo: String = "week") {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            labels.forEachIndexed { index, label ->
+            etiquetas.forEachIndexed { index, label ->
                 Text(
                     text = label,
                     color = if (index == indiceDestacado) colorBarraDestacada else Color.Gray,

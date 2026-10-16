@@ -7,7 +7,7 @@ import androidx.room.RoomDatabaseConstructor
 
 @Database(
     entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class, PromoEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false)
 @ConstructedBy(SazonDatabaseConstructor::class)
 abstract class SazonDatabase : RoomDatabase() {
