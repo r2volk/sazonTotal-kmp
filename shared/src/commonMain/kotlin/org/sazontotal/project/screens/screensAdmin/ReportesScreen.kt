@@ -39,6 +39,8 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.decimales
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.partesFecha
 
 @Composable
@@ -217,7 +219,7 @@ fun ReportesScreen(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = "S/ "+ ganancias.toString(),
+                        text = moneda(ganancias),
                         color = Color.Green,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold
@@ -261,7 +263,7 @@ fun ReportesScreen(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "Prom: S/ "+ promedio,
+                        text = "Prom: ${decimales(promedio)}",
                         color = Colores.TextoTenue,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold

@@ -39,6 +39,7 @@ import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.SwitchButton
 import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.moneda
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.collectAsState
@@ -289,7 +290,7 @@ private fun menuCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "S/ $precio •",
+                    text = "${moneda(precio)} •",
                     color = if (isActive) {
                         Color(0xFF5F5F5F)
                     } else {

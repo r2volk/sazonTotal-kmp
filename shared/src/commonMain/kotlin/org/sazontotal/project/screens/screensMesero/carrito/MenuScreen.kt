@@ -45,6 +45,7 @@ import org.sazontotal.project.components.visualDeCategoria
 import org.sazontotal.project.data.CarritoCompra
 import androidx.compose.runtime.collectAsState
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.theme.Colores
 
 @Composable
@@ -196,7 +197,7 @@ fun MenuScreen(
                         PlatoCard(
                             nombre = plato.nombre,
                             etiqueta = plato.etiquetas.ifBlank { plato.descripcion },
-                            precio = "S/ ${plato.precio}",
+                            precio = moneda(plato.precio),
                             icono = visual.icono,
                             fondoImagen = visual.fondo,
                             tintaIcono = visual.tinta,
@@ -247,7 +248,7 @@ fun MenuScreen(
                     fontSize = 13.sp
                 )
                 Text(
-                    text = "S/ ${carrito?.let { it.subtotal(platos) } ?: 0.0}",
+                    text = moneda(carrito?.let { it.subtotal(platos) } ?: 0.0),
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold

@@ -46,6 +46,7 @@ import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.moneda
 
 @Composable
 fun CarritoScreen(
@@ -132,7 +133,7 @@ fun CarritoScreen(
                 val visual = visualDeCategoria(plato.categoria)
                 CarritoItemCard(
                     nombre = plato.nombre,
-                    precioUnitario = "S/ ${plato.precio} c/u",
+                    precioUnitario = "${moneda(plato.precio)} c/u",
                     icono = visual.icono,
                     fondoImagen = visual.fondo,
                     tintaIcono = visual.tinta,
@@ -219,7 +220,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ $subtotal",
+                    text = moneda(subtotal),
                     color = Color.White,
                     fontSize = 15.sp
                 )
@@ -233,7 +234,7 @@ fun CarritoScreen(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "−S/ $descuento",
+                        text = "−${moneda(descuento)}",
                         color = Colores.VerdePrimario,
                         fontSize = 15.sp
                     )
@@ -247,7 +248,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ $igv",
+                    text = moneda(igv),
                     color = Color.White,
                     fontSize = 15.sp
                 )
@@ -264,7 +265,7 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ $total",
+                    text = moneda(total),
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold

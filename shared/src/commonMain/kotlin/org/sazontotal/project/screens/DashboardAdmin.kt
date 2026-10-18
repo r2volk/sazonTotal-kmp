@@ -30,6 +30,7 @@ import org.sazontotal.project.components.AccesoRapidoCard
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.icons.MenuIcon
@@ -152,7 +153,7 @@ fun DashboardAdmin(
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     StatCardAdmin(
-                        textoSuperior = "S/ $ventas",
+                        textoSuperior = moneda(ventas),
                         textoInferior = "Ventas del día",
                         colorSuperior = Color(0xFF00E676),
                         modifier = Modifier.weight(1f)

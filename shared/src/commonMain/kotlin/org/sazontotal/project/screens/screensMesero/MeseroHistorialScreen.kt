@@ -38,6 +38,7 @@ import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.utils.textoHora
 
@@ -148,7 +149,7 @@ private fun HistorialDePedido(
         mesa = "Mesa ${pedido.mesa}",
         hora = textoHora(pedido.fecha),
         detalle = detalle,
-        precio = "S/ ${pedido.total}"
+        precio = moneda(pedido.total)
     )
 }
 

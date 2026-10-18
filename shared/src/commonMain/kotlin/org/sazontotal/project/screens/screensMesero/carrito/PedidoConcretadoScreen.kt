@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.theme.Colores
 
 @Composable
@@ -209,7 +210,7 @@ fun PedidoConcretadoScreen(
             items.forEach { item ->
                 ResumenRow(
                     plato = "${item.nombrePlato} x${item.cantidad}",
-                    precio = "S/ ${item.precioUnit * item.cantidad}"
+                    precio = moneda(item.precioUnit * item.cantidad)
                 )
             }
             Box(
@@ -230,7 +231,7 @@ fun PedidoConcretadoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "S/ ${pedido?.total ?: 0.0}",
+                    text = moneda(pedido?.total ?: 0.0),
                     color = Color.White,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold

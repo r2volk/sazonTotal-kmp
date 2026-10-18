@@ -40,6 +40,7 @@ import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.textoHora
 import org.sazontotal.project.enums.EstadoTodosLosPedidos
 
@@ -232,7 +233,7 @@ private fun PedidoEnAdmin(
         titulo = "Mesa ${pedido.mesa} • #${pedido.id}",
         detalle = "Mesero: $nombreMesero • ${items.size} items",
         hora = textoHora(pedido.fecha),
-        total = "S/ ${pedido.total}",
+        total = moneda(pedido.total),
         // solo se puede anular lo que aun no se entrego ni se anulo.
         sePuedeAnular = pedido.estado == "PENDIENTE" || pedido.estado == "LISTO",
         onAnular = { onAnular(pedido.id) }
