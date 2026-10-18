@@ -57,6 +57,13 @@ fun PedidoConcretadoScreen(
 
     val itemsEnVivo = repositorio?.observarItems(pedidoId)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
+
+    // Desglose del total. El ticket tiene que explicar de donde sale el total:
+    // antes saltaba de la suma de los renglones directo al total (que ya incluía
+    // IGV), y el comprobante parecia tener error de maths.
+    // Sin descuentos, IGV = total - subtotal, asi que siempre cuadra.
+    val subtotal = items.sumOf { it.precioUnit * it.cantidad }
+    val igv = subtotal * 0.18
     // Estructura: la parte de arriba scrollea, los botones quedan FIJOS abajo.
     // Asi nunca se pueden salir de la pantalla, por mas platos que tenga el ticket.
     Column(
@@ -211,6 +218,46 @@ fun PedidoConcretadoScreen(
                 ResumenRow(
                     plato = "${item.nombrePlato} x${item.cantidad}",
                     precio = moneda(item.precioUnit * item.cantidad)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Colores.GrisMedio)
+            )
+            // Subtotal e IGV a la vista: la cuenta del ticket se puede
+            // verificar a simple vista (subtotal + IGV = total).
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Subtotal",
+                    color = Colores.TextoTenue,
+                    fontSize = 15.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = moneda(subtotal),
+                    color = Colores.TextoTenue,
+                    fontSize = 15.sp
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "IGV (18%)",
+                    color = Colores.TextoTenue,
+                    fontSize = 15.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = moneda(igv),
+                    color = Colores.TextoTenue,
+                    fontSize = 15.sp
                 )
             }
             Box(

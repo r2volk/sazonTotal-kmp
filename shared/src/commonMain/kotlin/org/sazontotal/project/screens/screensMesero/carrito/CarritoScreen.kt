@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -57,21 +56,15 @@ fun CarritoScreen(
     carrito: CarritoCompra? = null,
     mesa: String = "4"
 ) {
-    var codigoPromo by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     val platosEnVivo = repositorio?.observarPlatos()
     val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // 0 = sin promo
-    var descuentoPorc by remember { mutableStateOf(0) }
-    var promoAplicada by remember { mutableStateOf("") }
-    var promoError by remember { mutableStateOf(false) }
-
+    // Total = subtotal + IGV 18%. Sin promos ni descuentos.
     val subtotal = carrito?.subtotal(platos) ?: 0.0
-    val descuento = subtotal * descuentoPorc / 100.0
-    val igv = (subtotal - descuento) * 0.18
-    val total = subtotal - descuento + igv
+    val igv = subtotal * 0.18
+    val total = subtotal + igv
 
     // sin nada en el carrito el boton no hace nada
     val hayAlgo = (carrito?.totalItems() ?: 0) > 0
@@ -154,62 +147,6 @@ fun CarritoScreen(
 
         }
 
-        // codigo de promocion
-        CampoTextoAdmin(
-            valor = codigoPromo,
-            onValorChange = { codigoPromo = it },
-            placeholder = "Código de promoción",
-            leading = {
-                Icon(
-                    imageVector = Icons.Outlined.ConfirmationNumber,
-                    contentDescription = null,
-                    tint = Colores.TextoTenue,
-                    modifier = Modifier.size(20.dp)
-                )
-            },
-            trailing = {
-                Text(
-                    text = "Aplicar",
-                    color = Colores.VerdePrimario,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .clickable {
-                            scope.launch {
-                                // se busca el codigo en la base (vale en mayusculas o minusculas).
-                                val promo = repositorio?.buscarPromo(codigoPromo)
-                                if (promo == null) {
-                                    promoError = true
-                                    descuentoPorc = 0
-                                    promoAplicada = ""
-                                } else {
-                                    promoError = false
-                                    descuentoPorc = promo.porcentaje
-                                    promoAplicada = promo.codigo
-                                }
-                            }
-                        }
-                )
-            }
-        )
-        // mensaje segun lo que paso con el codigo.
-        if (promoError) {
-            Text(
-                text = "Código inválido",
-                color = Colores.Rojo,
-                fontSize = 13.sp
-            )
-        }
-        if (descuentoPorc > 0) {
-            Text(
-                text = "Promo $promoAplicada: −$descuentoPorc%",
-                color = Colores.VerdePrimario,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
         // totales
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -224,21 +161,6 @@ fun CarritoScreen(
                     color = Color.White,
                     fontSize = 15.sp
                 )
-            }
-            if (descuento > 0) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Descuento ($descuentoPorc%)",
-                        color = Colores.VerdePrimario,
-                        fontSize = 15.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "−${moneda(descuento)}",
-                        color = Colores.VerdePrimario,
-                        fontSize = 15.sp
-                    )
-                }
             }
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -316,11 +238,8 @@ fun CarritoScreen(
                                 )
                             }
                             val numeroPedido = repositorio?.crearPedidoConItems(cabecera, renglones) ?: 0
-                            // el pedido ya salio: se vacia el carrito y la promo.
+                            // el pedido ya salio: se vacia el carrito.
                             carrito?.limpiar()
-                            descuentoPorc = 0
-                            promoAplicada = ""
-                            codigoPromo = ""
                             confirmarCarrito(numeroPedido)
                         } catch (e: Exception) {
                             // si algo falla, el boton se rehabilita y se avisa:

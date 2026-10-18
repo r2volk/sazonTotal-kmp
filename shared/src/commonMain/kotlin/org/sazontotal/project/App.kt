@@ -22,6 +22,7 @@ import org.sazontotal.project.screens.screensMesero.AsistenteScreen
 import org.sazontotal.project.screens.screensMesero.carrito.CarritoScreen
 import org.sazontotal.project.screens.screensMesero.carrito.MenuScreen
 import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScreen
+import org.sazontotal.project.utils.BackHandlerApp
 
 @Composable
 @Preview
@@ -48,6 +49,25 @@ fun App() {
 
         LaunchedEffect(db) {
             repositorio?.seedIfEmpty()
+        }
+
+        // Boton atras del sistema (Android) / gesto de retroceso.
+        // Sin esto, atras en una subpantalla cerraba toda la app.
+        // Cada pantalla sabe a cual se vuelve atras: al padre, no al login.
+        BackHandlerApp(enabled = pantallaActual != "login") {
+            val padre = when (pantallaActual) {
+                "gestionPersonal", "todosLosPedidos", "reportesAdmin", "editarMenu" -> "dashboardAdmin"
+                "menuMesero" -> "dashboardMesero"
+                "carritoMesero" -> "menuMesero"
+                "pedidoConcretado" -> "dashboardMesero"
+                else -> "login"
+            }
+            // Al volver atras desde una subpantalla, el carrito sigue abierto
+            // (es el mismo pedido en curso), salvo al salir del ticket.
+            if (pantallaActual == "pedidoConcretado") {
+                carrito.limpiar()
+            }
+            pantallaActual = padre
         }
 
         when (pantallaActual){

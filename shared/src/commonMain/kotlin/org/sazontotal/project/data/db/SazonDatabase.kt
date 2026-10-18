@@ -6,8 +6,8 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 
 @Database(
-    entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class, PromoEntity::class],
-    version = 6,
+    entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class],
+    version = 7,
     exportSchema = false)
 @ConstructedBy(SazonDatabaseConstructor::class)
 abstract class SazonDatabase : RoomDatabase() {
@@ -15,7 +15,6 @@ abstract class SazonDatabase : RoomDatabase() {
     abstract fun platoDao(): PlatoDao
     abstract fun pedidoDao(): PedidoDao
     abstract fun pedidoItemDao(): PedidoItemDao
-    abstract fun promoDao(): PromoDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

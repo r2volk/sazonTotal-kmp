@@ -5,7 +5,6 @@ import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
-import org.sazontotal.project.data.db.PromoEntity
 import org.sazontotal.project.data.db.SazonDatabase
 import org.sazontotal.project.data.db.VentaPlato
 import org.sazontotal.project.utils.ahoraMillis
@@ -117,12 +116,6 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoItemDao().observarTopPlatos()
     }
 
-    // busca un codigo de promo (sin importar mayusculas/minusculas).
-    // devuelve nulo si no existe o esta apagado.
-    suspend fun buscarPromo(codigo: String): PromoEntity? {
-        return db.promoDao().buscarPorCodigo(codigo.trim().uppercase())
-    }
-
     suspend fun seedIfEmpty() {
         val dao = db.empleadoDao()
         if (dao.buscarPorId("ADM-001") == null) {
@@ -142,14 +135,6 @@ class SazonRepository(private val db: SazonDatabase) {
             platoDao.guardar(PlatoEntity(id = 2, nombre = "Lomo saltado", descripcion = "Picante leve", precio = 18.0, categoria = "Platos", etiquetas = "Picante"))
             platoDao.guardar(PlatoEntity(id = 3, nombre = "Pisco sour", descripcion = "Con alcohol", precio = 20.0, categoria = "Bebidas"))
             platoDao.guardar(PlatoEntity(id = 4, nombre = "Suspiro limeño", descripcion = "Contiene lácteos", precio = 13.0, categoria = "Postres", etiquetas = "Lácteo"))
-        }
-
-        val promoDao = db.promoDao()
-        if (promoDao.buscarPorCodigo("SAZON10") == null) {
-            promoDao.guardar(PromoEntity("SAZON10", 10))
-        }
-        if (promoDao.buscarPorCodigo("MESERO15") == null) {
-            promoDao.guardar(PromoEntity("MESERO15", 15))
         }
 
         sembrarPedidosDeEjemplo()
@@ -180,7 +165,6 @@ class SazonRepository(private val db: SazonDatabase) {
             estado = "ENTREGADO",
             mesa = "2",
             fecha = ahora - 10 * DIA,
-            descuentoPorc = 15,
             lineas = listOf(
                 linea(ceviche, 2, ""),
                 linea(suspiro, 2, "")
@@ -190,7 +174,6 @@ class SazonRepository(private val db: SazonDatabase) {
             estado = "ENTREGADO",
             mesa = "3",
             fecha = ahora - 40 * MIN,
-            descuentoPorc = 0,
             lineas = listOf(
                 linea(ceviche, 2, "sin cebolla"),
                 linea(lomo, 1, ""),
@@ -201,7 +184,6 @@ class SazonRepository(private val db: SazonDatabase) {
             estado = "ENTREGADO",
             mesa = "7",
             fecha = ahora - 25 * MIN,
-            descuentoPorc = 10,
             lineas = listOf(
                 linea(lomo, 2, "pico de gallo aparte"),
                 linea(suspiro, 2, "")
@@ -212,7 +194,6 @@ class SazonRepository(private val db: SazonDatabase) {
             estado = "LISTO",
             mesa = "5",
             fecha = ahora - 12 * MIN,
-            descuentoPorc = 0,
             lineas = listOf(
                 linea(ceviche, 1, ""),
                 linea(pisco, 1, "bien frio")
@@ -223,7 +204,6 @@ class SazonRepository(private val db: SazonDatabase) {
             estado = "PENDIENTE",
             mesa = "1",
             fecha = ahora - 3 * MIN,
-            descuentoPorc = 0,
             lineas = listOf(
                 linea(lomo, 3, "uno sin aji"),
                 linea(suspiro, 1, "")
@@ -243,18 +223,16 @@ class SazonRepository(private val db: SazonDatabase) {
         )
 
     // crea un pedido de ejemplo con su total ya calculado. el total usa la
-    // misma cuenta que el carrito (subtotal - descuento, mas IGV de 18%), asi
-    // que el ejemplo no descuadra con lo que veria el mesero al cobrar.
+    // misma cuenta que el carrito (subtotal mas IGV de 18%), asi que el
+    // ejemplo nunca descuadra con lo que veria el mesero al cobrar.
     private suspend fun crearPedidoDeEjemplo(
         estado: String,
         mesa: String,
         fecha: Long,
-        descuentoPorc: Int,
         lineas: List<PedidoItemEntity>
     ) {
         val subtotal = lineas.sumOf { it.precioUnit * it.cantidad }
-        val base = subtotal - subtotal * descuentoPorc / 100.0
-        val total = base + base * 0.18
+        val total = subtotal + subtotal * 0.18
 
         val pedidoId = db.pedidoDao().insertar(
             PedidoEntity(

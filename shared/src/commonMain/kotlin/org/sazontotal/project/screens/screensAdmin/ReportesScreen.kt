@@ -62,16 +62,29 @@ fun ReportesScreen(
     // un dia en milisegundos. las ventanas se miden hacia atras desde ahora.
     // solo cuentan pedidos con fecha real (los viejos con fecha 0 quedan fuera).
     val DIA = 86_400_000L
+    val anioActual = partesFecha(ahora).third
+
+    // "Semana" y "Mes" son ventanas rodantes hacia atras.
+    // "Año" NO lo es: son los 12 meses calendario del anio actual (enero a
+    // diciembre), que es como lo lee cualquiera un reporte anual.
     val largoVentana = when (periodo) {
         "month" -> 28 * DIA
-        "year" -> 360 * DIA
         else -> 7 * DIA
     }
     fun enVentana(fecha: Long, atras: Long): Boolean {
         return fecha > 0 && ahora - fecha >= atras && ahora - fecha < atras + largoVentana
     }
-    val pedidosVentana = vendidos.filter { enVentana(it.fecha, 0) }
-    val pedidosAntes = vendidos.filter { enVentana(it.fecha, largoVentana) }
+    fun enAnio(fecha: Long, anio: Int): Boolean {
+        return fecha > 0 && partesFecha(fecha).third == anio
+    }
+    val pedidosVentana = vendidos.filter { pedido ->
+        if (periodo == "year") enAnio(pedido.fecha, anioActual) else enVentana(pedido.fecha, 0)
+    }
+    // La comparacion usa el mismo criterio: el ano anterior en modo "Año",
+    // y la ventana anterior del mismo largo en los otros modos.
+    val pedidosAntes = vendidos.filter { pedido ->
+        if (periodo == "year") enAnio(pedido.fecha, anioActual - 1) else enVentana(pedido.fecha, largoVentana)
+    }
 
     val ganancias = pedidosVentana.sumOf { it.total }
     val pedidosTotales = pedidosVentana.size
@@ -96,7 +109,6 @@ fun ReportesScreen(
     // el 1-1-1970 fue jueves, asi que cada dia suma 1 desde ahi
     val letrasDia = listOf("D", "L", "M", "M", "J", "V", "S")
     val inicialesMes = listOf("E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
-    val mesActual = partesFecha(ahora).second
     val (etiquetas, sumas) = when (periodo) {
         "month" -> {
             // ultimas 4 semanas: S1 la mas vieja.
@@ -108,16 +120,18 @@ fun ReportesScreen(
             listOf("S1", "S2", "S3", "S4") to grupos
         }
         "year" -> {
-            // ultimos 12 grupos de 30 dias, con la inicial de cada mes.
-            val nombres = (11 downTo 0).map { atras ->
-                inicialesMes[(mesActual - 1 - atras + 120) % 12]
+            // Los 12 meses REALES del anio actual, de enero a diciembre.
+            // Antes eran 12 tramos de 30 dias rotulados con iniciales de mes:
+            // como 30 dias no calzan con los meses, la etiqueta no correspondia
+            // al dato y la serie arrancaba en "N" en vez de "E".
+            val grupos = (1..12).map { mes ->
+                vendidos.filter { pedido ->
+                    pedido.fecha > 0 && partesFecha(pedido.fecha).let { (_, m, a) ->
+                        m == mes && a == anioActual
+                    }
+                }.sumOf { it.total }
             }
-            val grupos = (11 downTo 0).map { atras ->
-                val desde = ahora - (atras + 1) * 30 * DIA
-                val hasta = ahora - atras * 30 * DIA
-                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
-            }
-            nombres to grupos
+            inicialesMes to grupos
         }
         else -> {
             // ultimos 7 dias, de la letra mas nueva a la mas vieja
@@ -134,13 +148,14 @@ fun ReportesScreen(
         }
     }
 
+    // Las barras son proporcionales al real: un dia SIN ventas tiene barra en 0,
+// no un mini-boton de 15% (antes todo dia con 0 ventas parecia tener actividad).
     val maximo = sumas.maxOrNull() ?: 0.0
-    val alturas = if (maximo == 0.0) {
-        sumas.map { 0.15f }
-    } else {
-        sumas.map { (it / maximo).toFloat().coerceIn(0.15f, 1f) }
+    val hayVentas = maximo > 0.0
+    val alturas = sumas.map {
+        if (hayVentas) (it / maximo).toFloat().coerceIn(0f, 1f) else 0f
     }
-    val destacado = if (maximo == 0.0) -1 else sumas.indexOf(maximo)
+    val destacado = if (hayVentas) sumas.indexOf(maximo) else -1
 
     val topEnVivo = repositorio?.observarTopPlatos()
     val top = topEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
@@ -207,10 +222,12 @@ fun ReportesScreen(
             }
 
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Column(
                     modifier = Modifier
+                        .weight(1f)
                         .heightIn(min = 60.dp)
                         .background(color = Colores.Superficie,
                             shape = RoundedCornerShape(12.dp))
@@ -239,6 +256,7 @@ fun ReportesScreen(
 
                 Column(
                     modifier = Modifier
+                        .weight(1f)
                         .heightIn(min = 60.dp)
                         .background(
                             color = Colores.Superficie,
@@ -284,6 +302,7 @@ fun ReportesScreen(
                 etiquetas = etiquetas,
                 valores = alturas,
                 indiceDestacado = destacado,
+                hayVentas = hayVentas,
                 tipo = periodo
             )
 
@@ -350,6 +369,7 @@ private fun graficoStatReporte(
     etiquetas: List<String>,
     valores: List<Float>,
     indiceDestacado: Int,
+    hayVentas: Boolean,
     tipo: String = "week"
 ) {
     val anchoBarra = when (tipo) {
@@ -360,6 +380,27 @@ private fun graficoStatReporte(
 
     val colorBarra = Colores.GrisDeshabilitado
     val colorBarraDestacada = Color(0xFF34C759)
+
+    // Sin ventas no se dibuja una grafica de barras vacia (que antes salia
+    // con todas las barras al 15% y parecia actividad). Se dice que no hay.
+    if (!hayVentas) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .background(color = Colores.Superficie, shape = RoundedCornerShape(12.dp))
+                .padding(15.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Sin ventas en este período",
+                color = Colores.TextoTenue,
+                fontSize = 15.sp
+            )
+        }
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -380,7 +421,7 @@ private fun graficoStatReporte(
                 Box(
                     modifier = Modifier
                         .width(anchoBarra)
-                        .fillMaxHeight(valor.coerceIn(0.15f, 1f))
+                        .fillMaxHeight(valor.coerceIn(0f, 1f))
                         .background(
                             color = if (index == indiceDestacado) colorBarraDestacada else colorBarra,
                             shape = RoundedCornerShape(10.dp)

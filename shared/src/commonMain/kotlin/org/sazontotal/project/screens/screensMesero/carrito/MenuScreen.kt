@@ -2,6 +2,7 @@ package org.sazontotal.project.screens.screensMesero.carrito
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -145,7 +146,10 @@ fun MenuScreen(
             texto = "Buscar platos o bebidas"
         )
 
+        // 4 filtros ≈ 340dp, mas que los ~320dp disponibles en un movil de 360dp:
+        // con scroll horizontal "Postres" ya no se corta.
         Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

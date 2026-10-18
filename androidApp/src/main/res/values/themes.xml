@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Tema oscuro a proposito: la app es negra de pies a cabeza.
+      Con Theme.Material.Light (el que estaba antes) pasaba esto:
+        1. Android pintaba el fondo de la ventana en blanco durante los
+           primeros frames -> flash blanco al abrir la app.
+        2. El tema Light le dice al sistema "fondo claro", asi que dibuja
+           los iconos de la barra de estado en NEGRO -> invisibles sobre
+           nuestra pantalla negra.
+
+      windowBackground en negro: cierra la ventana en el color correcto
+      desde el primer frame, sin parpadeo.
+      statusBarColor / navigationBarColor transparentes: con enableEdgeToEdge()
+      el contenido dibuja debajo de las barras y el sistema pone iconos claros.
+    -->
+    <style name="Theme.SazonTotal" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

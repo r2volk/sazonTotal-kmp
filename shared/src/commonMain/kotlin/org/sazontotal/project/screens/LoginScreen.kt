@@ -48,7 +48,7 @@ fun LoginScreen(
     mensajeError: String? = null
 ) {
 
-    var empleadoId by remember { mutableStateOf("ADM-001") }
+    var empleadoId by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
 
     // si llega un error, se limpia el PIN para reintentar desde cero.
@@ -86,15 +86,15 @@ fun LoginScreen(
         ) {
 
             Text(
-                text = "Login de mesero",
-                fontSize = 24.sp,
+                text = "SazonTotal",
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Ingresa tu ID y PIN",
+                text = "Inicia sesión para entrar",
                 fontSize = 14.sp,
                 color = Colores.TextoTenue,
                 textAlign = TextAlign.Center
