@@ -221,9 +221,11 @@ private fun PedidoEnAdmin(
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // LISTO sigue en curso hasta que alguien lo entregue (eso viene despues)
+    // LISTO ya no es "preparando": la cocina lo termino y espera que el
+    // mesero lo sirva. el PENDIENTE si sigue siendo "preparando".
     val insignia = when (pedido.estado) {
         "ENTREGADO" -> EstadoTodosLosPedidos.ENTREGADO
+        "LISTO" -> EstadoTodosLosPedidos.LISTO
         "ANULADO" -> EstadoTodosLosPedidos.ANULADO
         else -> EstadoTodosLosPedidos.PREPARANDO
     }
@@ -255,6 +257,12 @@ private fun CardPedido(
             "Preparando",
             Color(0xFF3A2600),
             Color(0xFFFFA500)
+        )
+
+        EstadoTodosLosPedidos.LISTO -> Triple(
+            "Listo",
+            Color(0xFF0B2E3F),
+            Color(0xFF64A8F5)
         )
 
         EstadoTodosLosPedidos.ENTREGADO -> Triple(

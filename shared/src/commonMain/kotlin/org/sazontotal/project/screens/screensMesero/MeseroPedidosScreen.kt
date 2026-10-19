@@ -74,12 +74,21 @@ fun MeseroPedidosScreen(
         ?.joinToString("") ?: "RS"
 
     var filtroEstado by remember { mutableStateOf("Todos") }
-    val pendientes = pedidos.count { it.estado == "PENDIENTE" }
-    val listos = pedidos.count { it.estado == "LISTO" }
-    val entregados = pedidos.count { it.estado == "ENTREGADO" }
+
+    // "Mis pedidos": solo los tomados por este mesero. si no hay sesion
+    // (preview) se muestran todos, para no dejar la pantalla vacia.
+    val idMesero = empleado?.id
+    val misPedidos = if (idMesero == null) pedidos else pedidos.filter { it.meseroID == idMesero }
+
+    // lo ENTREGADO sale de esta lista: ya se sirvio y vive en el historial.
+    val enCurso = misPedidos.filter { it.estado != "ENTREGADO" }
+
+    val pendientes = enCurso.count { it.estado == "PENDIENTE" }
+    val listos = enCurso.count { it.estado == "LISTO" }
+    val entregados = misPedidos.count { it.estado == "ENTREGADO" }
     val scope = rememberCoroutineScope()
 
-    val filtrados = pedidos.filter { pedido ->
+    val filtrados = enCurso.filter { pedido ->
         filtroEstado == "Todos" ||
             (filtroEstado == "Pendientes" && pedido.estado == "PENDIENTE") ||
             (filtroEstado == "Listos" && pedido.estado == "LISTO")
@@ -276,6 +285,28 @@ fun MeseroPedidosScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (filtrados.isEmpty()) {
+                // sin esto, entregar el ultimo pedido dejaba una pantalla
+                // en blanco y parecia que la app se habia caido.
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Sin pedidos por aquí",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Tus pedidos servidos aparecen en el Historial",
+                        color = Colores.TextoTenue,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
             filtrados.forEach { pedido ->
                 PedidoEnCocina(
                     pedido = pedido,

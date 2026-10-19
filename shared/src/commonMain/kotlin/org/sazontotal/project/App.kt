@@ -60,6 +60,12 @@ fun App() {
                 "menuMesero" -> "dashboardMesero"
                 "carritoMesero" -> "menuMesero"
                 "pedidoConcretado" -> "dashboardMesero"
+                "asistente" -> "dashboardMesero"
+                "cambioPin" -> when {
+                    empleadoLogueado?.id?.startsWith("MSR-") == true -> "dashboardMesero"
+                    empleadoLogueado?.id?.startsWith("CCN-") == true -> "dashboardCocina"
+                    else -> "dashboardAdmin"
+                }
                 else -> "login"
             }
             // Al volver atras desde una subpantalla, el carrito sigue abierto
