@@ -215,7 +215,10 @@ fun GestionPersonalScreen(
                 .size(52.dp)
                 .clip(CircleShape)
                 .background(Colores.VerdeBoton)
-                .clickable { mostrarFormulario = true },
+                .clickable {
+                    aviso = null
+                    mostrarFormulario = true
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -233,8 +236,19 @@ fun GestionPersonalScreen(
                 CrearEmpleado(
                     onGuardar = { nuevo ->
                         scope.launch {
-                            repositorio?.guardarEmpleado(nuevo)
-                            mostrarFormulario = false
+                            try {
+                                val repo = repositorio
+                                if (repo == null) {
+                                    aviso = "No se pudo guardar el empleado en este momento"
+                                } else {
+                                    repo.guardarEmpleado(nuevo)
+                                    aviso = null
+                                }
+                            } catch (e: Exception) {
+                                aviso = e.message ?: "No se pudo guardar el empleado"
+                            } finally {
+                                mostrarFormulario = false
+                            }
                         }
                     }
                 )

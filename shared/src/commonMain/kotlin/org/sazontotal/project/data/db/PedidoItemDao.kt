@@ -15,9 +15,22 @@ interface PedidoItemDao {
     @Query("SELECT * FROM pedido_items WHERE pedidoId = :pedidoId")
     fun observarPorPedido(pedidoId: Long): Flow<List<PedidoItemEntity>>
 
-    // top 5 platos mas vendidos: junta los renglones por nombre,
-    // suma cantidades, ordena del mayor y trae 5.
-    // solo cuenta renglones de pedidos ENTREGADOS (lo demas no se vendio).
-    @Query("SELECT i.nombrePlato, SUM(i.cantidad) AS total FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId WHERE p.estado = 'ENTREGADO' GROUP BY i.nombrePlato ORDER BY total DESC LIMIT 5")
-    fun observarTopPlatos(): Flow<List<VentaPlato>>
+    // Ranking para una ventana de fechas (Semana o Mes en Reportes).
+    @Query("""
+        SELECT i.nombrePlato, SUM(i.cantidad) AS total
+        FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId
+        WHERE p.estado = 'ENTREGADO' AND p.fecha > :desde AND p.fecha <= :hasta
+        GROUP BY i.nombrePlato ORDER BY total DESC LIMIT 5
+    """)
+    fun observarTopPlatosEnRango(desde: Long, hasta: Long): Flow<List<VentaPlato>>
+
+    // Ranking del año calendario local (igual que el gráfico anual).
+    @Query("""
+        SELECT i.nombrePlato, SUM(i.cantidad) AS total
+        FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId
+        WHERE p.estado = 'ENTREGADO'
+          AND CAST(strftime('%Y', p.fecha / 1000, 'unixepoch', 'localtime') AS INTEGER) = :anio
+        GROUP BY i.nombrePlato ORDER BY total DESC LIMIT 5
+    """)
+    fun observarTopPlatosEnAnio(anio: Int): Flow<List<VentaPlato>>
 }

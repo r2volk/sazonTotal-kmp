@@ -38,7 +38,8 @@ fun DashboardMesero(
             },
             TabItem(Icons.Default.History, "Historial") {
                 MeseroHistorialScreen(
-                    repositorio = repositorio
+                    repositorio = repositorio,
+                    empleado = empleado
                 )
             },
             TabItem(Icons.Default.Person, "Perfil") {

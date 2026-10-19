@@ -34,18 +34,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
+import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.esHoy
 import org.sazontotal.project.utils.moneda
-import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.utils.textoHora
 
 @Composable
 @Preview
 fun MeseroHistorialScreen(
-    repositorio: SazonRepository? = null
+    repositorio: SazonRepository? = null,
+    empleado: EmpleadoEntity? = null
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
 
@@ -58,14 +60,18 @@ fun MeseroHistorialScreen(
     val ahora = remember { ahoraMillis() }
     val DIA = 86_400_000L
     val completados = pedidos.filter { pedido ->
-        pedido.estado == "ENTREGADO" &&
+        val perteneceAlMesero = empleado == null || pedido.meseroID == empleado.id
+        val antiguedad = ahora - pedido.fecha
+        val dentroDelPeriodo = when (filtroTiempo) {
+            "Semana" -> antiguedad >= 0 && antiguedad < 7 * DIA
+            "Mes" -> antiguedad >= 0 && antiguedad < 30 * DIA
+            else -> esHoy(pedido.fecha, ahora)
+        }
+        perteneceAlMesero &&
+            pedido.estado == "ENTREGADO" &&
             pedido.fecha > 0 &&
             (textoBusqueda.isBlank() || pedido.mesa.contains(textoBusqueda, ignoreCase = true)) &&
-            when (filtroTiempo) {
-                "Semana" -> ahora - pedido.fecha < 7 * DIA
-                "Mes" -> ahora - pedido.fecha < 30 * DIA
-                else -> partesFecha(pedido.fecha) == partesFecha(ahora)
-            }
+            dentroDelPeriodo
     }
 
     Column(

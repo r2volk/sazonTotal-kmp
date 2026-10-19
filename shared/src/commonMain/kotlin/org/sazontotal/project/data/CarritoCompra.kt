@@ -10,6 +10,10 @@ class CarritoCompra {
     // id del plato -> cuantos pidio. si no esta anotado, es 0.
     val cantidades: SnapshotStateMap<Long, Int> = mutableStateMapOf()
 
+    // Copia del plato al momento de agregarlo. Mantiene nombre, categoria y
+    // precio aunque el administrador lo desactive o lo borre del menu.
+    val platosGuardados: SnapshotStateMap<Long, PlatoEntity> = mutableStateMapOf()
+
     // id del plato -> nota ("sin cebolla"). solo se guardan las no vacias.
     val notas: SnapshotStateMap<Long, String> = mutableStateMapOf()
 
@@ -17,14 +21,25 @@ class CarritoCompra {
         return cantidades[id] ?: 0
     }
 
-    fun sumar(id: Long) {
-        cantidades[id] = cantidadDe(id) + 1
+    fun sumar(plato: PlatoEntity) {
+        // No se reemplaza la copia mientras el producto siga en el carrito:
+        // asi el precio no cambia a mitad de una comanda.
+        if (platosGuardados[plato.id] == null) {
+            platosGuardados[plato.id] = plato
+        }
+        cantidades[plato.id] = cantidadDe(plato.id) + 1
     }
 
     fun restar(id: Long) {
         val actual = cantidadDe(id)
         if (actual > 0) {
-            cantidades[id] = actual - 1
+            if (actual == 1) {
+                cantidades.remove(id)
+                platosGuardados.remove(id)
+                notas.remove(id)
+            } else {
+                cantidades[id] = actual - 1
+            }
         }
     }
 
@@ -44,12 +59,19 @@ class CarritoCompra {
         return cantidades.values.sum()
     }
 
-    fun subtotal(platos: List<PlatoEntity>): Double {
-        return platos.sumOf { plato -> plato.precio * cantidadDe(plato.id) }
+    fun total(): Double {
+        return platosGuardados.entries.sumOf { (id, plato) ->
+            plato.precio * cantidadDe(id)
+        }
+    }
+
+    fun platosEnCarrito(): List<PlatoEntity> {
+        return platosGuardados.values.filter { cantidadDe(it.id) > 0 }
     }
 
     fun limpiar() {
         cantidades.clear()
+        platosGuardados.clear()
         notas.clear()
     }
 }

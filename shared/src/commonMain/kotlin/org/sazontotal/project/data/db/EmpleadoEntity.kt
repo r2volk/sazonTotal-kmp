@@ -13,3 +13,7 @@ data class EmpleadoEntity(
     val telefono: String = "",
     val activo: Boolean = true
 )
+
+fun esPinEmpleadoValido(pin: String): Boolean {
+    return pin.length == 4 && pin.all { it in '0'..'9' }
+}

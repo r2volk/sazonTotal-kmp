@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Icon
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +37,7 @@ import org.sazontotal.project.components.FotoEmpleadoAvatar
 import org.sazontotal.project.components.RolOptionButton
 import org.sazontotal.project.components.SwitchButton
 import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.db.esPinEmpleadoValido
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
 
@@ -144,8 +147,12 @@ fun CrearEmpleado(
             )
             CampoTextoAdmin(
                 valor = pin,
-                onValorChange = { pin = it },
-                placeholder = "● ● ● ●"
+                onValorChange = { texto ->
+                    pin = texto.filter { it in '0'..'9' }.take(4)
+                    error = null
+                },
+                placeholder = "● ● ● ●",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
             )
         }
 
@@ -191,11 +198,11 @@ fun CrearEmpleado(
                     // se queda "sin hacer nada" como si la app estuviera congelada.
                     val faltaNombre = nombre.isBlank()
                     val faltaPin = pin.isBlank()
-                    val pinCorto = pin.isNotBlank() && pin.length < 4
+                    val pinInvalido = pin.isNotBlank() && !esPinEmpleadoValido(pin)
                     error = when {
                         faltaNombre -> "Escribe el nombre del empleado"
                         faltaPin -> "Escribe el PIN de 4 dígitos"
-                        pinCorto -> "El PIN debe tener 4 dígitos"
+                        pinInvalido -> "El PIN debe tener exactamente 4 dígitos numéricos"
                         else -> null
                     }
                     if (error == null) {

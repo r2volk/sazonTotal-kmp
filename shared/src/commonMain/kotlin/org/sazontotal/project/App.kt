@@ -171,7 +171,8 @@ fun App() {
                 meseroId = empleadoLogueado?.id ?: "EMP-001",
                 repositorio = repositorio,
                 carrito = carrito,
-                mesa = mesaActual
+                mesa = mesaActual,
+                onMesaChange = { mesaActual = it }
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardMesero"},

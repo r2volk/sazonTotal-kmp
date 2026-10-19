@@ -2,6 +2,7 @@ package org.sazontotal.project.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.db.esPinEmpleadoValido
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
@@ -20,6 +21,13 @@ class SazonRepository(private val db: SazonDatabase) {
     }
 
     suspend fun guardarEmpleado(empleado: EmpleadoEntity) {
+        require(empleado.nombre.isNotBlank()) { "El nombre del empleado es obligatorio" }
+        require(esPinEmpleadoValido(empleado.pin)) {
+            "El PIN debe tener exactamente 4 dígitos numéricos"
+        }
+        check(db.empleadoDao().buscarPorId(empleado.id) == null) {
+            "Ya existe un empleado con ese ID"
+        }
         db.empleadoDao().guardar(empleado)
     }
 
@@ -45,12 +53,8 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().cambiarActivo(id,activo)
     }
 
-    suspend fun cambiarActivoEmpleado(id: String, activo: Boolean) {
-        db.empleadoDao().cambiarActivo(id, activo)
-    }
-
-    // Igual que cambiarActivoEmpleado, pero con una red de seguridad:
-    // nunca se puede apagar al ULTIMO administrador activo, porque sin el
+    // Cambia el estado con una red de seguridad: nunca se puede apagar al
+    // ultimo administrador activo, porque sin el
     // nadie podria entrar al panel admin y la app quedaria inutilizable
     // (habria que desinstalar para recuperarla).
     // Devuelve false cuando el cambio fue bloqueado, para que la pantalla avise.
@@ -85,6 +89,11 @@ class SazonRepository(private val db: SazonDatabase) {
     // en codigo comun, asi que el rollback va a mano.
     suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
         require(items.isNotEmpty()) { "El pedido no tiene renglones" }
+        require(items.all { it.cantidad > 0 && it.precioUnit >= 0.0 }) {
+            "El pedido contiene cantidades o precios no válidos"
+        }
+        val platosActivos = items.all { db.platoDao().contarActivo(it.platoId) > 0 }
+        require(platosActivos) { "Uno o más platos ya no están disponibles" }
         val numeroPedido = db.pedidoDao().insertar(pedido)
         try {
             // .copy() = copia del renglon cambiando solo el id del pedido
@@ -111,9 +120,13 @@ class SazonRepository(private val db: SazonDatabase) {
         db.pedidoDao().cambiarEstado(id, estado)
     }
 
-    // top 5 platos mas vendidos, lista viva para reportes.
-    fun observarTopPlatos(): Flow<List<VentaPlato>> {
-        return db.pedidoItemDao().observarTopPlatos()
+    // Ranking del top 5 limitado al mismo periodo de los reportes.
+    fun observarTopPlatosEnRango(desde: Long, hasta: Long): Flow<List<VentaPlato>> {
+        return db.pedidoItemDao().observarTopPlatosEnRango(desde, hasta)
+    }
+
+    fun observarTopPlatosEnAnio(anio: Int): Flow<List<VentaPlato>> {
+        return db.pedidoItemDao().observarTopPlatosEnAnio(anio)
     }
 
     suspend fun seedIfEmpty() {
@@ -222,17 +235,15 @@ class SazonRepository(private val db: SazonDatabase) {
             precioUnit = plato.precio
         )
 
-    // crea un pedido de ejemplo con su total ya calculado. el total usa la
-    // misma cuenta que el carrito (subtotal mas IGV de 18%), asi que el
-    // ejemplo nunca descuadra con lo que veria el mesero al cobrar.
+    // Los precios guardados en el menu ya incluyen IGV; el total del ejemplo
+    // es la suma directa de los precios de sus renglones.
     private suspend fun crearPedidoDeEjemplo(
         estado: String,
         mesa: String,
         fecha: Long,
         lineas: List<PedidoItemEntity>
     ) {
-        val subtotal = lineas.sumOf { it.precioUnit * it.cantidad }
-        val total = subtotal + subtotal * 0.18
+        val total = lineas.sumOf { it.precioUnit * it.cantidad }
 
         val pedidoId = db.pedidoDao().insertar(
             PedidoEntity(

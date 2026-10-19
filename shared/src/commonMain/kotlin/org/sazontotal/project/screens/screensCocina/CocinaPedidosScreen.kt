@@ -39,6 +39,8 @@ import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.esHoy
 import org.sazontotal.project.utils.textoHora
 
 @Composable
@@ -57,8 +59,9 @@ fun CocinaPedidosScreen(
 
     // en cocina solo importa lo que esta pendiente o listo
     var filtro by remember { mutableStateOf("Por preparar") }
+    val ahora = ahoraMillis()
     val porPreparar = pedidos.count { it.estado == "PENDIENTE" }
-    val listosHoy = pedidos.count { it.estado == "LISTO" }
+    val listosHoy = pedidos.count { it.estado == "LISTO" && esHoy(it.fecha, ahora) }
     val scope = rememberCoroutineScope()
 
     // nombre corto e iniciales del que entro ("Joaquin Gutierrez" -> "Joaquin" / "JG").

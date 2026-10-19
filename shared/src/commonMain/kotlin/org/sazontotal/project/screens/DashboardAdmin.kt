@@ -30,8 +30,8 @@ import org.sazontotal.project.components.AccesoRapidoCard
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.esHoy
 import org.sazontotal.project.utils.moneda
-import org.sazontotal.project.utils.partesFecha
 import org.sazontotal.project.icons.LogoutButton
 import org.sazontotal.project.icons.MenuIcon
 import org.sazontotal.project.icons.PedidosIcon
@@ -54,8 +54,8 @@ fun DashboardAdmin(
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
     // solo lo de hoy, y solo con fecha real
-    val hoyPartes = partesFecha(ahoraMillis())
-    val pedidosHoy = pedidos.filter { it.fecha > 0 && partesFecha(it.fecha) == hoyPartes }
+    val ahora = ahoraMillis()
+    val pedidosHoy = pedidos.filter { esHoy(it.fecha, ahora) }
 
     // lo ENTREGADO de hoy es lo unico que suma como venta
     val ventas = pedidosHoy.filter { it.estado == "ENTREGADO" }.sumOf { it.total }

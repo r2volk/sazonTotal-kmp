@@ -35,6 +35,8 @@ import org.sazontotal.project.data.CarritoCompra
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.esHoy
 import org.sazontotal.project.utils.textoHora
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +81,8 @@ fun MeseroPedidosScreen(
     // (preview) se muestran todos, para no dejar la pantalla vacia.
     val idMesero = empleado?.id
     val misPedidos = if (idMesero == null) pedidos else pedidos.filter { it.meseroID == idMesero }
+    val ahora = ahoraMillis()
+    val pedidosHoy = misPedidos.count { esHoy(it.fecha, ahora) }
 
     // lo ENTREGADO sale de esta lista: ya se sirvio y vive en el historial.
     val enCurso = misPedidos.filter { it.estado != "ENTREGADO" }
@@ -118,7 +122,7 @@ fun MeseroPedidosScreen(
                     color = Color.White
                 )
                 Text(
-                    text = "Hola $primerNombre · ${pedidos.size} pedidos hoy",
+                    text = "Hola $primerNombre · $pedidosHoy pedidos hoy",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = Colores.TextoTenue

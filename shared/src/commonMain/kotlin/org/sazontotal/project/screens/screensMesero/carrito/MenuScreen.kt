@@ -120,7 +120,7 @@ fun MenuScreen(
                         expanded = mostrarMesas,
                         onDismissRequest = { mostrarMesas = false }
                     ) {
-                        (1..10).forEach { numero ->
+        (1..15).forEach { numero ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -207,7 +207,7 @@ fun MenuScreen(
                             tintaIcono = visual.tinta,
                             cantidad = carrito?.cantidadDe(plato.id) ?: 0,
                             onMinus = { carrito?.restar(plato.id) },
-                            onPlus = { carrito?.sumar(plato.id) },
+                            onPlus = { carrito?.sumar(plato) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -252,7 +252,7 @@ fun MenuScreen(
                     fontSize = 13.sp
                 )
                 Text(
-                    text = moneda(carrito?.let { it.subtotal(platos) } ?: 0.0),
+                    text = moneda(carrito?.total() ?: 0.0),
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold

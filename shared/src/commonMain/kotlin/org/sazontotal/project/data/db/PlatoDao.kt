@@ -23,6 +23,9 @@ interface PlatoDao {
     @Query("SELECT COUNT(*) FROM platos")
     suspend fun contar(): Int
 
+    @Query("SELECT COUNT(*) FROM platos WHERE id = :id AND activo = 1")
+    suspend fun contarActivo(id: Long): Int
+
     // busca un plato por su nombre exacto. lo usa el sembrado de datos de
     // ejemplo para no depender de los ids (el admin puede editarlos o borrarlos).
     @Query("SELECT * FROM platos WHERE nombre = :nombre LIMIT 1")

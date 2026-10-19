@@ -58,12 +58,11 @@ fun PedidoConcretadoScreen(
     val itemsEnVivo = repositorio?.observarItems(pedidoId)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // Desglose del total. El ticket tiene que explicar de donde sale el total:
-    // antes saltaba de la suma de los renglones directo al total (que ya incluía
-    // IGV), y el comprobante parecia tener error de maths.
-    // Sin descuentos, IGV = total - subtotal, asi que siempre cuadra.
-    val subtotal = items.sumOf { it.precioUnit * it.cantidad }
-    val igv = subtotal * 0.18
+    // Los precios de cada renglon ya incluyen IGV. Se extraen los componentes
+    // desde el total guardado, sin volver a sumarle el impuesto.
+    val total = pedido?.total ?: items.sumOf { it.precioUnit * it.cantidad }
+    val subtotal = total / 1.18
+    val igv = total - subtotal
     // Estructura: la parte de arriba scrollea, los botones quedan FIJOS abajo.
     // Asi nunca se pueden salir de la pantalla, por mas platos que tenga el ticket.
     Column(
@@ -226,14 +225,13 @@ fun PedidoConcretadoScreen(
                     .height(1.dp)
                     .background(Colores.GrisMedio)
             )
-            // Subtotal e IGV a la vista: la cuenta del ticket se puede
-            // verificar a simple vista (subtotal + IGV = total).
+            // Base imponible e IGV incluidos en los precios del menu.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Subtotal",
+                    text = "Base imponible",
                     color = Colores.TextoTenue,
                     fontSize = 15.sp,
                     modifier = Modifier.weight(1f)
@@ -249,7 +247,7 @@ fun PedidoConcretadoScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "IGV (18%)",
+                    text = "IGV incluido (18%)",
                     color = Colores.TextoTenue,
                     fontSize = 15.sp,
                     modifier = Modifier.weight(1f)
@@ -278,7 +276,7 @@ fun PedidoConcretadoScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = moneda(pedido?.total ?: 0.0),
+                    text = moneda(total),
                     color = Color.White,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold

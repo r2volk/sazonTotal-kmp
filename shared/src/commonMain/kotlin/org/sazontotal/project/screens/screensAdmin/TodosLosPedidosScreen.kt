@@ -40,6 +40,8 @@ import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.esHoy
 import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.textoHora
 import org.sazontotal.project.enums.EstadoTodosLosPedidos
@@ -60,6 +62,8 @@ fun TodosLosPedidosScreen(
     val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
     var filtroEstado by remember { mutableStateOf("Todos") }
+    val ahora = ahoraMillis()
+    val pedidosHoy = pedidos.count { esHoy(it.fecha, ahora) }
     val enCurso = pedidos.count { it.estado == "PENDIENTE" || it.estado == "LISTO" }
     val entregados = pedidos.count { it.estado == "ENTREGADO" }
     val anulados = pedidos.count { it.estado == "ANULADO" }
@@ -119,7 +123,7 @@ fun TodosLosPedidosScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ){
                 StatCardCentrado(
-                    textoSuperior = "${pedidos.size}",
+                    textoSuperior = "$pedidosHoy",
                     textoInferior = "Hoy",
                     colorSuperior = Color.White,
                     modifier = Modifier.weight(1f)

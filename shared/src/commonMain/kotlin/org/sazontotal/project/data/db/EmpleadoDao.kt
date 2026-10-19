@@ -34,7 +34,8 @@ interface EmpleadoDao {
     @Query("UPDATE empleados SET pin = :pinNuevo WHERE id = :id AND pin = :pinActual")
     suspend fun actualizarPin(id: String, pinActual: String, pinNuevo: String): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // No reemplazar a otro empleado si por error se repite un ID.
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun guardar(empleado: EmpleadoEntity)
 
 }

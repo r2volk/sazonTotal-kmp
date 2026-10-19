@@ -112,18 +112,15 @@ fun ReportesScreen(
     val (etiquetas, sumas) = when (periodo) {
         "month" -> {
             // ultimas 4 semanas: S1 la mas vieja.
-            val grupos = (3 downTo 0).map { atras ->
-                val desde = ahora - (atras + 1) * 7 * DIA
-                val hasta = ahora - atras * 7 * DIA
-                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
+                val grupos = (3 downTo 0).map { atras ->
+                    val desde = ahora - (atras + 1) * 7 * DIA
+                    val hasta = ahora - atras * 7 * DIA
+                    vendidos.filter { it.fecha > desde && it.fecha <= hasta }.sumOf { it.total }
             }
             listOf("S1", "S2", "S3", "S4") to grupos
         }
         "year" -> {
             // Los 12 meses REALES del anio actual, de enero a diciembre.
-            // Antes eran 12 tramos de 30 dias rotulados con iniciales de mes:
-            // como 30 dias no calzan con los meses, la etiqueta no correspondia
-            // al dato y la serie arrancaba en "N" en vez de "E".
             val grupos = (1..12).map { mes ->
                 vendidos.filter { pedido ->
                     pedido.fecha > 0 && partesFecha(pedido.fecha).let { (_, m, a) ->
@@ -142,7 +139,7 @@ fun ReportesScreen(
             val grupos = (6 downTo 0).map { atras ->
                 val desde = ahora - (atras + 1) * DIA
                 val hasta = ahora - atras * DIA
-                vendidos.filter { it.fecha in desde..hasta }.sumOf { it.total }
+                vendidos.filter { it.fecha > desde && it.fecha <= hasta }.sumOf { it.total }
             }
             nombres to grupos
         }
@@ -157,7 +154,11 @@ fun ReportesScreen(
     }
     val destacado = if (hayVentas) sumas.indexOf(maximo) else -1
 
-    val topEnVivo = repositorio?.observarTopPlatos()
+    val topEnVivo = when {
+        repositorio == null -> null
+        periodo == "year" -> repositorio.observarTopPlatosEnAnio(anioActual)
+        else -> repositorio.observarTopPlatosEnRango(ahora - largoVentana, ahora)
+    }
     val top = topEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
     Box(

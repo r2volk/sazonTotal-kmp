@@ -22,6 +22,8 @@ fun CantidadStepper(
     cantidad: Int,
     onMinus: () -> Unit,
     onPlus: () -> Unit,
+    plusEnabled: Boolean = true,
+    minusEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -34,9 +36,9 @@ fun CantidadStepper(
     ) {
         Text(
             text = "−",
-            color = Colores.TextoTenue,
+            color = if (minusEnabled) Colores.TextoTenue else Color(0xFF55555A),
             fontSize = 18.sp,
-            modifier = Modifier.clickable { onMinus() }
+            modifier = Modifier.clickable(enabled = minusEnabled) { onMinus() }
         )
         Text(
             text = "$cantidad",
@@ -46,10 +48,10 @@ fun CantidadStepper(
         )
         Text(
             text = "+",
-            color = Colores.VerdePrimario,
+            color = if (plusEnabled) Colores.VerdePrimario else Colores.TextoTenue,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onPlus() }
+            modifier = Modifier.clickable(enabled = plusEnabled) { onPlus() }
         )
     }
 }
