@@ -52,7 +52,6 @@ fun AsistenteScreen(
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -162,7 +161,6 @@ fun AsistenteScreen(
             }
         }
 
-        // atajos
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -174,7 +172,6 @@ fun AsistenteScreen(
             AtajoChip(texto = "Más vendidos", onClick = {})
         }
 
-        // entrada
         Row(
             modifier = Modifier
                 .fillMaxWidth()

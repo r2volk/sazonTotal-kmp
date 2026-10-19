@@ -43,8 +43,7 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().guardar(plato)
     }
 
-    // borra un plato por su id. los pedidos viejos no se afectan
-    // porque cada renglon guarda su propia copia de nombre y precio.
+    // borra un plato por su id; los pedidos viejos no se afectan porque guardan su propia copia.
     suspend fun borrarPlato(id: Long) {
         db.platoDao().borrarPorId(id)
     }
@@ -53,18 +52,14 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().cambiarActivo(id,activo)
     }
 
-    // Cambia el estado con una red de seguridad: nunca se puede apagar al
-    // ultimo administrador activo, porque sin el
-    // nadie podria entrar al panel admin y la app quedaria inutilizable
-    // (habria que desinstalar para recuperarla).
-    // Devuelve false cuando el cambio fue bloqueado, para que la pantalla avise.
+    // no deja apagar al ultimo admin activo (la app quedaria sin acceso al panel); devuelve false si se bloqueo.
     suspend fun cambiarActivoEmpleadoSeguro(id: String, activo: Boolean): Boolean {
         val dao = db.empleadoDao()
         if (!activo) {
             val empleado = dao.buscarPorId(id)
             val esAdmin = empleado != null &&
                 (empleado.rol == "Administrador" || empleado.id.startsWith("ADM-"))
-            // Es admin y es el unico activo -> no se deja apagar.
+            // es admin y es el unico activo -> no se deja apagar.
             if (esAdmin && dao.contarAdminsActivos() <= 1) {
                 return false
             }
@@ -73,8 +68,7 @@ class SazonRepository(private val db: SazonDatabase) {
         return true
     }
 
-    // cambia el PIN de un empleado. la base solo aplica el cambio si el
-    // PIN actual es correcto; devolvemos si se logro o no.
+    // cambia el PIN solo si el actual es correcto; devuelve si se logro.
     suspend fun cambiarPin(id: String, pinActual: String, pinNuevo: String): Boolean {
         return db.empleadoDao().actualizarPin(id.trim(), pinActual, pinNuevo) > 0
     }
@@ -84,9 +78,7 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoDao().buscarPorId(id)
     }
 
-    // crea el pedido con sus renglones, todo junto. si algo falla a la mitad
-    // se borra la cabecera para no dejarla huerfana: Room no da transacciones
-    // en codigo comun, asi que el rollback va a mano.
+    // crea pedido y renglones juntos; si falla, borra la cabecera a mano (Room no da transacciones en comun).
     suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
         require(items.isNotEmpty()) { "El pedido no tiene renglones" }
         require(items.all { it.cantidad > 0 && it.precioUnit >= 0.0 }) {
@@ -120,7 +112,7 @@ class SazonRepository(private val db: SazonDatabase) {
         db.pedidoDao().cambiarEstado(id, estado)
     }
 
-    // Ranking del top 5 limitado al mismo periodo de los reportes.
+    // ranking del top 5 limitado al mismo periodo de los reportes.
     fun observarTopPlatosEnRango(desde: Long, hasta: Long): Flow<List<VentaPlato>> {
         return db.pedidoItemDao().observarTopPlatosEnRango(desde, hasta)
     }
@@ -153,15 +145,12 @@ class SazonRepository(private val db: SazonDatabase) {
         sembrarPedidosDeEjemplo()
     }
 
-    // pedidos de ejemplo para que la app no abra vacia. se meten solo si la
-    // base no tiene ningun pedido: en cuanto el mesero carga uno real, ya no
-    // se siembran mas y los de ejemplo se mezclan con los de verdad.
+    // pedidos de ejemplo si la base esta vacia; al cargar uno real ya no se siembran y se mezclan.
     private suspend fun sembrarPedidosDeEjemplo() {
         val pedidoDao = db.pedidoDao()
         if (pedidoDao.contar() > 0) return
 
-        // se buscan por nombre y no por id: si el admin borro o edito un plato,
-        // no se crea un renglon apuntando a algo que ya no existe.
+        // se buscan por nombre, no por id: no se crea un renglon apuntando a un plato ya borrado o editado.
         val platoDao = db.platoDao()
         val ceviche = platoDao.buscarPorNombre("Ceviche clásico") ?: return
         val lomo = platoDao.buscarPorNombre("Lomo saltado") ?: return
@@ -172,8 +161,7 @@ class SazonRepository(private val db: SazonDatabase) {
         val MIN = 60_000L
         val DIA = 86_400_000L
 
-        // del mas viejo al mas nuevo, para que la lista (que sale por id
-        // descendente) muestre primero lo recien hecho.
+        // del mas viejo al mas nuevo para que la lista por id descendente muestre lo reciente primero.
         crearPedidoDeEjemplo(
             estado = "ENTREGADO",
             mesa = "2",
@@ -235,8 +223,7 @@ class SazonRepository(private val db: SazonDatabase) {
             precioUnit = plato.precio
         )
 
-    // Los precios guardados en el menu ya incluyen IGV; el total del ejemplo
-    // es la suma directa de los precios de sus renglones.
+    // el total del ejemplo suma directo los precios de sus renglones (ya incluyen IGV).
     private suspend fun crearPedidoDeEjemplo(
         estado: String,
         mesa: String,

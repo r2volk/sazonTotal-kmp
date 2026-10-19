@@ -83,7 +83,6 @@ fun DashboardAdmin(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 30.dp)
         ) {
-            // header: textos + logout + avatar KC
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -126,7 +125,6 @@ fun DashboardAdmin(
                 }
             }
 
-            // stats 2x2
             Column(
                 modifier = Modifier.padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)

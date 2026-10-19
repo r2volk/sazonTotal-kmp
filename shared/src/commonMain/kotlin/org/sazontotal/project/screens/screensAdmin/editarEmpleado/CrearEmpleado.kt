@@ -52,7 +52,7 @@ fun CrearEmpleado(
     var pin by remember { mutableStateOf("") }
     var rol by remember { mutableStateOf("Mesero") }
     var activo by remember { mutableStateOf(true) }
-    // Aviso cuando falta algo (antes el boton no hacia nada y parecia congelado).
+    // aviso cuando falta algo.
     var error by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -63,7 +63,6 @@ fun CrearEmpleado(
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header
         Row(){
             Text(
                 text = "Nuevo Empleado",
@@ -94,7 +93,6 @@ fun CrearEmpleado(
             )
         }
 
-        // Telefono (el campo "Fecha de ingreso" se elimino: nunca se guardaba)
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Teléfono",
@@ -176,7 +174,7 @@ fun CrearEmpleado(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-// Aviso de validacion (solo aparece si falta algo).
+// aviso de validacion (solo aparece si falta algo).
         if (error != null) {
             Text(
                 text = error!!,
@@ -186,7 +184,6 @@ fun CrearEmpleado(
             )
         }
 
-        // boton guardar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -194,8 +191,6 @@ fun CrearEmpleado(
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFF5DF08A))
                 .clickable {
-                    // Se revisa todo y se avisa que falta: el boton nunca
-                    // se queda "sin hacer nada" como si la app estuviera congelada.
                     val faltaNombre = nombre.isBlank()
                     val faltaPin = pin.isBlank()
                     val pinInvalido = pin.isNotBlank() && !esPinEmpleadoValido(pin)
@@ -206,8 +201,7 @@ fun CrearEmpleado(
                         else -> null
                     }
                     if (error == null) {
-                        // el prefijo sale del rol, y el numero de la hora
-                        // (mas unico que random)
+                        // el id sale del prefijo del rol y el numero de la hora (mas unico que random)
                         val prefijo = when (rol) {
                             "Administrador" -> "ADM"
                             "Mesero" -> "MSR"

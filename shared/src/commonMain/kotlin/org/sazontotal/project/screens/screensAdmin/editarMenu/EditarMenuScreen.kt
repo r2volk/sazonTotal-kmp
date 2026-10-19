@@ -70,7 +70,7 @@ fun EditarMenuScreen(
     var mostrarFormulario by remember { mutableStateOf(false) }
     // que plato se esta editando. nulo = se va a crear uno nuevo.
     var platoEnEdicion by remember { mutableStateOf<PlatoEntity?>(null) }
-    val scope = rememberCoroutineScope() //evita que el app se congele al guardar un dato en la bd
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier

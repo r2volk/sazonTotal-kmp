@@ -163,7 +163,6 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // row 1, 2, 3
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -173,7 +172,6 @@ fun LoginScreen(
                     PinButton(number = 3, onClick = onNumberClick, modifier = Modifier.weight(1f))
                 }
 
-                // row 4, 5, 6
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -183,7 +181,6 @@ fun LoginScreen(
                     PinButton(number = 6, onClick = onNumberClick, modifier = Modifier.weight(1f))
                 }
 
-                // row 7, 8, 9
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -193,14 +190,12 @@ fun LoginScreen(
                     PinButton(number = 9, onClick = onNumberClick, modifier = Modifier.weight(1f))
                 }
 
-                // row 0, backspace
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // boton aceptar / entrar
                     Box(
                         modifier = Modifier
                             .weight(1f)

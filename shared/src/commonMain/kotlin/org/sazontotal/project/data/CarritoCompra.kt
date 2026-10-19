@@ -4,14 +4,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.sazontotal.project.data.db.PlatoEntity
 
-// vive aqui y no en una pantalla para que el menu y el carrito vean las
-// mismas cantidades. se crea una vez en App y se pasa a las dos.
+// vive aqui para que menu y carrito compartan cantidades; se crea en App y se pasa a ambos.
 class CarritoCompra {
     // id del plato -> cuantos pidio. si no esta anotado, es 0.
     val cantidades: SnapshotStateMap<Long, Int> = mutableStateMapOf()
 
-    // Copia del plato al momento de agregarlo. Mantiene nombre, categoria y
-    // precio aunque el administrador lo desactive o lo borre del menu.
+    // copia del plato al agregarlo: conserva nombre, categoria y precio aunque lo borren del menu.
     val platosGuardados: SnapshotStateMap<Long, PlatoEntity> = mutableStateMapOf()
 
     // id del plato -> nota ("sin cebolla"). solo se guardan las no vacias.
@@ -22,8 +20,7 @@ class CarritoCompra {
     }
 
     fun sumar(plato: PlatoEntity) {
-        // No se reemplaza la copia mientras el producto siga en el carrito:
-        // asi el precio no cambia a mitad de una comanda.
+        // no se reemplaza la copia mientras el plato siga en el carrito, asi el precio no cambia a mitad de la comanda.
         if (platosGuardados[plato.id] == null) {
             platosGuardados[plato.id] = plato
         }

@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PedidoDao {
-    // al guardar te devuelve el numero que le toco al pedido.
-    // con ese numero marcas despues los renglones.
+    // al guardar devuelve el numero del pedido, con el se marcan luego los renglones.
     @Insert
     suspend fun insertar(pedido: PedidoEntity): Long
 
@@ -21,8 +20,7 @@ interface PedidoDao {
     @Query("SELECT * FROM pedidos WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: Long): PedidoEntity?
 
-    // cuantos pedidos hay en total. lo usa el sembrado de datos de ejemplo
-    // para no meterlos si el restaurante ya tiene pedidos reales.
+    // cuenta los pedidos; el sembrado lo usa para no meter ejemplos si ya hay reales.
     @Query("SELECT COUNT(*) FROM pedidos")
     suspend fun contar(): Int
 

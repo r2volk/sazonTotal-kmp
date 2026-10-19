@@ -77,8 +77,7 @@ fun MeseroPedidosScreen(
 
     var filtroEstado by remember { mutableStateOf("Todos") }
 
-    // "Mis pedidos": solo los tomados por este mesero. si no hay sesion
-    // (preview) se muestran todos, para no dejar la pantalla vacia.
+    // "Mis pedidos": solo los de este mesero; sin sesion (preview) se muestran todos.
     val idMesero = empleado?.id
     val misPedidos = if (idMesero == null) pedidos else pedidos.filter { it.meseroID == idMesero }
     val ahora = ahoraMillis()
@@ -290,8 +289,6 @@ fun MeseroPedidosScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (filtrados.isEmpty()) {
-                // sin esto, entregar el ultimo pedido dejaba una pantalla
-                // en blanco y parecia que la app se habia caido.
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -315,8 +312,7 @@ fun MeseroPedidosScreen(
                 PedidoEnCocina(
                     pedido = pedido,
                     repositorio = repositorio,
-                    // el mesero marca ENTREGADO al servir a la mesa.
-                    // ahi el pedido sale de aqui y entra al historial.
+                    // al marcar ENTREGADO el pedido sale de aqui y entra al historial.
                     onMarcarListo = { id ->
                         scope.launch {
                             repositorio?.cambiarEstadoPedido(id, "ENTREGADO")

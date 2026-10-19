@@ -26,8 +26,7 @@ interface PlatoDao {
     @Query("SELECT COUNT(*) FROM platos WHERE id = :id AND activo = 1")
     suspend fun contarActivo(id: Long): Int
 
-    // busca un plato por su nombre exacto. lo usa el sembrado de datos de
-    // ejemplo para no depender de los ids (el admin puede editarlos o borrarlos).
+    // busca por nombre exacto para el sembrado: no depende de ids que el admin puede cambiar.
     @Query("SELECT * FROM platos WHERE nombre = :nombre LIMIT 1")
     suspend fun buscarPorNombre(nombre: String): PlatoEntity?
 

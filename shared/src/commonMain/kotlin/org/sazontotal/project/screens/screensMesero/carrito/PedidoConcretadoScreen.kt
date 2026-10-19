@@ -58,13 +58,11 @@ fun PedidoConcretadoScreen(
     val itemsEnVivo = repositorio?.observarItems(pedidoId)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // Los precios de cada renglon ya incluyen IGV. Se extraen los componentes
-    // desde el total guardado, sin volver a sumarle el impuesto.
+    // los precios ya incluyen IGV: se extraen base e IGV del total guardado, sin sumar impuesto.
     val total = pedido?.total ?: items.sumOf { it.precioUnit * it.cantidad }
     val subtotal = total / 1.18
     val igv = total - subtotal
-    // Estructura: la parte de arriba scrollea, los botones quedan FIJOS abajo.
-    // Asi nunca se pueden salir de la pantalla, por mas platos que tenga el ticket.
+    // arriba scrollea y los botones quedan fijos abajo para que no se salgan de pantalla.
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -225,7 +223,7 @@ fun PedidoConcretadoScreen(
                     .height(1.dp)
                     .background(Colores.GrisMedio)
             )
-            // Base imponible e IGV incluidos en los precios del menu.
+            // base imponible e IGV incluidos en los precios del menu.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -307,7 +305,6 @@ fun PedidoConcretadoScreen(
             }
         }
 
-        // Botones: fuera de la columna que scrollea, siempre visibles.
         Box(
             modifier = Modifier
                 .fillMaxWidth()

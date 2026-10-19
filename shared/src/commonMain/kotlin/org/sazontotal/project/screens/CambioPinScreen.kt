@@ -119,7 +119,6 @@ fun CambioPinScreen(
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

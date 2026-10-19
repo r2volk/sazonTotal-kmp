@@ -41,7 +41,6 @@ fun BackspaceIcon(
             )
         )
 
-        // la X de adentro
         val xMin = w * 0.44f
         val xMax = w * 0.70f
         val yMin = h * 0.36f

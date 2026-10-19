@@ -225,8 +225,7 @@ private fun PedidoEnAdmin(
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // LISTO ya no es "preparando": la cocina lo termino y espera que el
-    // mesero lo sirva. el PENDIENTE si sigue siendo "preparando".
+    // LISTO = cocina termino y espera al mesero; PENDIENTE sigue como preparando.
     val insignia = when (pedido.estado) {
         "ENTREGADO" -> EstadoTodosLosPedidos.ENTREGADO
         "LISTO" -> EstadoTodosLosPedidos.LISTO
@@ -351,7 +350,6 @@ private fun CardPedido(
             )
         }
 
-        // solo los pedidos en curso se pueden anular.
         if (sePuedeAnular) {
             Text(
                 text = "Anular pedido",

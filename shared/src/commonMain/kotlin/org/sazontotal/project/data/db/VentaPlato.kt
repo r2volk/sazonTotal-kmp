@@ -1,7 +1,6 @@
 package org.sazontotal.project.data.db
 
-// respuesta de la consulta "platos mas vendidos".
-// no es tabla: es solo la forma del resultado (nombre + total vendido).
+// forma del resultado de "platos mas vendidos" (nombre + total); no es una tabla.
 data class VentaPlato(
     val nombrePlato: String,
     val total: Int

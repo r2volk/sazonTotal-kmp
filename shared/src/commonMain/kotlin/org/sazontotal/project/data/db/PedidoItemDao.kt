@@ -15,7 +15,7 @@ interface PedidoItemDao {
     @Query("SELECT * FROM pedido_items WHERE pedidoId = :pedidoId")
     fun observarPorPedido(pedidoId: Long): Flow<List<PedidoItemEntity>>
 
-    // Ranking para una ventana de fechas (Semana o Mes en Reportes).
+    // ranking para una ventana de fechas (semana o mes en reportes).
     @Query("""
         SELECT i.nombrePlato, SUM(i.cantidad) AS total
         FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId
@@ -24,7 +24,7 @@ interface PedidoItemDao {
     """)
     fun observarTopPlatosEnRango(desde: Long, hasta: Long): Flow<List<VentaPlato>>
 
-    // Ranking del año calendario local (igual que el gráfico anual).
+    // ranking del ano calendario local (igual que el grafico anual).
     @Query("""
         SELECT i.nombrePlato, SUM(i.cantidad) AS total
         FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId

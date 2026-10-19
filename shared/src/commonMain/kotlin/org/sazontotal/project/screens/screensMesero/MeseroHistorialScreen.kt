@@ -54,8 +54,7 @@ fun MeseroHistorialScreen(
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // aca solo los ya completados, y que pasen buscador y filtro de tiempo.
-    // "hoy" compara dia/mes/ano; semana y mes miden hacia atras.
+    // solo los completados que pasan buscador y filtro: hoy compara dia/mes/ano; semana y mes van hacia atras.
     var filtroTiempo by remember { mutableStateOf("Hoy") }
     val ahora = remember { ahoraMillis() }
     val DIA = 86_400_000L
@@ -82,7 +81,6 @@ fun MeseroHistorialScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // titulo
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = "Historial",

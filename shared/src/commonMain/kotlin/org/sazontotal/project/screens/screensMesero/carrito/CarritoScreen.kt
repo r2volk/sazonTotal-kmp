@@ -81,15 +81,13 @@ fun CarritoScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    // Observa tambien los platos desactivados para indicar cuando alguno deja
-    // de venderse. El carrito conserva su copia aunque el plato sea borrado.
+    // tambien observa platos desactivados para avisar cuando uno deja de venderse; el carrito conserva su copia.
     var catalogo by remember { mutableStateOf<List<PlatoEntity>?>(null) }
     LaunchedEffect(repositorio) {
         catalogo = null
         repositorio?.observarTodosLosPlatos()?.collect { catalogo = it }
     }
 
-    // En Peru los precios del menu ya incluyen IGV; no se agrega otro 18%.
     val total = carrito?.total() ?: 0.0
 
     // sin nada en el carrito el boton no hace nada
@@ -97,7 +95,7 @@ fun CarritoScreen(
 
     // se apaga mientras guarda, asi el doble tap no crea dos pedidos
     var guardando by remember { mutableStateOf(false) }
-    // Si el guardado falla, se avisa (y nunca se queda en "Enviando...").
+    // si el guardado falla, se avisa (y nunca se queda en "Enviando...").
     var errorGuardado by remember { mutableStateOf<String?>(null) }
 
     // al bajar a 0 el card sale solo de la lista
@@ -115,8 +113,7 @@ fun CarritoScreen(
         mesaValida &&
         !guardando
 
-    // La mesa se puede cambiar mientras haya productos en el carrito y no se
-    // este guardando. El envio valida de forma independiente que sea 1..15.
+    // la mesa se puede cambiar mientras haya productos y no se este guardando; el envio valida 1..15.
     var mesaAbierta by remember { mutableStateOf(false) }
     var anclaMesa by remember { mutableStateOf<Rect?>(null) }
     val distanciaMesa = with(LocalDensity.current) { 10.dp.toPx() }
@@ -142,7 +139,7 @@ fun CarritoScreen(
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header: el titulo acompana la mesa que eligio en el selector de abajo
+        // el titulo acompana la mesa elegida en el selector de abajo.
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -168,7 +165,6 @@ fun CarritoScreen(
             )
         }
 
-        // items con scroll
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -286,7 +282,7 @@ fun CarritoScreen(
             }
         }
 
-        // Explica por que no se puede enviar o muestra el error del guardado.
+        // explica por que no se puede enviar o muestra el error del guardado.
         val aviso = errorGuardado ?: mensajeBloqueo
         if (aviso != null) {
             Text(
@@ -333,12 +329,11 @@ fun CarritoScreen(
                             )
                             val numeroPedido = repositorioConfirmado.crearPedidoConItems(cabecera, renglones)
                             check(numeroPedido > 0L) { "La base de datos no devolvió un número de pedido" }
-                            // Solo vaciar despues de que el pedido exista.
+                            // solo vaciar despues de que el pedido exista.
                             carritoConfirmado.limpiar()
                             confirmarCarrito(numeroPedido)
                         } catch (e: Exception) {
-                            // si algo falla, el boton se rehabilita y se avisa:
-                            // nunca queda en "Enviando..." para siempre.
+                            // si algo falla el boton se rehabilita y se avisa, nunca queda en "Enviando..." para siempre.
                             errorGuardado = "No se pudo enviar el pedido: ${e.message ?: "intenta de nuevo"}"
                         } finally {
                             guardando = false
@@ -356,8 +351,7 @@ fun CarritoScreen(
         }
     }
 
-    // el dropdown se abre por encima de todo, pegado al borde derecho del
-    // boton. afuera, al elegir una mesa o al tocar el boton de nuevo se cierra.
+    // el dropdown se abre sobre todo, pegado al borde derecho del boton; se cierra al elegir o al tocar de nuevo.
     if (mesaAbierta && anclaMesa != null) {
         Popup(
             onDismissRequest = { mesaAbierta = false },
@@ -375,10 +369,7 @@ fun CarritoScreen(
     }
 }
 
-/**
- * El botoncito "4 v" de la tarjeta inferior. Asi el ancla [onAncla] queda en
- * un sitio conocido y no se dispara el redibujo solo por tener un estado.
- */
+// el selector de mesa; el ancla [onAncla] queda fija y no dispara redibujo.
 @Composable
 private fun SelectorDeMesa(
     mesa: String,
@@ -427,10 +418,7 @@ private fun SelectorDeMesa(
     }
 }
 
-/**
- * La lista que aparece flotando: mesas 1 a 15, con un limite de altura para
- * que siempre quepa encima del boton y sea scrolleable.
- */
+// lista flotante de mesas 1 a 15, con altura limitada y scroll.
 @Composable
 private fun ListaDeMesas(
     mesaActual: String,
@@ -479,10 +467,7 @@ private fun ListaDeMesas(
     }
 }
 
-/**
- * Posiciona la lista justo encima del boton de mesa, alineada a su borde
- * derecho. Si arriba no hay espacio (pantalla corta), se abre hacia abajo.
- */
+// posiciona la lista encima del boton y alineada a la derecha; sin espacio arriba, se abre hacia abajo.
 private class PosicionSobreAncla(
     private val ancla: Rect,
     private val distanciaPx: Float

@@ -51,7 +51,6 @@ fun TabBarPill(
             .background(Color(0xFF000000))
     ) {
 
-        // contenido
         Column(
             modifier = Modifier.weight(1f, fill = true)
         ) {

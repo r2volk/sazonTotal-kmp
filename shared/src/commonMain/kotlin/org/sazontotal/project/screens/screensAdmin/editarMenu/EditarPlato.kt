@@ -50,15 +50,14 @@ fun EditarPlato(
     onGuardar: (PlatoEntity) -> Unit = {},
     onEliminar: (Long) -> Unit = {}
 ) {
-    // si viene un plato, el formulario arranca lleno con sus datos (editar).
-    // si viene nulo, arranca vacio (crear). al cambiar de plato se reinicia.
+    // con plato el formulario arranca lleno (editar); con nulo, vacio (crear); al cambiar se reinicia.
     var nombre by remember(plato) { mutableStateOf(plato?.nombre ?: "") }
     var categoria by remember(plato) { mutableStateOf(plato?.categoria ?: "Platos") }
     var precio by remember(plato) { mutableStateOf(plato?.precio?.toString() ?: "") }
     var descripcion by remember(plato) { mutableStateOf(plato?.descripcion ?: "") }
     var disponible by remember(plato) { mutableStateOf(plato?.activo ?: true) }
     var mostrarCategorias by remember { mutableStateOf(false) }
-    // Aviso cuando falta algo o el precio no es un numero valido.
+    // aviso cuando falta algo o el precio no es un numero valido.
     var error by remember { mutableStateOf<String?>(null) }
     // etiquetas elegidas (pueden ser varias). al editar se marcan las guardadas.
     var etiquetasElegidas by remember(plato) {
@@ -79,7 +78,6 @@ fun EditarPlato(
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header
         Row(){
             Text(
                 text = if (plato == null) "Nuevo plato" else "Editar plato",
@@ -248,7 +246,7 @@ fun EditarPlato(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Aviso de validacion (solo aparece si falta algo o el precio no cuadra).
+        // aviso de validacion (solo aparece si falta algo o el precio no cuadra).
         if (error != null) {
             Text(
                 text = error!!,
@@ -258,7 +256,6 @@ fun EditarPlato(
             )
         }
 
-        // botones inferiores
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -291,8 +288,6 @@ fun EditarPlato(
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFF5DF08A))
                     .clickable {
-                        // Se revisa y se avisa: antes el boton no hacia nada
-                        // y parecia que la app estaba congelada.
                         val precioNumero = precio
                             .trim()
                             .replace(",", ".")

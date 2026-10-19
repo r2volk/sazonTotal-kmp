@@ -30,15 +30,13 @@ fun App() {
     MaterialTheme {
         var pantallaActual by remember { mutableStateOf("login") }
         var ultimoPedidoId by remember { mutableStateOf(0L) }
-        // quien entro con su ID y PIN. se recuerda para mostrar su nombre
-        // en el perfil y firmar sus pedidos. se borra al cerrar sesion.
+        // quien entro (ID y PIN): da nombre en el perfil y firma pedidos; se borra al cerrar sesion.
         var empleadoLogueado by remember { mutableStateOf<EmpleadoEntity?>(null) }
         // mesa atendida ahora (se elige en el menu y viaja con el pedido).
         var mesaActual by remember { mutableStateOf("4") }
         // mensaje de error del login (nulo = todo bien, no se muestra nada).
         var errorLogin by remember { mutableStateOf<String?>(null) }
-        // en la vista previa no hay base de datos (no hay app corriendo),
-        // asi que se permite que sea nula y se muestran las pantallas sin datos.
+        // en preview no hay base de datos, por eso puede ser nula (pantallas sin datos).
         val db = remember {
             try { buildDatabase() } catch (e: Exception) { null }
         }
@@ -51,9 +49,7 @@ fun App() {
             repositorio?.seedIfEmpty()
         }
 
-        // Boton atras del sistema (Android) / gesto de retroceso.
-        // Sin esto, atras en una subpantalla cerraba toda la app.
-        // Cada pantalla sabe a cual se vuelve atras: al padre, no al login.
+        // atras del sistema: cada pantalla vuelve a su padre, no cierra toda la app.
         BackHandlerApp(enabled = pantallaActual != "login") {
             val padre = when (pantallaActual) {
                 "gestionPersonal", "todosLosPedidos", "reportesAdmin", "editarMenu" -> "dashboardAdmin"
@@ -68,8 +64,7 @@ fun App() {
                 }
                 else -> "login"
             }
-            // Al volver atras desde una subpantalla, el carrito sigue abierto
-            // (es el mismo pedido en curso), salvo al salir del ticket.
+            // al volver atras el carrito sigue abierto (mismo pedido en curso), salvo al salir del ticket.
             if (pantallaActual == "pedidoConcretado") {
                 carrito.limpiar()
             }
@@ -83,8 +78,7 @@ fun App() {
                     scope.launch {
                         val empleado = repositorio?.login(empleadoIdIngresado, pinIngresado)
                         if (empleado != null) {
-                            // el rol dice en que area trabaja (mesero/cocina).
-                            // el ID dice si es administrador (ADM-), mesero (MSR-) o cocina (CCN-).
+                            // el rol define el area (mesero/cocina) y el ID el tipo: ADM-, MSR- o CCN-.
                             empleadoLogueado = empleado
                             pantallaActual = if (empleado.id.startsWith("ADM-")) {
                                 "dashboardAdmin"

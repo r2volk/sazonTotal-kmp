@@ -83,7 +83,6 @@ fun MenuScreen(
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -146,8 +145,7 @@ fun MenuScreen(
             texto = "Buscar platos o bebidas"
         )
 
-        // 4 filtros ≈ 340dp, mas que los ~320dp disponibles en un movil de 360dp:
-        // con scroll horizontal "Postres" ya no se corta.
+        // los 4 filtros no caben en un movil de 360dp, por eso hay scroll horizontal.
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -228,8 +226,7 @@ fun MenuScreen(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // cuadritos segun lo que lleva el carrito: 1, 2 o 3 como maximo.
-            // si hay mas de 3, se queda en 3.
+            // un cuadrito por item del carrito, tope 3.
             val cuadritos = minOf(carrito?.totalItems() ?: 0, 3)
             val coloresCuadrito = listOf(Color(0xFF4A2620), Color(0xFF5A4A12), Color(0xFF0B3820))
             repeat(cuadritos) { indice ->

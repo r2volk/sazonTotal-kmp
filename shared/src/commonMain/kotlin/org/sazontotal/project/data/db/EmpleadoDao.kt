@@ -17,9 +17,7 @@ interface EmpleadoDao {
     @Query("SELECT * FROM empleados WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: String): EmpleadoEntity?
 
-    // cuantos administradores activos hay. si es 1, ese es el unico que puede
-    // existir: apagarlo dejaria la app sin acceso al panel admin.
-    // cuenta por rol O por prefijo de id (las dos formas de ser admin).
+    // cuenta admins activos por rol o prefijo de id; si es 1, no se puede apagar (la app quedaria sin panel).
     @Query("SELECT COUNT(*) FROM empleados WHERE activo = 1 AND (rol = 'Administrador' OR id LIKE 'ADM-%')")
     suspend fun contarAdminsActivos(): Int
 
@@ -29,12 +27,11 @@ interface EmpleadoDao {
     @Query("UPDATE empleados SET activo = :activo WHERE id = :id")
     suspend fun cambiarActivo(id: String, activo: Boolean)
 
-    // solo cambia el PIN si el actual coincide (la verificacion vive en la misma consulta,
-    // nadie puede cambiar el PIN de otro sin saber el suyo). devuelve las filas afectadas.
+    // cambia el PIN solo si el actual coincide; devuelve las filas afectadas.
     @Query("UPDATE empleados SET pin = :pinNuevo WHERE id = :id AND pin = :pinActual")
     suspend fun actualizarPin(id: String, pinActual: String, pinNuevo: String): Int
 
-    // No reemplazar a otro empleado si por error se repite un ID.
+    // no reemplazar a otro empleado si se repite un ID.
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun guardar(empleado: EmpleadoEntity)
 

@@ -84,7 +84,6 @@ fun CocinaPedidosScreen(
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -121,7 +120,6 @@ fun CocinaPedidosScreen(
             }
         }
 
-        // stats
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -146,7 +144,6 @@ fun CocinaPedidosScreen(
             )
         }
 
-        // filtros
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically

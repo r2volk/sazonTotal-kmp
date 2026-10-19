@@ -98,16 +98,9 @@ fun PedidoCard(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // el card del mesero tiene 3 momentos:
-        // PENDIENTE = esperando a cocina (solo muestra el estado).
-        // LISTO = cocina termino (boton verde: el mesero lo aprieta al entregar).
-        // ENTREGADO = fin del flujo (texto simple).
+        // el card pasa por PENDIENTE (espera), LISTO (boton para entregar) y ENTREGADO (fin).
         when (estado) {
-            // PENDIENTE no es un boton: es el ESTADO del pedido.
-            // Antes se dibujaba igual que el boton de abajo (mismo alto,
-            // mismo relleno, mismo redondeo) y la gente lo apretaba sin
-            // que pasara nada. Ahora es una etiqueta centrada: se lee como
-            // informacion, no como algo accionable.
+            // PENDIENTE es estado, no boton: se muestra como etiqueta centrada para no parecer accionable.
             EstadoPedido.PENDIENTE -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),

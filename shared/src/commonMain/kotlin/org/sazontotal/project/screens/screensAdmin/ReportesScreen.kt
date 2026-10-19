@@ -59,14 +59,11 @@ fun ReportesScreen(
     var periodo by remember { mutableStateOf("week") }
     val ahora = remember { ahoraMillis() }
 
-    // un dia en milisegundos. las ventanas se miden hacia atras desde ahora.
-    // solo cuentan pedidos con fecha real (los viejos con fecha 0 quedan fuera).
+    // un dia en ms; las ventanas miden hacia atras y solo cuentan pedidos con fecha real.
     val DIA = 86_400_000L
     val anioActual = partesFecha(ahora).third
 
-    // "Semana" y "Mes" son ventanas rodantes hacia atras.
-    // "Año" NO lo es: son los 12 meses calendario del anio actual (enero a
-    // diciembre), que es como lo lee cualquiera un reporte anual.
+    // semana y mes son ventanas rodantes; el anual son los 12 meses calendario
     val largoVentana = when (periodo) {
         "month" -> 28 * DIA
         else -> 7 * DIA
@@ -80,8 +77,7 @@ fun ReportesScreen(
     val pedidosVentana = vendidos.filter { pedido ->
         if (periodo == "year") enAnio(pedido.fecha, anioActual) else enVentana(pedido.fecha, 0)
     }
-    // La comparacion usa el mismo criterio: el ano anterior en modo "Año",
-    // y la ventana anterior del mismo largo en los otros modos.
+    // la comparacion usa el mismo criterio: el ano anterior o la ventana previa del mismo largo.
     val pedidosAntes = vendidos.filter { pedido ->
         if (periodo == "year") enAnio(pedido.fecha, anioActual - 1) else enVentana(pedido.fecha, largoVentana)
     }
@@ -120,7 +116,7 @@ fun ReportesScreen(
             listOf("S1", "S2", "S3", "S4") to grupos
         }
         "year" -> {
-            // Los 12 meses REALES del anio actual, de enero a diciembre.
+            // los 12 meses reales del ano actual, de enero a diciembre.
             val grupos = (1..12).map { mes ->
                 vendidos.filter { pedido ->
                     pedido.fecha > 0 && partesFecha(pedido.fecha).let { (_, m, a) ->
@@ -145,8 +141,7 @@ fun ReportesScreen(
         }
     }
 
-    // Las barras son proporcionales al real: un dia SIN ventas tiene barra en 0,
-// no un mini-boton de 15% (antes todo dia con 0 ventas parecia tener actividad).
+    // las barras son proporcionales: un dia sin ventas queda en 0.
     val maximo = sumas.maxOrNull() ?: 0.0
     val hayVentas = maximo > 0.0
     val alturas = sumas.map {
@@ -382,8 +377,7 @@ private fun graficoStatReporte(
     val colorBarra = Colores.GrisDeshabilitado
     val colorBarraDestacada = Color(0xFF34C759)
 
-    // Sin ventas no se dibuja una grafica de barras vacia (que antes salia
-    // con todas las barras al 15% y parecia actividad). Se dice que no hay.
+    // sin ventas no se dibuja una grafica vacia; se avisa que no hay.
     if (!hayVentas) {
         Column(
             modifier = Modifier
