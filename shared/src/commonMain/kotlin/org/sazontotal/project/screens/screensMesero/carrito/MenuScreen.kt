@@ -62,6 +62,7 @@ fun MenuScreen(
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
 
+    // el menu consulta solo platos activos; cantidades y mesa se comparten en memoria.
     val platosEnVivo = repositorio?.observarPlatos()
     val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -73,7 +74,7 @@ fun MenuScreen(
         filtroCategoria == "Todos" || plato.categoria == filtroCategoria
     }
 
-    // menu desplegable de mesas (1 a 10). la elegida viaja con el pedido.
+    // la mesa elegida se guarda en el estado compartido de App.
     var mostrarMesas by remember { mutableStateOf(false) }
 
     Column(

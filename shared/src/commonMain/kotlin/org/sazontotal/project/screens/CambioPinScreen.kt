@@ -99,6 +99,7 @@ fun CambioPinScreen(
 
         guardando.value = true
         scope.launch {
+            // el repositorio compara el pin actual y guarda el nuevo en empleados.
             val logro = repositorioUso.cambiarPin(empleadoUso.id, pinActual, pinNuevo)
             guardando.value = false
             if (logro) {

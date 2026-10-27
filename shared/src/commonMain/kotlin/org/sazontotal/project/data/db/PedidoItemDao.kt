@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PedidoItemDao {
+    // este dao guarda y consulta los platos que pertenecen a cada pedido.
     // guarda varios renglones de un solo viaje
     @Insert
     suspend fun insertarTodos(items: List<PedidoItemEntity>)

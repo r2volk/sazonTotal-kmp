@@ -9,6 +9,7 @@ import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun createDatabaseBuilder(): RoomDatabase.Builder<SazonDatabase> {
+    // ios guarda el archivo sqlite dentro del directorio Documents de la app.
     val docDir = NSFileManager.defaultManager.URLForDirectory(
         NSDocumentDirectory, NSUserDomainMask, null, true, null
     )!!.path!!

@@ -62,6 +62,7 @@ fun MeseroPedidosScreen(
     carrito: CarritoCompra? = null
 ){
 
+    // room entrega pedidos actualizados; despues se filtran por el mesero conectado.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -315,6 +316,7 @@ fun MeseroPedidosScreen(
                     // al marcar ENTREGADO el pedido sale de aqui y entra al historial.
                     onMarcarListo = { id ->
                         scope.launch {
+                            // al servirlo, se guarda el estado entregado en room.
                             repositorio?.cambiarEstadoPedido(id, "ENTREGADO")
                         }
                     }

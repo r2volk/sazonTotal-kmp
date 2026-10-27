@@ -56,6 +56,7 @@ fun EditarMenuScreen(
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
 
+    // administracion consulta todos los platos, incluso los que estan desactivados.
     val platosEnVivo = repositorio?.observarTodosLosPlatos()
     val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -176,6 +177,7 @@ fun EditarMenuScreen(
                         },
                         onActivoChange = { prendido ->
                             scope.launch {
+                                // el switch actualiza disponibilidad sin borrar el plato.
                                 repositorio?.cambiarActivoPlato(plato.id, prendido)
                             }
                         }
@@ -214,12 +216,14 @@ fun EditarMenuScreen(
                     plato = platoEnEdicion,
                     onGuardar = { platoAGuardar ->
                         scope.launch {
+                            // guardar inserta un plato nuevo o reemplaza el existente por su id.
                             repositorio?.guardarPlato(platoAGuardar)
                             mostrarFormulario = false
                         }
                     },
                     onEliminar = { id ->
                         scope.launch {
+                            // los pedidos guardan su propio nombre y precio aunque se borre el plato.
                             repositorio?.borrarPlato(id)
                             mostrarFormulario = false
                         }

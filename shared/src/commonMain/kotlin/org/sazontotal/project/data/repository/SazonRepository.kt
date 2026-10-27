@@ -10,6 +10,7 @@ import org.sazontotal.project.data.db.SazonDatabase
 import org.sazontotal.project.data.db.VentaPlato
 import org.sazontotal.project.utils.ahoraMillis
 
+// las pantallas llaman al repositorio; aqui se validan reglas y se coordinan los dao.
 class SazonRepository(private val db: SazonDatabase) {
 
     suspend fun login(id: String, pin: String): EmpleadoEntity? {
@@ -78,7 +79,7 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoDao().buscarPorId(id)
     }
 
-    // crea pedido y renglones juntos; si falla, borra la cabecera a mano (Room no da transacciones en comun).
+
     suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
         require(items.isNotEmpty()) { "El pedido no tiene renglones" }
         require(items.all { it.cantidad > 0 && it.precioUnit >= 0.0 }) {
@@ -121,6 +122,7 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoItemDao().observarTopPlatosEnAnio(anio)
     }
 
+    // agrega datos de demostracion faltantes sin reemplazar empleados existentes.
     suspend fun seedIfEmpty() {
         val dao = db.empleadoDao()
         if (dao.buscarPorId("ADM-001") == null) {

@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EmpleadoDao {
-    // solo entran los activos: un desactivado ya no pasa aunque su PIN sea correcto.
+    // el dao contiene las consultas sql; el repositorio aplica reglas antes de llamarlas.
+    // solo entran los activos; un empleado desactivado no pasa aunque su pin sea correcto.
     @Query("SELECT * FROM empleados WHERE id = :id AND pin = :pin AND activo = 1 LIMIT 1")
     suspend fun login(id: String, pin: String): EmpleadoEntity?
 
@@ -27,11 +28,11 @@ interface EmpleadoDao {
     @Query("UPDATE empleados SET activo = :activo WHERE id = :id")
     suspend fun cambiarActivo(id: String, activo: Boolean)
 
-    // cambia el PIN solo si el actual coincide; devuelve las filas afectadas.
+    // cambia el pin solo si el actual coincide; devuelve las filas afectadas.
     @Query("UPDATE empleados SET pin = :pinNuevo WHERE id = :id AND pin = :pinActual")
     suspend fun actualizarPin(id: String, pinActual: String, pinNuevo: String): Int
 
-    // no reemplazar a otro empleado si se repite un ID.
+    // no reemplazar a otro empleado si se repite un id.
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun guardar(empleado: EmpleadoEntity)
 

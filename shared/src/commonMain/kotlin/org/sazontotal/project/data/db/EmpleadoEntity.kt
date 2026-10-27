@@ -4,12 +4,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
+// cada instancia representa una fila de la tabla empleados.
 @Entity(tableName = "empleados")
 data class EmpleadoEntity(
     @PrimaryKey val id: String,
     val nombre: String,
-    val pin: String,            // PIN de 4 digitos del login
-    val rol: String,            // "ADMIN" o "COCINERO" (String, no enum, para SQLite)
+    val pin: String,            // pin de 4 digitos usado al iniciar sesion
+    val rol: String,            // etiqueta del perfil; la ruta inicial depende del prefijo del id
     val telefono: String = "",
     val activo: Boolean = true
 )

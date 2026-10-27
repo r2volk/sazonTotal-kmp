@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlatoDao {
+    // el menu pide activos; administracion y el carrito pueden consultar todos.
     @Query("SELECT * FROM platos WHERE activo = 1 ORDER BY nombre")
     fun observarActivos(): Flow<List<PlatoEntity>>
 

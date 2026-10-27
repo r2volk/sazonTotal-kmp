@@ -48,6 +48,7 @@ fun CocinaPedidosScreen(
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null
 ) {
+    // cocina recibe pedidos, empleados y platos desde los flujos del repositorio.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -178,6 +179,7 @@ fun CocinaPedidosScreen(
                     categoriaPorPlato = categoriaPorPlato,
                     onListoClick = { id ->
                         scope.launch {
+                            // cocina guarda en room que termino la preparacion.
                             repositorio?.cambiarEstadoPedido(id, "LISTO")
                         }
                     }

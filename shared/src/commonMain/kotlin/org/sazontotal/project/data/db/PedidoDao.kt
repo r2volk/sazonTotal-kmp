@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PedidoDao {
+    // estas consultas leen y actualizan las cabeceras de pedidos.
     // al guardar devuelve el numero del pedido, con el se marcan luego los renglones.
     @Insert
     suspend fun insertar(pedido: PedidoEntity): Long

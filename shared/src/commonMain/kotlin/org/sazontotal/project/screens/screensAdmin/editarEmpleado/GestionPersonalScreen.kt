@@ -57,6 +57,7 @@ fun GestionPersonalScreen(
     var aviso by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
+    // room emite la lista y la pantalla recalcula contadores y filtros al cambiarla.
     val empleados = repositorio?.observarEmpleados()
         ?.collectAsState(initial = emptyList())?.value ?: emptyList()
     val total = empleados.size
@@ -190,6 +191,7 @@ fun GestionPersonalScreen(
                         id = empleado.id,
                         onActivoChange = { prendido ->
                             scope.launch {
+                                // el repositorio protege al ultimo admin antes de actualizar la fila.
                                 val sePudo = repositorio?.cambiarActivoEmpleadoSeguro(empleado.id, prendido)
                                 // false = bloqueado (ultimo admin); el switch vuelve solo porque el estado sale de la base.
                                 aviso = if (sePudo == false) {
@@ -238,6 +240,7 @@ fun GestionPersonalScreen(
                                 if (repo == null) {
                                     aviso = "No se pudo guardar el empleado en este momento"
                                 } else {
+                                    // el repositorio valida el empleado y el dao lo inserta en room.
                                     repo.guardarEmpleado(nuevo)
                                     aviso = null
                                 }

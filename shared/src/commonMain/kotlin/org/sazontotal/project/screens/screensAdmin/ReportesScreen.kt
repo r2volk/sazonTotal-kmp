@@ -49,6 +49,7 @@ fun ReportesScreen(
     repositorio: SazonRepository? = null
 ){
 
+    // reportes calcula ventas solo con pedidos entregados que vienen de room.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -149,6 +150,7 @@ fun ReportesScreen(
     }
     val destacado = if (hayVentas) sumas.indexOf(maximo) else -1
 
+    // el dao aplica el mismo periodo seleccionado para obtener el top de platos.
     val topEnVivo = when {
         repositorio == null -> null
         periodo == "year" -> repositorio.observarTopPlatosEnAnio(anioActual)

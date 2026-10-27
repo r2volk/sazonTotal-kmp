@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.sazontotal.project.data.db.PlatoEntity
 
-// vive aqui para que menu y carrito compartan cantidades; se crea en App y se pasa a ambos.
+// vive aqui para que menu y carrito compartan cantidades, se crea en App y se pasa a ambos.
 class CarritoCompra {
     // id del plato -> cuantos pidio. si no esta anotado, es 0.
     val cantidades: SnapshotStateMap<Long, Int> = mutableStateMapOf()

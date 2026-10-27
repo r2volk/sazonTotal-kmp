@@ -30,13 +30,14 @@ fun App() {
     MaterialTheme {
         var pantallaActual by remember { mutableStateOf("login") }
         var ultimoPedidoId by remember { mutableStateOf(0L) }
-        // quien entro (ID y PIN): da nombre en el perfil y firma pedidos; se borra al cerrar sesion.
+
         var empleadoLogueado by remember { mutableStateOf<EmpleadoEntity?>(null) }
-        // mesa atendida ahora (se elige en el menu y viaja con el pedido).
+
         var mesaActual by remember { mutableStateOf("4") }
-        // mensaje de error del login (nulo = todo bien, no se muestra nada).
+
         var errorLogin by remember { mutableStateOf<String?>(null) }
         // en preview no hay base de datos, por eso puede ser nula (pantallas sin datos).
+
         val db = remember {
             try { buildDatabase() } catch (e: Exception) { null }
         }
@@ -45,6 +46,7 @@ fun App() {
         
         val carrito = remember { CarritoCompra() }
 
+        // al iniciar se agregan las cuentas y datos de demostracion que falten.
         LaunchedEffect(db) {
             repositorio?.seedIfEmpty()
         }
@@ -76,6 +78,7 @@ fun App() {
                 onLogin = { empleadoIdIngresado, pinIngresado ->
                     errorLogin = null
                     scope.launch {
+                        // el repositorio consulta empleados activos y valida el id con el pin.
                         val empleado = repositorio?.login(empleadoIdIngresado, pinIngresado)
                         if (empleado != null) {
                             // el rol define el area (mesero/cocina) y el ID el tipo: ADM-, MSR- o CCN-.

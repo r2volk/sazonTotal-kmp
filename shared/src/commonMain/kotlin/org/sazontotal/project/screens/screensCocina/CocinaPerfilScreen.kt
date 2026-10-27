@@ -26,6 +26,7 @@ fun CocinaPerfilScreen(
         ?.joinToString("") ?: "??"
 
     // pedidos que cocina ya marco listos (trabajo del equipo).
+    // el perfil consulta pedidos persistidos para mostrar el contador de cocina.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
     val listos = pedidos.count { it.estado == "LISTO" }

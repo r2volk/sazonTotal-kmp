@@ -4,13 +4,14 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
+// cada fila es un renglon y conserva los datos del plato usados al ordenar.
 @Entity(tableName = "pedido_items")
 data class PedidoItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val pedidoId: Long,
-    val platoId: Long,         // que plato es
-    val nombrePlato: String,   // copia al momento de pedir
+    val pedidoId: Long,        // id de la cabecera en pedidos
+    val platoId: Long,         // id original del plato en el menu
+    val nombrePlato: String,   // copia del nombre al momento de pedir
     val cantidad: Int,
     val nota: String = "",
-    val precioUnit: Double     // idem, para que no cambie si editan el plato
+    val precioUnit: Double     // copia del precio unitario con igv incluido
 )

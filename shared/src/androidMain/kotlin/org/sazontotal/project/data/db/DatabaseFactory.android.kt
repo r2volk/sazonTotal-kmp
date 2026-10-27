@@ -14,6 +14,7 @@ actual fun createDatabaseBuilder(): RoomDatabase.Builder<SazonDatabase> {
     // en la app real el contexto lo pone MainActivity al arrancar.
     // en la vista previa no hay app corriendo, asi que se avisa claro.
     val context = appContext ?: error("Sin contexto: en vista previa la base no existe")
+    // android guarda la base en el directorio privado de la aplicacion.
     val dbFile = context.getDatabasePath("sazontotal.db")
     return Room.databaseBuilder<SazonDatabase>(
         context = context,

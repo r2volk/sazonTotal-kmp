@@ -54,6 +54,7 @@ fun TodosLosPedidosScreen(
 
     var textoBusqueda by remember { mutableStateOf("") }
 
+    // la lista y los nombres de mesero vienen de consultas observables del repositorio.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -203,6 +204,7 @@ fun TodosLosPedidosScreen(
                         nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
                         onAnular = { id ->
                             scope.launch {
+                                // el cambio de estado se guarda en la tabla pedidos.
                                 repositorio?.cambiarEstadoPedido(id, "ANULADO")
                             }
                         }

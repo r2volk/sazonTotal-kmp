@@ -81,7 +81,7 @@ fun CarritoScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    // tambien observa platos desactivados para avisar cuando uno deja de venderse; el carrito conserva su copia.
+    // el repositorio lee todos los platos; el carrito conserva una copia del seleccionado.
     var catalogo by remember { mutableStateOf<List<PlatoEntity>?>(null) }
     LaunchedEffect(repositorio) {
         catalogo = null
@@ -320,6 +320,7 @@ fun CarritoScreen(
                     errorGuardado = null
                     scope.launch {
                         try {
+                            // la interfaz arma los datos y el repositorio los valida antes de guardarlos.
                             val cabecera = PedidoEntity(
                                 mesa = mesa,
                                 meseroID = meseroId,

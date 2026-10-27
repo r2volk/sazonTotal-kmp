@@ -48,6 +48,7 @@ fun DashboardAdmin(
     onLogoutClick: () -> Unit = {},
     repositorio: SazonRepository? = null
 ) {
+    // estos flujos traen empleados y pedidos de room y se actualizan al cambiar la base.
     val empleadosEnVivo = repositorio?.observarEmpleados()
     val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
     val pedidosEnVivo = repositorio?.observarPedidos()

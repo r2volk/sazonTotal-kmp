@@ -51,6 +51,7 @@ fun MeseroHistorialScreen(
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
 
+    // el historial lee pedidos de room y conserva solo los del mesero conectado.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 

@@ -25,6 +25,7 @@ fun MeseroPerfilScreen(
         ?.joinToString("") ?: "??"
 
     // pedidos tomados por este mesero (se buscan por su id).
+    // el contador del perfil se calcula con los pedidos persistidos del mesero.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
     val misPedidos = pedidos.count { it.meseroID == empleado?.id }

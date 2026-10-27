@@ -49,7 +49,7 @@ fun PedidoConcretadoScreen(
     pedidoId: Long = 0L,
     repositorio: SazonRepository? = null
 ) {
-    // el pedido no cambia, asi que se lee una sola vez al abrir
+    // la cabecera se lee una vez y sus renglones se observan desde room para armar el ticket.
     var pedido by remember { mutableStateOf<PedidoEntity?>(null) }
     LaunchedEffect(pedidoId) {
         pedido = repositorio?.buscarPedidoPorId(pedidoId)

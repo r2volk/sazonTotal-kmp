@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 
+// esta clase registra las tablas y entrega el dao para consultar cada una.
 @Database(
     entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class],
     version = 7,
@@ -17,6 +18,7 @@ abstract class SazonDatabase : RoomDatabase() {
     abstract fun pedidoItemDao(): PedidoItemDao
 }
 
+// room genera la implementacion de este constructor para cada plataforma.
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 expect object SazonDatabaseConstructor : RoomDatabaseConstructor<SazonDatabase> {
     override fun initialize(): SazonDatabase
