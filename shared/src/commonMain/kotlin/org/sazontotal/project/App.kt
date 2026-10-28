@@ -178,7 +178,10 @@ fun App() {
                 repositorio = repositorio
             )
             "asistente" -> AsistenteScreen(
-                backAsistente = {pantallaActual = "dashboardMesero"}
+                backAsistente = {pantallaActual = "dashboardMesero"},
+                repositorio = repositorio,
+                empleado = empleadoLogueado,
+                mesa = mesaActual
             )
             "cambioPin" -> CambioPinScreen(
                 backCambioPinScreen = {

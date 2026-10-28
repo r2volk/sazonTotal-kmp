@@ -46,6 +46,12 @@ kotlin {
             implementation(libs.compose.uiTooling)
             // Solo para el boton atras del sistema (BackHandler) en Navegacion.android.kt.
             implementation(libs.androidx.activity.compose)
+            // motor HTTP de ktor para Android (usa OkHttp por debajo).
+            implementation(libs.ktor.client.okhttp)
+        }
+        nativeMain.dependencies {
+            // motor HTTP de ktor para iOS (usa NSURLSession por debajo).
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -59,6 +65,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
+            // cliente HTTP multiplataforma para llamar a la API de
+            // Gemini; el JSON se arma/lee a mano con kotlinx-serialization-json.
+            implementation(libs.ktor.client.core)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
