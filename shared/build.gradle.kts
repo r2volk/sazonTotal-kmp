@@ -69,6 +69,9 @@ kotlin {
             // Gemini; el JSON se arma/lee a mano con kotlinx-serialization-json.
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)
+            // carga de imagenes por url (mapa estatico de Google Maps).
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

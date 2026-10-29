@@ -51,14 +51,12 @@ class GeminiService(
     suspend fun enviar(sistema: String, historial: List<MensajeChat>): String {
         // reintentos solo para fallos temporales del servidor (503 "high demand"):
         // los modelos recien estrenados se saturan y a veces responden a la segunda.
-        var ultimoError: Exception? = null
         repeat(3) { intento ->
             if (intento > 0) delay(2000L)
             try {
                 return llamadaUnica(sistema, historial)
             } catch (e: ErrorIA) {
                 if (!e.message.toString().startsWith("Saturado")) throw e
-                ultimoError = e
             } catch (e: SocketTimeoutException) {
                 throw ErrorIA("La IA tardó demasiado en responder y se cortó la espera. Intenta de nuevo.")
             }

@@ -10,6 +10,10 @@ fun initAndroidContext(context: Context) {
     appContext = context.applicationContext
 }
 
+// contexto de aplicacion para utilidades del proyecto (ej. abrir rutas de
+// Google Maps con un Intent). nulo solo en vista previa.
+fun contextoAndroid(): Context? = appContext
+
 actual fun createDatabaseBuilder(): RoomDatabase.Builder<SazonDatabase> {
     // en la app real el contexto lo pone MainActivity al arrancar.
     // en la vista previa no hay app corriendo, asi que se avisa claro.
