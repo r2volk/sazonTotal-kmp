@@ -3,7 +3,6 @@ package org.sazontotal.project
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
-
 import org.sazontotal.project.data.CarritoCompra
 import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.buildDatabase
@@ -19,6 +18,9 @@ import kotlinx.coroutines.launch
 import org.sazontotal.project.screens.CambioPinScreen
 import org.sazontotal.project.screens.DashboardCocina
 import org.sazontotal.project.screens.screensMesero.AsistenteScreen
+import org.sazontotal.project.screens.screensMesero.EntregasScreen
+import org.sazontotal.project.screens.screensMesero.RepartoScreen
+import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.screens.screensMesero.carrito.CarritoScreen
 import org.sazontotal.project.screens.screensMesero.carrito.MenuScreen
 import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScreen
@@ -46,6 +48,9 @@ fun App() {
         
         val carrito = remember { CarritoCompra() }
 
+        // entregas del modulo reparto: EN MEMORIA (sin Room todavia); se borran al cerrar la app.
+        val entregasReparto = remember { mutableStateListOf<EntregaReparto>() }
+
         // al iniciar se agregan las cuentas y datos de demostracion que falten.
         LaunchedEffect(db) {
             repositorio?.seedIfEmpty()
@@ -59,6 +64,8 @@ fun App() {
                 "carritoMesero" -> "menuMesero"
                 "pedidoConcretado" -> "dashboardMesero"
                 "asistente" -> "dashboardMesero"
+                "reparto" -> "dashboardMesero"
+                "entregas" -> "reparto"
                 "cambioPin" -> when {
                     empleadoLogueado?.id?.startsWith("MSR-") == true -> "dashboardMesero"
                     empleadoLogueado?.id?.startsWith("CCN-") == true -> "dashboardCocina"
@@ -182,6 +189,38 @@ fun App() {
                 repositorio = repositorio,
                 empleado = empleadoLogueado,
                 mesa = mesaActual
+            )
+            "reparto" -> RepartoScreen(
+                backReparto = {pantallaActual = "dashboardMesero"},
+                onVerEntregas = {pantallaActual = "entregas"},
+                onRegistrarEntrega = { entrega ->
+                    // entra al inicio de la lista para que la mas reciente quede primera.
+                    entregasReparto.add(0, entrega)
+                },
+                nombreMesero = empleadoLogueado?.nombre ?: "Mesero",
+                // resaltado del historial: cuantas quedan por entregar.
+                entregasPendientes = entregasReparto.count { !it.entregada }
+            )
+            "entregas" -> EntregasScreen(
+                backEntregas = {pantallaActual = "reparto"},
+                entregas = entregasReparto,
+                onMarcarEntregada = { id ->
+                    val indice = entregasReparto.indexOfFirst { it.id == id }
+                    if (indice >= 0) {
+                        entregasReparto[indice] = entregasReparto[indice].copy(entregada = true)
+                    }
+                },
+                onDeshacerEntrega = { id ->
+                    // por si marco entregada por error: vuelve a En camino.
+                    val indice = entregasReparto.indexOfFirst { it.id == id }
+                    if (indice >= 0) {
+                        entregasReparto[indice] = entregasReparto[indice].copy(entregada = false)
+                    }
+                },
+                onEliminarEntrega = { id ->
+                    val indice = entregasReparto.indexOfFirst { it.id == id }
+                    if (indice >= 0) entregasReparto.removeAt(indice)
+                }
             )
             "cambioPin" -> CambioPinScreen(
                 backCambioPinScreen = {

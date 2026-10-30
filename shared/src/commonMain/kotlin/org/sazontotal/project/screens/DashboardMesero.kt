@@ -20,6 +20,7 @@ fun DashboardMesero(
     onLogoutClick: () -> Unit,
     onCarritoClick: () -> Unit,
     onAsistenteClick: () -> Unit,
+    onRepartoClick: () -> Unit = {},
     onCambiarPinClick: () -> Unit = {},
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null,
@@ -31,6 +32,7 @@ fun DashboardMesero(
                 MeseroPedidosScreen(
                     onCarritoClick = onCarritoClick,
                     onAsistenteClick = onAsistenteClick,
+                    onRepartoClick = onRepartoClick,
                     repositorio = repositorio,
                     empleado = empleado,
                     carrito = carrito

@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +58,7 @@ import org.sazontotal.project.enums.EstadoPedido
 fun MeseroPedidosScreen(
     onCarritoClick: () -> Unit,
     onAsistenteClick: () -> Unit,
+    onRepartoClick: () -> Unit,
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null,
     carrito: CarritoCompra? = null
@@ -253,6 +255,36 @@ fun MeseroPedidosScreen(
                         Text(
                             text = "Asistente IA",
                             color = Color(0xFFD6C9FF),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // tarjeta de acceso al modulo de reparto (misma fila, tema verde).
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFF0E2B18))
+                        .border(1.dp, Color(0xFF2F8A4F), RoundedCornerShape(16.dp))
+                        .clickable { onRepartoClick() }
+                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.TwoWheeler,
+                            contentDescription = "Ir al reparto",
+                            tint = Color(0xFF7BE382),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Reparto",
+                            color = Color(0xFF7BE382),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
