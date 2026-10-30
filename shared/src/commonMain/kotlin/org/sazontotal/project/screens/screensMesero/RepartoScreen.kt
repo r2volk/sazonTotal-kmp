@@ -69,6 +69,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.sazontotal.project.data.maps.Coordenada
 import org.sazontotal.project.data.maps.DIRECCION_SEDE
+import org.sazontotal.project.data.maps.ErrorMaps
 import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.data.maps.KEY_MAPS
 import org.sazontotal.project.data.maps.GoogleMapsService
@@ -88,9 +89,9 @@ private val RojoSuave = Color(0xFFFF6B6B)
  * sugerencia y la app muestra el mapa, la distancia y el tiempo del reparto,
  * con botones para abrir la ruta y registrar la entrega.
  *
- * todavia no usa la base de datos: las suggerencias/distancias salen del
+ * todavia no usa la red de maps: las sugerencias/distancias salen del
  * servicio de maps (en modo demo devuelve datos de ejemplo si no hay key) y
- * las entregas registradas van a una lista en memoria en App.kt.
+ * las entregas registradas se guardan en Room a traves de App.kt.
  */
 @Composable
 fun RepartoScreen(
@@ -171,6 +172,10 @@ fun RepartoScreen(
                 val dista = maps.distancia(punto)
                 coordenada = punto
                 resultado = dista
+            } catch (e: ErrorMaps) {
+                // el servicio ya traduce el fallo (key invalida, cuota, sin resultados).
+                error = e.message
+                direccionElegida = null
             } catch (e: Exception) {
                 error = "No se pudo encontrar esa dirección. Prueba con otra."
                 direccionElegida = null

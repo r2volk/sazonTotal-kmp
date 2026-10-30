@@ -1,11 +1,12 @@
 package org.sazontotal.project.data.maps
 
+import org.sazontotal.project.data.db.EntregaEntity
+
 /**
  * una entrega de domicilio registrada en la pantalla de reparto.
  *
- * MODO EN MEMORIA: aun no se guarda en Room; la lista vive en App.kt y muere
- * al cerrar la app. cuando se conecte la base de datos se reemplaza por una
- * EntregaEntity sin cambiar la UI.
+ * MODELO DE PANTALLA: la fila real vive en Room como EntregaEntity; App.kt
+ * convierte entre ambos con los maps de aqui abajo y la UI sigue igual.
  */
 data class EntregaReparto(
     val id: Long,
@@ -20,3 +21,25 @@ data class EntregaReparto(
 // estado del chip de cada entrega en la lista.
 const val ESTADO_EN_CAMINO = "En camino"
 const val ESTADO_ENTREGADA = "Entregada"
+
+// pasa una fila de Room al modelo que usan las pantallas.
+fun EntregaEntity.aEntregaReparto(): EntregaReparto = EntregaReparto(
+    id = id,
+    direccion = direccion,
+    kmTexto = kmTexto,
+    minutosTexto = minutosTexto,
+    fecha = fecha,
+    entregada = entregada,
+    meseroNombre = meseroNombre
+)
+
+// pasa el modelo de pantalla a fila de Room; el id va en 0 para que room genere el suyo.
+fun EntregaReparto.aEntregaEntity(): EntregaEntity = EntregaEntity(
+    id = 0L,
+    direccion = direccion,
+    kmTexto = kmTexto,
+    minutosTexto = minutosTexto,
+    fecha = fecha,
+    entregada = entregada,
+    meseroNombre = meseroNombre
+)

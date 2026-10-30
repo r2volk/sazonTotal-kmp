@@ -21,6 +21,8 @@ import org.sazontotal.project.screens.screensMesero.AsistenteScreen
 import org.sazontotal.project.screens.screensMesero.EntregasScreen
 import org.sazontotal.project.screens.screensMesero.RepartoScreen
 import org.sazontotal.project.data.maps.EntregaReparto
+import org.sazontotal.project.data.maps.aEntregaEntity
+import org.sazontotal.project.data.maps.aEntregaReparto
 import org.sazontotal.project.screens.screensMesero.carrito.CarritoScreen
 import org.sazontotal.project.screens.screensMesero.carrito.MenuScreen
 import org.sazontotal.project.screens.screensMesero.carrito.PedidoConcretadoScreen
@@ -45,15 +47,23 @@ fun App() {
         }
         val repositorio = remember(db) { db?.let { SazonRepository(it) } }
         val scope = rememberCoroutineScope()
-        
+
         val carrito = remember { CarritoCompra() }
 
-        // entregas del modulo reparto: EN MEMORIA (sin Room todavia); se borran al cerrar la app.
-        val entregasReparto = remember { mutableStateListOf<EntregaReparto>() }
+        // entregas del modulo reparto: ya viven en Room; este estado es solo el reflejo
+        // de la tabla para las pantallas (el repositorio la observa con un Flow).
+        var entregasReparto by remember { mutableStateOf<List<EntregaReparto>>(emptyList()) }
 
         // al iniciar se agregan las cuentas y datos de demostracion que falten.
         LaunchedEffect(db) {
             repositorio?.seedIfEmpty()
+        }
+
+        // la lista de entregas se actualiza sola cuando room inserta o borra algo.
+        LaunchedEffect(repositorio) {
+            repositorio?.observarEntregas()?.collect { filas ->
+                entregasReparto = filas.map { fila -> fila.aEntregaReparto() }
+            }
         }
 
         // atras del sistema: cada pantalla vuelve a su padre, no cierra toda la app.
@@ -194,8 +204,8 @@ fun App() {
                 backReparto = {pantallaActual = "dashboardMesero"},
                 onVerEntregas = {pantallaActual = "entregas"},
                 onRegistrarEntrega = { entrega ->
-                    // entra al inicio de la lista para que la mas reciente quede primera.
-                    entregasReparto.add(0, entrega)
+                    // la entrega llega como modelo de pantalla; room le asigna su propio id.
+                    scope.launch { repositorio?.registrarEntrega(entrega.aEntregaEntity()) }
                 },
                 nombreMesero = empleadoLogueado?.nombre ?: "Mesero",
                 // resaltado del historial: cuantas quedan por entregar.
@@ -205,21 +215,14 @@ fun App() {
                 backEntregas = {pantallaActual = "reparto"},
                 entregas = entregasReparto,
                 onMarcarEntregada = { id ->
-                    val indice = entregasReparto.indexOfFirst { it.id == id }
-                    if (indice >= 0) {
-                        entregasReparto[indice] = entregasReparto[indice].copy(entregada = true)
-                    }
+                    scope.launch { repositorio?.cambiarEntregada(id, true) }
                 },
                 onDeshacerEntrega = { id ->
                     // por si marco entregada por error: vuelve a En camino.
-                    val indice = entregasReparto.indexOfFirst { it.id == id }
-                    if (indice >= 0) {
-                        entregasReparto[indice] = entregasReparto[indice].copy(entregada = false)
-                    }
+                    scope.launch { repositorio?.cambiarEntregada(id, false) }
                 },
                 onEliminarEntrega = { id ->
-                    val indice = entregasReparto.indexOfFirst { it.id == id }
-                    if (indice >= 0) entregasReparto.removeAt(indice)
+                    scope.launch { repositorio?.borrarEntrega(id) }
                 }
             )
             "cambioPin" -> CambioPinScreen(

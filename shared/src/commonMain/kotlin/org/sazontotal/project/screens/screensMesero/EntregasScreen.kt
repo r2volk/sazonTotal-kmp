@@ -60,7 +60,7 @@ private const val FILTRO_ENTREGADAS = ESTADO_ENTREGADA
  * entregas de domicilio del dia: lista filtrable (Todas / En camino /
  * Entregadas) con direccion, distancia/tiempo, quien la registro y su estado.
  *
- * MODO EN MEMORIA: la lista viene de App.kt (sin Room todavia). acciones por
+ * la lista viene de Room (App.kt la observa con un Flow). acciones por
  * tarjeta: marcar entregada, deshacer (volver a En camino) y eliminar.
  */
 @Composable

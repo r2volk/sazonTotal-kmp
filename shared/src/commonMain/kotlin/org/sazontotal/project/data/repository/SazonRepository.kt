@@ -2,6 +2,7 @@ package org.sazontotal.project.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import org.sazontotal.project.data.db.EmpleadoEntity
+import org.sazontotal.project.data.db.EntregaEntity
 import org.sazontotal.project.data.db.esPinEmpleadoValido
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
@@ -109,6 +110,25 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoItemDao().observarPorPedido(pedidoId)
     }
 
+    // entregas de domicilio del modulo reparto (ahora si en Room).
+    fun observarEntregas(): Flow<List<EntregaEntity>> {
+        return db.entregaDao().observarTodas()
+    }
+
+    suspend fun registrarEntrega(entrega: EntregaEntity): Long {
+        require(entrega.direccion.isNotBlank()) { "La direccion de la entrega es obligatoria" }
+        return db.entregaDao().insertar(entrega)
+    }
+
+    // marca o deshace la entrega (true = Entregada, false = En camino).
+    suspend fun cambiarEntregada(id: Long, entregada: Boolean) {
+        db.entregaDao().cambiarEntregada(id, entregada)
+    }
+
+    suspend fun borrarEntrega(id: Long) {
+        db.entregaDao().borrarPorId(id)
+    }
+
     suspend fun cambiarEstadoPedido(id: Long, estado: String) {
         db.pedidoDao().cambiarEstado(id, estado)
     }
@@ -145,6 +165,7 @@ class SazonRepository(private val db: SazonDatabase) {
         }
 
         sembrarPedidosDeEjemplo()
+        sembrarEntregasDeEjemplo()
     }
 
     // pedidos de ejemplo si la base esta vacia; al cargar uno real ya no se siembran y se mezclan.
@@ -245,6 +266,59 @@ class SazonRepository(private val db: SazonDatabase) {
         )
         db.pedidoItemDao().insertarTodos(
             lineas.map { renglon -> renglon.copy(pedidoId = pedidoId) }
+        )
+    }
+
+    // entregas de domicilio de ejemplo si la tabla esta vacia; el mesero ya puede
+    // practicar el historial (filtrar / marcar / deshacer) sin registrar nada antes.
+    private suspend fun sembrarEntregasDeEjemplo() {
+        val entregaDao = db.entregaDao()
+        if (entregaDao.contar() > 0) return
+
+        val ahora = ahoraMillis()
+        val MIN = 60_000L
+
+        // del mas viejo al mas nuevo para que la lista por fecha descendente muestre lo reciente primero.
+        entregaDao.insertar(
+            EntregaEntity(
+                direccion = "Av. Arequipa 2500, Lince",
+                kmTexto = "4.8 km",
+                minutosTexto = "~15 min",
+                fecha = ahora - 110 * MIN,
+                entregada = true,
+                meseroNombre = "Ricardo Sanchez"
+            )
+        )
+        entregaDao.insertar(
+            EntregaEntity(
+                direccion = "Jr. de la Unión 1000, Lima Centro",
+                kmTexto = "6.2 km",
+                minutosTexto = "~19 min",
+                fecha = ahora - 55 * MIN,
+                entregada = true,
+                meseroNombre = "Ricardo Sanchez"
+            )
+        )
+        // estas dos quedan EN CAMINO: hay algo real para marcar "Entregada" o deshacer.
+        entregaDao.insertar(
+            EntregaEntity(
+                direccion = "Parque Kennedy, Av. José Larco 900, Miraflores",
+                kmTexto = "1.6 km",
+                minutosTexto = "~6 min",
+                fecha = ahora - 22 * MIN,
+                entregada = false,
+                meseroNombre = "Ricardo Sanchez"
+            )
+        )
+        entregaDao.insertar(
+            EntregaEntity(
+                direccion = "Calle Berlín 500, Miraflores",
+                kmTexto = "2.7 km",
+                minutosTexto = "~9 min",
+                fecha = ahora - 8 * MIN,
+                entregada = false,
+                meseroNombre = "Ricardo Sanchez"
+            )
         )
     }
 }
