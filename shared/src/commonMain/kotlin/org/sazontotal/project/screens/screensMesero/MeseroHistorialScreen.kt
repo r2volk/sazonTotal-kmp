@@ -36,6 +36,7 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.destinoPedido
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
@@ -151,7 +152,7 @@ private fun HistorialDePedido(
     val detalle = items.joinToString(", ") { "${it.nombrePlato} x${it.cantidad}" }
 
     HistorialCard(
-        mesa = "Mesa ${pedido.mesa}",
+        mesa = destinoPedido(pedido.mesa),
         hora = textoHora(pedido.fecha),
         detalle = detalle,
         precio = moneda(pedido.total)

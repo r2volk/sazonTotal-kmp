@@ -10,6 +10,7 @@ import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.db.SazonDatabase
 import org.sazontotal.project.data.db.VentaPlato
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.data.transicionPedidoPermitida
 
 // las pantallas llaman al repositorio; aqui se validan reglas y se coordinan los dao.
 class SazonRepository(private val db: SazonDatabase) {
@@ -130,7 +131,11 @@ class SazonRepository(private val db: SazonDatabase) {
     }
 
     suspend fun cambiarEstadoPedido(id: Long, estado: String) {
-        db.pedidoDao().cambiarEstado(id, estado)
+        val dao = db.pedidoDao()
+        val pedido = dao.buscarPorId(id) ?: return
+        if (transicionPedidoPermitida(pedido.mesa, pedido.estado, estado)) {
+            dao.cambiarEstadoSiActual(id, pedido.estado, estado)
+        }
     }
 
     // ranking del top 5 limitado al mismo periodo de los reportes.

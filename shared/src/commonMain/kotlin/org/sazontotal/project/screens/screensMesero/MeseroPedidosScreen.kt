@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import org.sazontotal.project.data.CarritoCompra
+import org.sazontotal.project.data.esDelivery
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -194,12 +196,13 @@ fun MeseroPedidosScreen(
                             .background(Color(0xFF2B2113))
                             .border(1.dp, Color(0xFF8A6A2F), RoundedCornerShape(16.dp))
                             .clickable { onCarritoClick() }
-                            .padding(horizontal = 12.dp, vertical = 14.dp),
+                            .height(62.dp)
+                            .padding(horizontal = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ShoppingCart,
@@ -210,8 +213,10 @@ fun MeseroPedidosScreen(
                             Text(
                                 text = "Carrito",
                                 color = Color(0xFFFFD791),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -239,12 +244,13 @@ fun MeseroPedidosScreen(
                         .background(Color(0xFF2A2350))
                         .border(1.dp, Color(0xFF6B5FC7), RoundedCornerShape(16.dp))
                         .clickable { onAsistenteClick() }
-                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                        .height(62.dp)
+                        .padding(horizontal = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
@@ -255,8 +261,10 @@ fun MeseroPedidosScreen(
                         Text(
                             text = "Asistente IA",
                             color = Color(0xFFD6C9FF),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -269,12 +277,13 @@ fun MeseroPedidosScreen(
                         .background(Color(0xFF0E2B18))
                         .border(1.dp, Color(0xFF2F8A4F), RoundedCornerShape(16.dp))
                         .clickable { onRepartoClick() }
-                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                        .height(62.dp)
+                        .padding(horizontal = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.TwoWheeler,
@@ -285,8 +294,10 @@ fun MeseroPedidosScreen(
                         Text(
                             text = "Reparto",
                             color = Color(0xFF7BE382),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -349,7 +360,8 @@ fun MeseroPedidosScreen(
                     onMarcarListo = { id ->
                         scope.launch {
                             // al servirlo, se guarda el estado entregado en room.
-                            repositorio?.cambiarEstadoPedido(id, "ENTREGADO")
+                            val siguiente = if (esDelivery(pedido.mesa) && pedido.estado == "LISTO") "EN_CAMINO" else "ENTREGADO"
+                            repositorio?.cambiarEstadoPedido(id, siguiente)
                         }
                     }
                 )
@@ -378,6 +390,7 @@ private fun PedidoEnCocina(
     val estado = when (pedido.estado) {
         "PENDIENTE" -> EstadoPedido.PENDIENTE
         "LISTO" -> EstadoPedido.LISTO
+        "EN_CAMINO" -> EstadoPedido.EN_CAMINO
         "ENTREGADO" -> EstadoPedido.ENTREGADO
         else -> EstadoPedido.ANULADO
     }

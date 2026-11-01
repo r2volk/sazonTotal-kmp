@@ -70,7 +70,7 @@ Dentro de `shared/src/commonMain/kotlin/org/sazontotal/project/`:
 | `App.kt` | Crea la base y el repositorio; conserva sesión, ruta actual, mesa y carrito; conecta las pantallas. |
 | `data/db/` | Entidades Room, DAO, base de datos y factories de plataforma. |
 | `data/repository/SazonRepository.kt` | Acceso a datos, validaciones de negocio, cambios de estado y seed. |
-| `data/CarritoCompra.kt` | Cantidades, notas, snapshots de platos y total compartido entre menú y carrito. |
+| `data/CarritoCompra.kt` | Cantidades, nota general, snapshots de platos y total compartido entre menú y carrito. |
 | `screens/` | Dashboards y pantallas de cada perfil. |
 | `screens/screensAdmin/` | Informes, pedidos, personal y edición del menú. |
 | `screens/screensMesero/carrito/` | Menú, carrito y confirmación/ticket del pedido. |
@@ -121,10 +121,18 @@ Los dashboards de mesero y cocina usan pestañas. El de mesero tiene **Pedidos**
 
 `App.kt` conserva la sesión actual, la ruta de pantalla, la mesa seleccionada y el carrito mediante estado Compose (`remember`). Los pedidos confirmados, en cambio, se persisten en Room. Si se cierra el proceso de la aplicación, no se conserva como pedido un carrito que todavía no se haya confirmado.
 
+Al cerrar sesión, o al volver desde un dashboard a la pantalla de acceso, se descarta el carrito sin confirmar y se restablecen la mesa y la dirección.
+
 ## Flujo de pedidos
 
+### Delivery
+
+Desde **Reparto**, el mesero abre el menú con delivery seleccionado. También puede elegir delivery en el selector de destino del menú o carrito. Agrega los platos, escribe la dirección en el carrito y confirma: se crea un pedido normal que cocina recibe como delivery. En **Mis pedidos**, cuando cocina lo marque listo, el mesero pulsa **Enviar con motorizado** y después **Marcar entregado**. Solo entonces cuenta como venta en reportes. La dirección permite abrir Google Maps; no se calcula una ruta ni una distancia automáticamente.
+
+Para conservar la base existente sin cambiar su esquema, la dirección de los nuevos deliverys se guarda en el campo `mesa` con el prefijo `Delivery: `. Los registros antiguos de la tabla `entregas` son independientes y no se convierten en pedidos; se pueden consultar desde **Entregas anteriores** en el menú de delivery.
+
 1. El mesero agrega platos y cantidades desde `MenuScreen`.
-2. El carrito conserva el detalle de los platos seleccionados, la cantidad, las notas y el precio de ese momento. Esto evita que el pedido cambie si el plato se edita o se elimina del menú mientras está en el carrito.
+2. El carrito conserva el detalle de los platos seleccionados, la cantidad, una nota general y el precio de ese momento. Esto evita que el pedido cambie si el plato se edita o se elimina del menú mientras está en el carrito.
 3. Se selecciona una mesa del **1 al 15**. La selección por defecto es la mesa `4` y se comparte entre menú y carrito.
 4. Al confirmar se crea una cabecera `PedidoEntity` con el ID del mesero, la mesa, el total, la fecha y estado `PENDIENTE`; también se guardan sus `PedidoItemEntity`.
 5. Cocina ve los pedidos pendientes y cambia su estado a `LISTO`.
@@ -152,6 +160,7 @@ Los estados guardados en Room son strings y sus valores válidos son:
 | --- | --- |
 | `PENDIENTE` | Pedido enviado y pendiente de preparación. |
 | `LISTO` | Cocina terminó; espera la entrega del mesero. |
+| `EN_CAMINO` | Pedido delivery enviado con el motorizado; aún no cuenta como venta. |
 | `ENTREGADO` | Pedido servido al cliente. Cuenta como venta. |
 | `ANULADO` | Pedido anulado por administración. No cuenta como venta. |
 
@@ -175,7 +184,7 @@ Flujo habitual: `PENDIENTE` → `LISTO` → `ENTREGADO`. Administración puede a
 
 ### Notas de comanda
 
-El modelo guarda `nota` en cada renglón del pedido. La tarjeta de cocina presenta una nota visible por pedido, que se considera la nota general de la comanda. Mantener este comportamiento; no convertirlo en una lista de notas separadas sin confirmación.
+El carrito permite escribir una sola nota general por pedido. Para conservar el esquema existente, se guarda en el primer renglón y cocina y mesero la muestran como nota de la comanda. Los pedidos antiguos conservan sus notas originales.
 
 ## Persistencia y datos de demostración
 
@@ -267,7 +276,7 @@ Una compilación de verificación de los módulos compartido y Android usa:
 
 ## Decisiones vigentes y limitaciones conocidas
 
-- `AsistenteScreen.kt` es deliberadamente una **maqueta visual** de la semana 9 del curso. No está conectada a un modelo de IA y sus controles no envían consultas. La integración real se difiere a la semana 11; no implementarla ni quitar la maqueta antes de una solicitud expresa.
+- `AsistenteScreen.kt` envía consultas a Gemini con contexto del menú y platos más vendidos. Requiere conexión y una clave válida configurada en `data/ia/ApiKey.kt`.
 - Los datos de turnos y promedios de los perfiles de mesero y cocina permanecen fijos por decisión actual. No sustituirlos ni eliminarlos sin autorización.
 - Los controles de cámara en los formularios de empleado y plato son marcadores visuales; no hay flujo de selección ni almacenamiento de imágenes. Mantenerlos sin cambios salvo petición expresa.
 - Si la inicialización de la base falla, `App.kt` puede continuar con un repositorio nulo para permitir previews. El comportamiento de error de inicio de sesión asociado está pendiente y debe consultarse antes de cambiarlo.

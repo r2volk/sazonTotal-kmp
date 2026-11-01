@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.data.destinoPedido
 
 data class CocinaPlatoVisual(
     val nombre: String,
@@ -65,7 +66,7 @@ fun CocinaPedidoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Mesa $mesa",
+                text = destinoPedido(mesa),
                 color = Color.White,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold

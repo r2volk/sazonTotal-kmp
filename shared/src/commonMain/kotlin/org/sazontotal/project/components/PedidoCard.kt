@@ -2,6 +2,7 @@ package org.sazontotal.project.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sazontotal.project.enums.EstadoPedido
 import org.sazontotal.project.theme.Colores
+import org.sazontotal.project.data.destinoPedido
+import org.sazontotal.project.data.esDelivery
+import org.sazontotal.project.data.direccionDelivery
+import org.sazontotal.project.utils.abrirEnExterno
+import io.ktor.http.encodeURLParameter
 
 @Composable
 fun PedidoCard(
@@ -56,7 +62,7 @@ fun PedidoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Mesa $numeroMesa",
+                text = destinoPedido(numeroMesa),
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -73,6 +79,20 @@ fun PedidoCard(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        if (esDelivery(numeroMesa)) {
+            Text(text = direccionDelivery(numeroMesa), color = Colores.TextoTenue, fontSize = 14.sp)
+            Text(
+                text = "Abrir dirección en Google Maps",
+                color = Colores.VerdePrimario,
+                fontSize = 13.sp,
+                modifier = Modifier.clickable {
+                    val destino = direccionDelivery(numeroMesa).encodeURLParameter()
+                    abrirEnExterno("https://www.google.com/maps/dir/?api=1&destination=$destino&travelmode=driving")
+                }.padding(vertical = 6.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -131,12 +151,21 @@ fun PedidoCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        "Marcar entregado",
+                        if (esDelivery(numeroMesa)) "Enviar con motorizado" else "Marcar entregado",
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+            }
+
+            EstadoPedido.EN_CAMINO -> {
+                Button(onClick = onCambiarEstado, modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Colores.VerdeBoton),
+                    shape = RoundedCornerShape(12.dp)) {
+                    Text("Marcar entregado", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Text("En camino", color = Colores.VerdePrimario, fontSize = 14.sp)
             }
 
             EstadoPedido.ENTREGADO -> {

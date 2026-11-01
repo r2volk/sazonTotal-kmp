@@ -57,7 +57,8 @@ fun MenuScreen(
     carrito: CarritoCompra? = null,
     mesa: String = "4",
     onMesaChange: (String) -> Unit = {},
-    nombreMesero: String = "José P."
+    nombreMesero: String = "José P.",
+    onHistorialReparto: () -> Unit = {}
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
@@ -111,7 +112,7 @@ fun MenuScreen(
                 )
                 Box {
                     Text(
-                        text = "Mesa $mesa · $nombreMesero ▾",
+                        text = "${if (mesa == "Delivery") "Delivery" else "Mesa $mesa"} · $nombreMesero ▾",
                         color = Colores.TextoTenue,
                         fontSize = 13.sp,
                         modifier = Modifier.clickable { mostrarMesas = true }
@@ -120,7 +121,11 @@ fun MenuScreen(
                         expanded = mostrarMesas,
                         onDismissRequest = { mostrarMesas = false }
                     ) {
-        (1..15).forEach { numero ->
+                        DropdownMenuItem(
+                            text = { Text("Delivery", color = Colores.Superficie) },
+                            onClick = { onMesaChange("Delivery"); mostrarMesas = false }
+                        )
+                        (1..15).forEach { numero ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -137,6 +142,10 @@ fun MenuScreen(
                         }
                     }
                 }
+            }
+            if (mesa == "Delivery") {
+                Text("Entregas anteriores", color = Colores.VerdePrimario, fontSize = 12.sp,
+                    modifier = Modifier.clickable { onHistorialReparto() })
             }
         }
 

@@ -38,6 +38,7 @@ fun App() {
         var empleadoLogueado by remember { mutableStateOf<EmpleadoEntity?>(null) }
 
         var mesaActual by remember { mutableStateOf("4") }
+        var direccionActual by remember { mutableStateOf("") }
 
         var errorLogin by remember { mutableStateOf<String?>(null) }
         // en preview no hay base de datos, por eso puede ser nula (pantallas sin datos).
@@ -49,6 +50,16 @@ fun App() {
         val scope = rememberCoroutineScope()
 
         val carrito = remember { CarritoCompra() }
+
+        fun cerrarSesion() {
+            carrito.limpiar()
+            mesaActual = "4"
+            direccionActual = ""
+            ultimoPedidoId = 0L
+            empleadoLogueado = null
+            errorLogin = null
+            pantallaActual = "login"
+        }
 
         // entregas del modulo reparto: ya viven en Room; este estado es solo el reflejo
         // de la tabla para las pantallas (el repositorio la observa con un Flow).
@@ -75,7 +86,7 @@ fun App() {
                 "pedidoConcretado" -> "dashboardMesero"
                 "asistente" -> "dashboardMesero"
                 "reparto" -> "dashboardMesero"
-                "entregas" -> "reparto"
+                "entregas" -> "menuMesero"
                 "cambioPin" -> when {
                     empleadoLogueado?.id?.startsWith("MSR-") == true -> "dashboardMesero"
                     empleadoLogueado?.id?.startsWith("CCN-") == true -> "dashboardCocina"
@@ -87,7 +98,7 @@ fun App() {
             if (pantallaActual == "pedidoConcretado") {
                 carrito.limpiar()
             }
-            pantallaActual = padre
+            if (padre == "login") cerrarSesion() else pantallaActual = padre
         }
 
         when (pantallaActual){
@@ -119,20 +130,18 @@ fun App() {
                 onPedidosClick = {pantallaActual = "todosLosPedidos"},
                 onReportesClick = {pantallaActual = "reportesAdmin"},
                 onMenuClick = {pantallaActual = "editarMenu"},
-                onLogoutClick = {
-                    empleadoLogueado = null
-                    pantallaActual = "login"
-                },
+                onLogoutClick = { cerrarSesion() },
                 nombreAdmin = empleadoLogueado?.nombre ?: "Karina Castillo",
                 repositorio = repositorio
             )
 
             "dashboardMesero" -> DashboardMesero(
-                onLogoutClick = {
-                    empleadoLogueado = null
-                    pantallaActual = "login"
-                },
+                onLogoutClick = { cerrarSesion() },
                 onAsistenteClick = {pantallaActual ="asistente"},
+                onRepartoClick = {
+                    mesaActual = "Delivery"
+                    pantallaActual = "menuMesero"
+                },
                 onCarritoClick = {pantallaActual = "menuMesero"},
                 onCambiarPinClick = {pantallaActual = "cambioPin"},
                 repositorio = repositorio,
@@ -141,10 +150,7 @@ fun App() {
             )
 
             "dashboardCocina" -> DashboardCocina(
-                onLogoutClick = {
-                    empleadoLogueado = null
-                    pantallaActual = "login"
-                },
+                onLogoutClick = { cerrarSesion() },
                 onCambiarPinClick = {pantallaActual = "cambioPin"},
                 repositorio = repositorio,
                 empleado = empleadoLogueado
@@ -174,19 +180,23 @@ fun App() {
                 carrito = carrito,
                 mesa = mesaActual,
                 onMesaChange = { mesaActual = it },
-                nombreMesero = empleadoLogueado?.nombre ?: "José P."
+                nombreMesero = empleadoLogueado?.nombre ?: "José P.",
+                onHistorialReparto = { pantallaActual = "entregas" }
             )
             "carritoMesero" -> CarritoScreen(
                 backCarritoScreen = {pantallaActual = "menuMesero"},
                 confirmarCarrito = { id ->
                     ultimoPedidoId = id
+                    direccionActual = ""
                     pantallaActual = "pedidoConcretado"
                 },
                 meseroId = empleadoLogueado?.id ?: "EMP-001",
                 repositorio = repositorio,
                 carrito = carrito,
                 mesa = mesaActual,
-                onMesaChange = { mesaActual = it }
+                onMesaChange = { mesaActual = it },
+                direccion = direccionActual,
+                onDireccionChange = { direccionActual = it }
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardMesero"},
@@ -212,7 +222,7 @@ fun App() {
                 entregasPendientes = entregasReparto.count { !it.entregada }
             )
             "entregas" -> EntregasScreen(
-                backEntregas = {pantallaActual = "reparto"},
+                backEntregas = {pantallaActual = "menuMesero"},
                 entregas = entregasReparto,
                 onMarcarEntregada = { id ->
                     scope.launch { repositorio?.cambiarEntregada(id, true) }

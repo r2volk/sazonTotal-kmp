@@ -1,6 +1,9 @@
 package org.sazontotal.project.data
 
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.sazontotal.project.data.db.PlatoEntity
 
@@ -12,8 +15,7 @@ class CarritoCompra {
     // copia del plato al agregarlo: conserva nombre, categoria y precio aunque lo borren del menu.
     val platosGuardados: SnapshotStateMap<Long, PlatoEntity> = mutableStateMapOf()
 
-    // id del plato -> nota ("sin cebolla"). solo se guardan las no vacias.
-    val notas: SnapshotStateMap<Long, String> = mutableStateMapOf()
+    var notaGeneral by mutableStateOf("")
 
     fun cantidadDe(id: Long): Int {
         return cantidades[id] ?: 0
@@ -33,22 +35,9 @@ class CarritoCompra {
             if (actual == 1) {
                 cantidades.remove(id)
                 platosGuardados.remove(id)
-                notas.remove(id)
             } else {
                 cantidades[id] = actual - 1
             }
-        }
-    }
-
-    fun notaDe(id: Long): String {
-        return notas[id] ?: ""
-    }
-
-    fun ponerNota(id: Long, nota: String) {
-        if (nota.isBlank()) {
-            notas.remove(id)
-        } else {
-            notas[id] = nota
         }
     }
 
@@ -69,6 +58,6 @@ class CarritoCompra {
     fun limpiar() {
         cantidades.clear()
         platosGuardados.clear()
-        notas.clear()
+        notaGeneral = ""
     }
 }

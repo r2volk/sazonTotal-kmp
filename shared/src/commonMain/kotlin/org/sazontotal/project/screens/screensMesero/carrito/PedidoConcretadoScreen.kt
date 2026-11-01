@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.destinoPedido
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.theme.Colores
@@ -108,7 +109,7 @@ fun PedidoConcretadoScreen(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Ticket #${pedidoId.toString().padStart(4, '0')} · Mesa ${pedido?.mesa ?: "–"}",
+                text = "Ticket #${pedidoId.toString().padStart(4, '0')} · ${pedido?.let { destinoPedido(it.mesa) } ?: "–"}",
                 color = Colores.TextoTenue,
                 fontSize = 14.sp
             )

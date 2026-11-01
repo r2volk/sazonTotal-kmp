@@ -15,8 +15,8 @@ interface PedidoDao {
     @Query("SELECT * FROM pedidos ORDER BY id DESC")
     fun observarTodos(): Flow<List<PedidoEntity>>
 
-    @Query("UPDATE pedidos SET estado = :estado WHERE id = :id")
-    suspend fun cambiarEstado(id: Long, estado: String)
+    @Query("UPDATE pedidos SET estado = :nuevo WHERE id = :id AND estado = :anterior")
+    suspend fun cambiarEstadoSiActual(id: Long, anterior: String, nuevo: String): Int
 
     @Query("SELECT * FROM pedidos WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: Long): PedidoEntity?

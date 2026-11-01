@@ -61,6 +61,7 @@ import org.sazontotal.project.components.CampoTextoAdmin
 import org.sazontotal.project.components.CantidadStepper
 import org.sazontotal.project.components.visualDeCategoria
 import org.sazontotal.project.data.CarritoCompra
+import org.sazontotal.project.data.crearDestinoDelivery
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
@@ -77,7 +78,9 @@ fun CarritoScreen(
     repositorio: SazonRepository? = null,
     carrito: CarritoCompra? = null,
     mesa: String = "4",
-    onMesaChange: (String) -> Unit = {}
+    onMesaChange: (String) -> Unit = {},
+    direccion: String = "",
+    onDireccionChange: (String) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
 
@@ -104,7 +107,8 @@ fun CarritoScreen(
     val todosLosPlatosDisponibles = catalogo != null && platosEnCarrito.all { plato ->
         catalogoPorId[plato.id]?.activo == true
     }
-    val mesaValida = mesa.toIntOrNull()?.let { it in 1..15 } == true
+    val esDelivery = mesa == "Delivery"
+    val mesaValida = if (esDelivery) direccion.isNotBlank() else mesa.toIntOrNull()?.let { it in 1..15 } == true
     val puedeConfirmar = hayAlgo &&
         carrito != null &&
         repositorio != null &&
@@ -123,7 +127,7 @@ fun CarritoScreen(
         !hayAlgo -> null
         repositorio == null -> "No se puede enviar el pedido en este momento."
         catalogo == null -> "Cargando el menú..."
-        !mesaValida -> "Selecciona una mesa del 1 al 15."
+        !mesaValida -> if (esDelivery) "Escribe la dirección de entrega." else "Selecciona una mesa del 1 al 15."
         !todosLosPlatosDisponibles -> "Hay platos que ya no están disponibles. Reduce su cantidad a cero para quitarlos."
         else -> null
     }
@@ -157,7 +161,7 @@ fun CarritoScreen(
                 )
             }
             Text(
-                text = "Carrito · Mesa $mesa",
+                text = if (esDelivery) "Carrito · Delivery" else "Carrito · Mesa $mesa",
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -192,11 +196,6 @@ fun CarritoScreen(
                         onPlus = {
                             errorGuardado = null
                             carrito?.sumar(plato)
-                        },
-                        nota = carrito?.notaDe(plato.id) ?: "",
-                        onNotaChange = {
-                            errorGuardado = null
-                            carrito?.ponerNota(plato.id, it)
                         }
                     )
                 }
@@ -206,6 +205,19 @@ fun CarritoScreen(
                     text = "Carrito vacío: suma platos con + desde el menú",
                     color = Colores.TextoTenue,
                     fontSize = 14.sp
+                )
+            }
+
+            if (hayAlgo) {
+                Text("Nota general del pedido", color = Color.White, fontWeight = FontWeight.Bold)
+                CampoTextoAdmin(
+                    valor = carrito?.notaGeneral ?: "",
+                    onValorChange = {
+                        errorGuardado = null
+                        carrito?.notaGeneral = it
+                    },
+                    placeholder = "Ej. sin cebolla en el ceviche",
+                    readOnly = guardando
                 )
             }
 
@@ -239,7 +251,7 @@ fun CarritoScreen(
                     )
                 }
                 Text(
-                    text = "Mesa:",
+                    text = "Destino:",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -253,6 +265,15 @@ fun CarritoScreen(
                     abierto = mesaAbierta,
                     onToggle = { mesaAbierta = !mesaAbierta },
                     onAncla = { anclaMesa = it }
+                )
+            }
+
+            if (esDelivery) {
+                CampoTextoAdmin(
+                    valor = direccion,
+                    onValorChange = onDireccionChange,
+                    placeholder = "Dirección de entrega",
+                    readOnly = guardando
                 )
             }
 
@@ -306,13 +327,13 @@ fun CarritoScreen(
                 .clickable(enabled = puedeConfirmar) {
                     val carritoConfirmado = carrito ?: return@clickable
                     val repositorioConfirmado = repositorio ?: return@clickable
-                    val renglones = platosEnCarrito.map { plato ->
+                    val renglones = platosEnCarrito.mapIndexed { indice, plato ->
                         PedidoItemEntity(
                             pedidoId = 0,
                             platoId = plato.id,
                             nombrePlato = plato.nombre,
                             cantidad = carritoConfirmado.cantidadDe(plato.id),
-                            nota = carritoConfirmado.notaDe(plato.id),
+                            nota = if (indice == 0) carritoConfirmado.notaGeneral.trim() else "",
                             precioUnit = plato.precio
                         )
                     }
@@ -322,7 +343,7 @@ fun CarritoScreen(
                         try {
                             // la interfaz arma los datos y el repositorio los valida antes de guardarlos.
                             val cabecera = PedidoEntity(
-                                mesa = mesa,
+                                mesa = if (esDelivery) crearDestinoDelivery(direccion) else mesa,
                                 meseroID = meseroId,
                                 estado = "PENDIENTE",
                                 total = total,
@@ -436,6 +457,12 @@ private fun ListaDeMesas(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
+                .clickable { onSelecciona("Delivery") }.padding(horizontal = 14.dp, vertical = 11.dp)
+        ) {
+            Text("Delivery", color = if (mesaActual == "Delivery") Colores.VerdeBoton else Color.White, fontSize = 15.sp)
+        }
         (1..15).forEach { numero ->
             val textoMesa = "$numero"
             val elegida = textoMesa == mesaActual
@@ -502,12 +529,8 @@ private fun CarritoItemCard(
     interactivo: Boolean,
     onMinus: () -> Unit,
     onPlus: () -> Unit,
-    modifier: Modifier = Modifier,
-    nota: String = "",
-    onNotaChange: (String) -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    // si esta escribiendo la nota se muestra el campo; si no, el texto o el boton.
-    var editandoNota by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -565,40 +588,6 @@ private fun CarritoItemCard(
                 text = "No disponible · reduce la cantidad a cero para quitarlo",
                 color = Color(0xFFFFA500),
                 fontSize = 12.sp
-            )
-        }
-        if (editandoNota) {
-            CampoTextoAdmin(
-                valor = nota,
-                onValorChange = onNotaChange,
-                placeholder = "Ej. sin cebolla",
-                readOnly = !interactivo,
-                trailing = {
-                    Text(
-                        text = "OK",
-                        color = Colores.VerdePrimario,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .clickable(enabled = interactivo) { editandoNota = false }
-                    )
-                }
-            )
-        } else if (nota.isNotBlank()) {
-            Text(
-                text = nota,
-                color = Colores.TextoTenue,
-                fontSize = 13.sp,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                modifier = Modifier.clickable(enabled = interactivo) { editandoNota = true }
-            )
-        } else {
-            Text(
-                text = "+ Agregar nota (ej. sin cebolla)",
-                color = Colores.TextoTenue,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable(enabled = interactivo) { editandoNota = true }
             )
         }
     }

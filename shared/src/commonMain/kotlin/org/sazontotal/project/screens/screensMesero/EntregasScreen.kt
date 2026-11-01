@@ -256,7 +256,7 @@ private fun EntregasHeader(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Entregas de hoy",
+                text = "Entregas anteriores",
                 color = Color.White,
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold

@@ -38,6 +38,7 @@ import org.sazontotal.project.components.BuscadorTextField
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.components.StatCardCentrado
 import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.destinoPedido
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
@@ -65,7 +66,7 @@ fun TodosLosPedidosScreen(
     var filtroEstado by remember { mutableStateOf("Todos") }
     val ahora = ahoraMillis()
     val pedidosHoy = pedidos.count { esHoy(it.fecha, ahora) }
-    val enCurso = pedidos.count { it.estado == "PENDIENTE" || it.estado == "LISTO" }
+    val enCurso = pedidos.count { it.estado == "PENDIENTE" || it.estado == "LISTO" || it.estado == "EN_CAMINO" }
     val entregados = pedidos.count { it.estado == "ENTREGADO" }
     val anulados = pedidos.count { it.estado == "ANULADO" }
     val scope = rememberCoroutineScope()
@@ -231,18 +232,19 @@ private fun PedidoEnAdmin(
     val insignia = when (pedido.estado) {
         "ENTREGADO" -> EstadoTodosLosPedidos.ENTREGADO
         "LISTO" -> EstadoTodosLosPedidos.LISTO
+        "EN_CAMINO" -> EstadoTodosLosPedidos.EN_CAMINO
         "ANULADO" -> EstadoTodosLosPedidos.ANULADO
         else -> EstadoTodosLosPedidos.PREPARANDO
     }
 
     CardPedido(
         estadoTodosLosPedidos = insignia,
-        titulo = "Mesa ${pedido.mesa} • #${pedido.id}",
+        titulo = "${destinoPedido(pedido.mesa)} • #${pedido.id}",
         detalle = "Mesero: $nombreMesero • ${items.size} items",
         hora = textoHora(pedido.fecha),
         total = moneda(pedido.total),
         // solo se puede anular lo que aun no se entrego ni se anulo.
-        sePuedeAnular = pedido.estado == "PENDIENTE" || pedido.estado == "LISTO",
+        sePuedeAnular = pedido.estado == "PENDIENTE" || pedido.estado == "LISTO" || pedido.estado == "EN_CAMINO",
         onAnular = { onAnular(pedido.id) }
     )
 }
@@ -269,6 +271,8 @@ private fun CardPedido(
             Color(0xFF0B2E3F),
             Color(0xFF64A8F5)
         )
+
+        EstadoTodosLosPedidos.EN_CAMINO -> Triple("En camino", Color(0xFF0B2E3F), Color(0xFF64A8F5))
 
         EstadoTodosLosPedidos.ENTREGADO -> Triple(
             "Entregado",
