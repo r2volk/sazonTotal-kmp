@@ -42,6 +42,7 @@ kotlin {
     
     sourceSets {
         androidMain.dependencies {
+            implementation(libs.maps.compose)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             // Solo para el boton atras del sistema (BackHandler) en Navegacion.android.kt.

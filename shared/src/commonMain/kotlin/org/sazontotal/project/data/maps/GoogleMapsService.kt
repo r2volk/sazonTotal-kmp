@@ -39,7 +39,8 @@ data class Coordenada(val latitud: Double, val longitud: Double)
 // resultado del calculo de distancia: texto listo para mostrar.
 data class ResultadoDistancia(
     val kmTexto: String,
-    val minutosTexto: String
+    val minutosTexto: String,
+    val distanciaKm: Double = 0.0
 )
 
 /**
@@ -78,12 +79,12 @@ class GoogleMapsService(
         if (modoDemo) return listaDemo.filter { contieneAlgunaPalabra(it, textoParcial) }
 
         val cuerpo = buildJsonObject {
-            put("text", textoParcial.trim())
+            put("textQuery", textoParcial.trim())
             put("pageSize", 5)  // el buscador muestra maximo 5 sugerencias
             put("languageCode", "es")
         }
 
-        val respuesta = cliente.post("https://places.googleapis.com/v1/places:searchText") {
+                val respuesta = cliente.post("https://places.googleapis.com/v1/places:searchText") {
             header("X-Goog-Api-Key", apiKey)
             // la mascara define que campos baja la respuesta (menos datos = menos costo).
             header("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
@@ -108,6 +109,45 @@ class GoogleMapsService(
         } catch (e: Exception) {
             throw ErrorMaps("No se pudieron leer las sugerencias de Google Maps. Intenta de nuevo.")
         }
+    }
+
+    /** Búsqueda de direcciones OSM para sugerir resultados si Places no está habilitado. */
+    suspend fun autocompletarPhoton(textoParcial: String): List<String> {
+        val consulta = textoParcial.trim()
+        if (consulta.length < 3) return emptyList()
+
+        val respuesta = cliente.get("https://photon.komoot.io/api/") {
+            parameter("q", consulta)
+            parameter("limit", 5)
+            parameter("lat", sede.latitud)
+            parameter("lon", sede.longitud)
+        }
+        if (!respuesta.status.isSuccess()) return emptyList()
+
+        val raiz = leerJson(respuesta.bodyAsText()) ?: return emptyList()
+        return raiz.getArray("features").orEmpty().mapNotNull { feature ->
+            val propiedades = (feature as? JsonObject)?.getJsonObject("properties") ?: return@mapNotNull null
+            fun campo(nombre: String): String? =
+                propiedades[nombre]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf(String::isNotEmpty)
+
+            val calle = campo("street")
+            val numero = campo("housenumber")
+            val nombre = campo("name")
+            val titulo = when {
+                calle != null && numero != null -> "$calle $numero"
+                calle != null -> calle
+                else -> nombre
+            } ?: return@mapNotNull null
+            val distrito = campo("district")
+            val ciudad = campo("city")
+            listOfNotNull(
+                titulo,
+                distrito,
+                ciudad?.takeUnless { it.equals(distrito, ignoreCase = true) },
+                campo("postcode"),
+                campo("country")
+            ).distinctBy { it.lowercase() }.joinToString(", ")
+        }.distinct().take(5)
     }
 
     // convierte la direccion elegida en coordenadas (Geocoding API).
@@ -162,7 +202,8 @@ class GoogleMapsService(
             val kmRedondeado = round(km * 10.0).toInt() / 10.0
             return ResultadoDistancia(
                 kmTexto = "$kmRedondeado km",
-                minutosTexto = "~$minutos min en moto"
+                minutosTexto = "~$minutos min en moto",
+                distanciaKm = km
             )
         }
 
@@ -205,6 +246,9 @@ class GoogleMapsService(
         val km = (metros ?: 0.0) / 1000.0
         val kmTextoDuro = punto.getJsonObjectOrNull("distance")
             ?.get("text")?.jsonPrimitive?.contentOrNull ?: ""
+        val distanciaKm = metros?.div(1000.0)
+            ?: kmTextoDuro.substringBefore(' ').replace(',', '.').toDoubleOrNull()
+            ?: 0.0
         val kmTexto = if (metros != null) {
             val redondeado = round(km * 10.0).toInt() / 10.0
             "$redondeado km"
@@ -218,7 +262,47 @@ class GoogleMapsService(
             "~$leyenda en moto"
         }
 
-        return ResultadoDistancia(kmTexto = kmTexto, minutosTexto = minutosTexto)
+        return ResultadoDistancia(
+            kmTexto = kmTexto,
+            minutosTexto = minutosTexto,
+            distanciaKm = distanciaKm
+        )
+    }
+
+    /** Obtiene distancia y duración por calles desde OSRM como respaldo sin clave. */
+    suspend fun distanciaPorCarretera(hasta: Coordenada): ResultadoDistancia {
+        val respuesta = cliente.get(
+            "https://router.project-osrm.org/route/v1/driving/" +
+                "${sede.longitud},${sede.latitud};${hasta.longitud},${hasta.latitud}"
+        ) {
+            parameter("overview", "false")
+        }
+        val textoRespuesta = respuesta.bodyAsText()
+        if (!respuesta.status.isSuccess()) {
+            throw ErrorMaps("El servicio de rutas respondió con error (${respuesta.status.value}).")
+        }
+
+        val raiz = leerJson(textoRespuesta)
+            ?: throw ErrorMaps("No se pudo leer la respuesta del servicio de rutas.")
+        if (raiz["code"]?.jsonPrimitive?.contentOrNull != "Ok") {
+            throw ErrorMaps("No se encontró una ruta por calles para esa dirección.")
+        }
+
+        val ruta = raiz.getArray("routes")?.firstOrNull()?.jsonObject
+            ?: throw ErrorMaps("El servicio de rutas no devolvió una ruta.")
+        val metros = ruta["distance"]?.jsonPrimitive?.contentOrNull?.toDoubleOrNull()
+            ?: throw ErrorMaps("El servicio de rutas no devolvió la distancia.")
+        val segundos = ruta["duration"]?.jsonPrimitive?.contentOrNull?.toDoubleOrNull()
+            ?: throw ErrorMaps("El servicio de rutas no devolvió la duración.")
+        val km = metros / 1000.0
+        val minutos = round(segundos / 60.0).toInt().coerceAtLeast(1)
+        val kmRedondeado = round(km * 10.0).toInt() / 10.0
+
+        return ResultadoDistancia(
+            kmTexto = "$kmRedondeado km",
+            minutosTexto = "~$minutos min aprox. por carretera",
+            distanciaKm = km
+        )
     }
 
     // URL de la imagen del mapa estatico: un pin verde en la sede y uno rojo
@@ -236,14 +320,6 @@ class GoogleMapsService(
             "&markers=$local&markers=$destino&$linea" +
             "&key=$apiKey"
     }
-
-    // abre la navegacion guiada en Google Maps o Waze (deep links universales).
-    fun urlRutaGoogleMaps(hasta: Coordenada): String =
-        "https://www.google.com/maps/dir/?api=1&origin=${sede.latitud},${sede.longitud}" +
-            "&destination=${hasta.latitud},${hasta.longitud}&travelmode=driving"
-
-    fun urlRutaWaze(hasta: Coordenada): String =
-        "https://waze.com/ul?ll=${hasta.latitud},${hasta.longitud}&navigate=yes"
 
     private fun pinDe(coordenada: Coordenada, colorHex: String, letra: String): String =
         "color:$colorHex|label:$letra|${coordenada.latitud},${coordenada.longitud}"

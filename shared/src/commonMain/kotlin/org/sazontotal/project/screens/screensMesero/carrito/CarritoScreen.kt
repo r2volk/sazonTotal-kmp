@@ -68,6 +68,7 @@ import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.repository.SazonRepository
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.utils.ahoraMillis
+import org.sazontotal.project.utils.decimales
 import org.sazontotal.project.utils.moneda
 
 @Composable
@@ -80,7 +81,9 @@ fun CarritoScreen(
     mesa: String = "4",
     onMesaChange: (String) -> Unit = {},
     direccion: String = "",
-    onDireccionChange: (String) -> Unit = {}
+    onDireccionChange: (String) -> Unit = {},
+    deliveryDistanceKm: Double = 0.0,
+    deliveryFee: Double = 0.0
 ) {
     val scope = rememberCoroutineScope()
 
@@ -91,7 +94,9 @@ fun CarritoScreen(
         repositorio?.observarTodosLosPlatos()?.collect { catalogo = it }
     }
 
-    val total = carrito?.total() ?: 0.0
+    val esDelivery = mesa == "Delivery"
+    val subtotal = carrito?.total() ?: 0.0
+    val total = subtotal + if (esDelivery) deliveryFee else 0.0
 
     // sin nada en el carrito el boton no hace nada
     val hayAlgo = (carrito?.totalItems() ?: 0) > 0
@@ -107,7 +112,6 @@ fun CarritoScreen(
     val todosLosPlatosDisponibles = catalogo != null && platosEnCarrito.all { plato ->
         catalogoPorId[plato.id]?.activo == true
     }
-    val esDelivery = mesa == "Delivery"
     val mesaValida = if (esDelivery) direccion.isNotBlank() else mesa.toIntOrNull()?.let { it in 1..15 } == true
     val puedeConfirmar = hayAlgo &&
         carrito != null &&
@@ -273,8 +277,28 @@ fun CarritoScreen(
                     valor = direccion,
                     onValorChange = onDireccionChange,
                     placeholder = "Dirección de entrega",
-                    readOnly = guardando
+                    // La tarifa corresponde a la ubicación calculada en Reparto.
+                    readOnly = guardando || deliveryDistanceKm > 0.0
                 )
+                if (deliveryDistanceKm > 0.0) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Delivery · ${decimales(deliveryDistanceKm)} km × S/ 3.00/km",
+                            color = Colores.TextoTenue,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = moneda(deliveryFee),
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
 
             Row(

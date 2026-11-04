@@ -3,7 +3,7 @@ package org.sazontotal.project.data.maps
 // pega aqui tu API key de Google Maps Platform (console.cloud.google.com).
 // debe tener habilitadas: Geocoding API, Places API (New),
 // Distance Matrix API y Maps Static API.
-const val KEY_MAPS = "API_MAPS_ACA"
+const val KEY_MAPS = "AIzaSyBMEsg4VvuPQXbkAN8RQlpiDhnH5cvl_eQ"
 
 // sede ficticia de Sazontotal: direccion real de una avenida de Lima para
 // que Google la geocodifique de verdad, aunque el restaurante sea de demostracion.

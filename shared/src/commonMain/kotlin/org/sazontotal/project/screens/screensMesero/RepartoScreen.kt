@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Navigation
-import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,10 +71,15 @@ import org.sazontotal.project.data.maps.DIRECCION_SEDE
 import org.sazontotal.project.data.maps.ErrorMaps
 import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.data.maps.KEY_MAPS
+import org.sazontotal.project.data.maps.MapaDelivery
+import org.sazontotal.project.data.maps.geocodificarDireccionLocal
+import org.sazontotal.project.data.maps.distanciaEnKilometros
+import org.sazontotal.project.data.maps.sugerirDireccionesLocales
 import org.sazontotal.project.data.maps.GoogleMapsService
 import org.sazontotal.project.data.maps.ResultadoDistancia
 import org.sazontotal.project.data.maps.SEDE_COORDENADA
-import org.sazontotal.project.utils.abrirEnExterno
+import org.sazontotal.project.utils.decimales
+import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.ahoraMillis
 
 // paleta propia del modulo de reparto (verde lima sobre fondo oscuro).
@@ -97,7 +101,7 @@ private val RojoSuave = Color(0xFFFF6B6B)
 fun RepartoScreen(
     backReparto: () -> Unit,
     onVerEntregas: () -> Unit,
-    onRegistrarEntrega: (EntregaReparto) -> Unit,
+    onCrearPedido: (String, Double, Double, EntregaReparto) -> Unit = { _, _, _, _ -> },
     nombreMesero: String = "Mesero",
     entregasPendientes: Int = 0
 ) {
@@ -121,8 +125,6 @@ fun RepartoScreen(
     var coordenada by remember { mutableStateOf<Coordenada?>(null) }
     var resultado by remember { mutableStateOf<ResultadoDistancia?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
-    // aviso breve de entrega registrada.
-    var entregaToast by remember { mutableStateOf(false) }
 
     // sugerencias con pausa de 600ms para no pedir en cada tecla.
     LaunchedEffect(direccion, direccionElegida) {
@@ -132,27 +134,28 @@ fun RepartoScreen(
             val texto = direccion.trim()
             if (texto.length >= 3) {
                 delay(600)
-                sugerencias = maps.autocompletar(texto)
+                val sugerenciasGoogle = try {
+                    maps.autocompletar(texto)
+                } catch (_: Exception) {
+                    emptyList()
+                }
+                // Si Places no está habilitado, usar OSM y después el geocoder local de Android.
+                val sugerenciasAlternas = if (sugerenciasGoogle.isNotEmpty()) emptyList() else try {
+                    maps.autocompletarPhoton(texto)
+                } catch (_: Exception) {
+                    emptyList()
+                }
+                sugerencias = sugerenciasGoogle.ifEmpty { sugerenciasAlternas }.ifEmpty {
+                    try {
+                        sugerirDireccionesLocales(texto)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                }
             } else {
                 sugerencias = emptyList()
             }
         }
-    }
-
-    LaunchedEffect(entregaToast) {
-        if (entregaToast) {
-            delay(2500)
-            entregaToast = false
-        }
-    }
-
-    // limpia el buscador, listo para el siguiente cliente.
-    fun reiniciarBusqueda() {
-        direccion = ""
-        direccionElegida = null
-        sugerencias = emptyList()
-        coordenada = null
-        resultado = null
     }
 
     // fija una direccion y calcula su ruta (coordenada + distancia/tiempo).
@@ -168,8 +171,28 @@ fun RepartoScreen(
         cargandoRuta = true
         scope.launch {
             try {
-                val punto = maps.geocodificar(limpia)
-                val dista = maps.distancia(punto)
+                val punto = try {
+                    maps.geocodificar(limpia)
+                } catch (_: Exception) {
+                    geocodificarDireccionLocal(limpia)
+                        ?: throw ErrorMaps("No se encontró esa dirección. Prueba con una dirección más completa.")
+                }
+                val dista = try {
+                    maps.distancia(punto)
+                } catch (_: Exception) {
+                    try {
+                        maps.distanciaPorCarretera(punto)
+                    } catch (_: Exception) {
+                        // Estimación de último recurso si Google y OSRM no responden.
+                        val km = distanciaEnKilometros(SEDE_COORDENADA, punto)
+                        val minutos = (km / 22.0 * 60).toInt().coerceAtLeast(2)
+                        ResultadoDistancia(
+                            kmTexto = "~${(km * 10).toInt() / 10.0} km",
+                            minutosTexto = "~$minutos min aprox.",
+                            distanciaKm = km
+                        )
+                    }
+                }
                 coordenada = punto
                 resultado = dista
             } catch (e: ErrorMaps) {
@@ -203,24 +226,19 @@ fun RepartoScreen(
         elegir(candidata)
     }
 
-    // registrar la entrega, avisa y deja la pantalla lista para el siguiente cliente.
-    fun registrarEntrega() {
-        val dista = resultado ?: return
-        val punto = coordenada ?: return
+    // prepara los datos de ruta, pero no persiste una entrega hasta que el pedido exista.
+    fun crearEntregaPendiente(): EntregaReparto? {
+        val dista = resultado ?: return null
         val fecha = ahoraMillis()
-        onRegistrarEntrega(
-            EntregaReparto(
-                id = fecha,
-                direccion = direccionElegida ?: direccion,
-                kmTexto = dista.kmTexto,
-                minutosTexto = dista.minutosTexto,
-                fecha = fecha,
-                entregada = false,
-                meseroNombre = nombreMesero
-            )
+        return EntregaReparto(
+            id = fecha,
+            direccion = direccionElegida ?: direccion,
+            kmTexto = dista.kmTexto,
+            minutosTexto = dista.minutosTexto,
+            fecha = fecha,
+            entregada = false,
+            meseroNombre = nombreMesero
         )
-        entregaToast = true
-        reiniciarBusqueda()
     }
 
     Column(
@@ -303,25 +321,23 @@ fun RepartoScreen(
             }
         }
 
-        // Mapa: imagen real (url del servicio), mini-mapa dibujado en demo, o placeholder.
-        MapaReparto(
+        MapaDelivery(
             modifier = Modifier.weight(1f),
-            maps = maps,
-            modoDemo = modoDemo,
-            coordenada = coordenada,
-            cargandoRuta = cargandoRuta,
-            direccionElegida = direccionElegida
+            destino = coordenada,
+            direccion = direccionElegida
         )
 
         // Distancia y tiempo (solo cuando ya se calculo la ruta).
         if (resultado != null) {
+            val distanciaTarifadaKm = kotlin.math.round(resultado!!.distanciaKm * 100.0) / 100.0
+            val costoDelivery = kotlin.math.round(distanciaTarifadaKm * 300.0) / 100.0
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatReparto(
                     icono = Icons.Outlined.Navigation,
-                    valor = resultado!!.kmTexto,
+                    valor = "${decimales(distanciaTarifadaKm)} km",
                     etiqueta = "distancia",
                     iconoBg = VerdeModuloOscuro,
                     iconoTint = VerdeModulo,
@@ -336,125 +352,64 @@ fun RepartoScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
-        }
-
-        // aviso corto de entrega registrada.
-        if (entregaToast) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF12331B))
+                    .background(Color(0xFF1C1C1E))
                     .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = null,
-                    tint = VerdeModulo,
-                    modifier = Modifier.size(18.dp)
+                Text(
+                    text = "Delivery estimado · ${decimales(distanciaTarifadaKm)} km × S/ 3.00/km",
+                    color = Color(0xFFB0B0B0),
+                    fontSize = 14.sp
                 )
                 Text(
-                    text = "Entrega registrada · En camino",
+                    text = moneda(costoDelivery),
                     color = VerdeModulo,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        // Abrir ruta (desabilitado sin coordenada).
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(if (coordenada != null) VerdeModulo else Color(0xFF3A3A3C))
-                .clickable(enabled = coordenada != null) {
-                    abrirEnExterno(maps.urlRutaGoogleMaps(coordenada!!))
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Navigation,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Abrir ruta en Google Maps",
-                    color = Color.Black,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
 
-        // Waze + Registrar entrega.
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        // El mesero consulta costo/tiempo aquí y continúa al pedido; el reparto
+        // se coordina fuera de esta app.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(if (resultado != null) VerdeModulo else Color(0xFF3A3A3C))
+                .clickable(enabled = resultado != null) {
+                    val direccionPedido = direccionElegida ?: direccion
+                    val ruta = resultado ?: return@clickable
+                    val distanciaTarifadaKm = kotlin.math.round(ruta.distanciaKm * 100.0) / 100.0
+                    val costoDelivery = kotlin.math.round(distanciaTarifadaKm * 300.0) / 100.0
+                    val entrega = crearEntregaPendiente() ?: return@clickable
+                    // El historial se actualiza después, cuando la base confirme el pedido.
+                    onCrearPedido(direccionPedido, ruta.distanciaKm, costoDelivery, entrega)
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF1C1C1E))
-                    .clickable(enabled = coordenada != null) {
-                        abrirEnExterno(maps.urlRutaWaze(coordenada!!))
-                    },
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Route,
-                        contentDescription = null,
-                        tint = Color(0xFFB0B0B0),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "Waze",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1.2f)
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (resultado != null) Color(0xFF0E2B18) else Color(0xFF1C1C1E))
-                    .clickable(enabled = resultado != null) { registrarEntrega() },
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = if (resultado != null) VerdeModulo else Color(0xFF5A5A5E),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Registrar entrega",
-                        color = if (resultado != null) VerdeModulo else Color(0xFF5A5A5E),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = if (resultado != null) Color.Black else Color(0xFF5A5A5E),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Continuar a crear pedido",
+                    color = if (resultado != null) Color.Black else Color(0xFF5A5A5E),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -465,8 +420,7 @@ fun RepartoScreen(
 private fun RepartoScreenPreview() {
     RepartoScreen(
         backReparto = {},
-        onVerEntregas = {},
-        onRegistrarEntrega = {}
+        onVerEntregas = {}
     )
 }
 

@@ -1,4 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+val mapsApiKey = Regex("const val KEY_MAPS = \"([^\"]+)\"")
+    .find(rootProject.file("shared/src/commonMain/kotlin/org/sazontotal/project/data/maps/DatosMaps.kt").readText())
+    ?.groupValues?.get(1).orEmpty()
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -31,6 +34,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
     packaging {
         resources {

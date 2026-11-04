@@ -39,6 +39,9 @@ fun App() {
 
         var mesaActual by remember { mutableStateOf("4") }
         var direccionActual by remember { mutableStateOf("") }
+        var distanciaDeliveryKm by remember { mutableStateOf(0.0) }
+        var costoDelivery by remember { mutableStateOf(0.0) }
+        var entregaDeliveryPendiente by remember { mutableStateOf<EntregaReparto?>(null) }
 
         var errorLogin by remember { mutableStateOf<String?>(null) }
         // en preview no hay base de datos, por eso puede ser nula (pantallas sin datos).
@@ -55,10 +58,34 @@ fun App() {
             carrito.limpiar()
             mesaActual = "4"
             direccionActual = ""
+            distanciaDeliveryKm = 0.0
+            costoDelivery = 0.0
+            entregaDeliveryPendiente = null
             ultimoPedidoId = 0L
             empleadoLogueado = null
             errorLogin = null
             pantallaActual = "login"
+        }
+
+        fun iniciarDelivery() {
+            mesaActual = "Delivery"
+            direccionActual = ""
+            distanciaDeliveryKm = 0.0
+            costoDelivery = 0.0
+            entregaDeliveryPendiente = null
+            pantallaActual = "reparto"
+        }
+
+        fun cambiarDestino(nuevoDestino: String) {
+            if (nuevoDestino == "Delivery") {
+                iniciarDelivery()
+            } else {
+                mesaActual = nuevoDestino
+                direccionActual = ""
+                distanciaDeliveryKm = 0.0
+                costoDelivery = 0.0
+                entregaDeliveryPendiente = null
+            }
         }
 
         // entregas del modulo reparto: ya viven en Room; este estado es solo el reflejo
@@ -138,10 +165,7 @@ fun App() {
             "dashboardMesero" -> DashboardMesero(
                 onLogoutClick = { cerrarSesion() },
                 onAsistenteClick = {pantallaActual ="asistente"},
-                onRepartoClick = {
-                    mesaActual = "Delivery"
-                    pantallaActual = "menuMesero"
-                },
+                onRepartoClick = { iniciarDelivery() },
                 onCarritoClick = {pantallaActual = "menuMesero"},
                 onCambiarPinClick = {pantallaActual = "cambioPin"},
                 repositorio = repositorio,
@@ -179,24 +203,37 @@ fun App() {
                 repositorio = repositorio,
                 carrito = carrito,
                 mesa = mesaActual,
-                onMesaChange = { mesaActual = it },
+                onMesaChange = { cambiarDestino(it) },
                 nombreMesero = empleadoLogueado?.nombre ?: "José P.",
+                deliveryFee = costoDelivery,
                 onHistorialReparto = { pantallaActual = "entregas" }
             )
             "carritoMesero" -> CarritoScreen(
                 backCarritoScreen = {pantallaActual = "menuMesero"},
                 confirmarCarrito = { id ->
                     ultimoPedidoId = id
+                    val entregaConfirmada = entregaDeliveryPendiente
+                    entregaDeliveryPendiente = null
+                    if (mesaActual == "Delivery" && entregaConfirmada != null) {
+                        // Solo guardar ruta cuando Room ya confirmó cabecera y renglones del pedido.
+                        scope.launch {
+                            repositorio?.registrarEntrega(entregaConfirmada.aEntregaEntity())
+                        }
+                    }
                     direccionActual = ""
+                    distanciaDeliveryKm = 0.0
+                    costoDelivery = 0.0
                     pantallaActual = "pedidoConcretado"
                 },
                 meseroId = empleadoLogueado?.id ?: "EMP-001",
                 repositorio = repositorio,
                 carrito = carrito,
                 mesa = mesaActual,
-                onMesaChange = { mesaActual = it },
+                onMesaChange = { cambiarDestino(it) },
                 direccion = direccionActual,
-                onDireccionChange = { direccionActual = it }
+                onDireccionChange = { direccionActual = it },
+                deliveryDistanceKm = distanciaDeliveryKm,
+                deliveryFee = costoDelivery
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardMesero"},
@@ -212,11 +249,15 @@ fun App() {
             )
             "reparto" -> RepartoScreen(
                 backReparto = {pantallaActual = "dashboardMesero"},
-                onVerEntregas = {pantallaActual = "entregas"},
-                onRegistrarEntrega = { entrega ->
-                    // la entrega llega como modelo de pantalla; room le asigna su propio id.
-                    scope.launch { repositorio?.registrarEntrega(entrega.aEntregaEntity()) }
+                onCrearPedido = { direccion, distanciaKm, costo, entrega ->
+                    mesaActual = "Delivery"
+                    direccionActual = direccion
+                    distanciaDeliveryKm = distanciaKm
+                    costoDelivery = costo
+                    entregaDeliveryPendiente = entrega
+                    pantallaActual = "menuMesero"
                 },
+                onVerEntregas = {pantallaActual = "entregas"},
                 nombreMesero = empleadoLogueado?.nombre ?: "Mesero",
                 // resaltado del historial: cuantas quedan por entregar.
                 entregasPendientes = entregasReparto.count { !it.entregada }

@@ -30,8 +30,6 @@ import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.data.destinoPedido
 import org.sazontotal.project.data.esDelivery
 import org.sazontotal.project.data.direccionDelivery
-import org.sazontotal.project.utils.abrirEnExterno
-import io.ktor.http.encodeURLParameter
 
 @Composable
 fun PedidoCard(
@@ -82,15 +80,6 @@ fun PedidoCard(
 
         if (esDelivery(numeroMesa)) {
             Text(text = direccionDelivery(numeroMesa), color = Colores.TextoTenue, fontSize = 14.sp)
-            Text(
-                text = "Abrir dirección en Google Maps",
-                color = Colores.VerdePrimario,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable {
-                    val destino = direccionDelivery(numeroMesa).encodeURLParameter()
-                    abrirEnExterno("https://www.google.com/maps/dir/?api=1&destination=$destino&travelmode=driving")
-                }.padding(vertical = 6.dp)
-            )
             Spacer(modifier = Modifier.height(8.dp))
         }
 

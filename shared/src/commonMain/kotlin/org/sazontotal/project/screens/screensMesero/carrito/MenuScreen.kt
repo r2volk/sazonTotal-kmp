@@ -58,6 +58,7 @@ fun MenuScreen(
     mesa: String = "4",
     onMesaChange: (String) -> Unit = {},
     nombreMesero: String = "José P.",
+    deliveryFee: Double = 0.0,
     onHistorialReparto: () -> Unit = {}
 ) {
     var textoBusqueda by remember { mutableStateOf("") }
@@ -259,11 +260,18 @@ fun MenuScreen(
                     fontSize = 13.sp
                 )
                 Text(
-                    text = moneda(carrito?.total() ?: 0.0),
+                    text = moneda((carrito?.total() ?: 0.0) + if (mesa == "Delivery") deliveryFee else 0.0),
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
+                if (mesa == "Delivery" && deliveryFee > 0.0) {
+                    Text(
+                        text = "Incluye ${moneda(deliveryFee)} de delivery",
+                        color = Colores.TextoTenue,
+                        fontSize = 11.sp
+                    )
+                }
             }
             Box(
                 modifier = Modifier

@@ -31,8 +31,65 @@ class AsistenteIA(private val servicio: GeminiService) {
         nombreMesero: String,
         mesa: String
     ): String {
+        val consultaActual = historial.lastOrNull { it.rol == MensajeChat.Rol.MESERO }?.texto.orEmpty()
+        respuestaRestriccionAlergenos(consultaActual, platos)?.let { return it }
+
         val sistema = construirPromptSistema(platos, topPlatos, nombreMesero, mesa)
         return servicio.enviar(sistema, historial)
+    }
+
+    /**
+     * Las consultas para evitar alergenos se responden usando etiquetas explicitas,
+     * sin delegar esa afirmacion al modelo generativo. Una etiqueta ausente significa
+     * "no confirmado", no "libre de".
+     */
+    private fun respuestaRestriccionAlergenos(
+        consulta: String,
+        platos: List<PlatoEntity>
+    ): String? {
+        val consultaNormalizada = normalizarTexto(consulta)
+        val alergenosSolicitados = ALERGENOS_RECONOCIDOS.filter { alergeno ->
+            alergeno.variantes.any { consultaNormalizada.contains(it) }
+        }
+        val consultaSobreAlergias = alergenosSolicitados.isNotEmpty() || listOf(
+            "alerg", "intoler", "celiac", "alergeno", "alergenos"
+        ).any { consultaNormalizada.contains(it) }
+        val pideEvitar = listOf(
+            "sin ", "alerg", "intoler", "celiac", "apto", "libre de", "evita", "evitar",
+            "no puede consumir", "no puede comer", "no consumir", "no contiene", "no tiene", "no lleva"
+        ).any { consultaNormalizada.contains(it) }
+        if (!consultaSobreAlergias || !pideEvitar) return null
+
+        if (alergenosSolicitados.isEmpty()) {
+            return "El menú no permite confirmar una opción libre de todos los alérgenos. " +
+                "Confirma los ingredientes y posibles trazas con cocina antes de recomendar."
+        }
+
+        val menuActivo = platos.filter { it.activo }
+        val opcionesConfirmadas = menuActivo.filter { plato ->
+            val etiquetas = plato.etiquetas
+                .split(',', ';', '|')
+                .map(::normalizarTexto)
+            alergenosSolicitados.all { alergeno ->
+                etiquetas.any { etiqueta -> alergeno.variantes.any { variante ->
+                    etiqueta == "sin $variante" ||
+                        etiqueta == "libre de $variante" ||
+                        etiqueta == "no contiene $variante"
+                } }
+            }
+        }
+
+        if (opcionesConfirmadas.isEmpty()) {
+            val nombresAlergenos = alergenosSolicitados.joinToString(" y ") { it.nombre }
+            return "No hay platos con etiquetas que confirmen que estén libres de $nombresAlergenos. " +
+                "La falta de una etiqueta no confirma que un plato sea apto. Verifica ingredientes " +
+                "y posibles trazas con cocina antes de recomendar."
+        }
+
+        val opciones = opcionesConfirmadas.joinToString(", ") { "${it.nombre} (${moneda(it.precio)})" }
+        val nombresAlergenos = alergenosSolicitados.joinToString(" y ") { it.nombre }
+        return "Según las etiquetas explícitas del menú, estas opciones figuran libres de " +
+            "$nombresAlergenos: $opciones. Confirma los ingredientes y posibles trazas con cocina."
     }
 
     // todo lo que la IA sabe del restaurante vive en este texto; sin internet
@@ -70,7 +127,9 @@ class AsistenteIA(private val servicio: GeminiService) {
 
             Reglas:
             - Recomienda SOLO platos del menú de arriba; si lo que piden no existe, dilo y sugiere alternativas del menú.
-            - Para alergias, guíate por las etiquetas de cada plato y avisa siempre: "confirma los detalles con cocina".
+            - Para alergias o restricciones, afirma que un plato está libre de un ingrediente SOLO si sus etiquetas contienen explícitamente "Sin <ingrediente>", "Libre de <ingrediente>" o "No contiene <ingrediente>" para cada restricción solicitada.
+            - Una etiqueta ausente significa que no hay información confirmada; nunca infieras que un plato está libre de un alérgeno por su nombre, categoría, descripción o conocimiento general.
+            - Si las etiquetas no confirman una opción para todas las restricciones, dilo claramente y recomienda verificar ingredientes y trazas con cocina; no inventes una alternativa apta.
             - Para maridajes, combina platos y bebidas del menú.
             - Puedes mencionar precios con "S/ " y calcular totales rápidos de varios platos.
             - No inventes datos que no estén aquí (horarios, promociones, disponibilidad, mesas).
@@ -79,3 +138,31 @@ class AsistenteIA(private val servicio: GeminiService) {
         """.trimIndent()
     }
 }
+
+private data class AlergenoReconocido(
+    val nombre: String,
+    val variantes: List<String>
+)
+
+private val ALERGENOS_RECONOCIDOS = listOf(
+    AlergenoReconocido("gluten", listOf("gluten", "celiaco", "celiaca", "celiaquia")),
+    AlergenoReconocido("mariscos", listOf("marisco", "mariscos", "crustaceo", "crustaceos", "camaron", "langostino")),
+    AlergenoReconocido("lácteos", listOf("lacteo", "lacteos", "leche")),
+    AlergenoReconocido("lactosa", listOf("lactosa")),
+    AlergenoReconocido("huevo", listOf("huevo", "huevos")),
+    AlergenoReconocido("pescado", listOf("pescado", "pescados")),
+    AlergenoReconocido("frutos secos", listOf("frutos secos", "nuez", "nueces", "almendra", "almendras", "avellana", "avellanas")),
+    AlergenoReconocido("maní", listOf("mani", "cacahuate", "cacahuetes")),
+    AlergenoReconocido("soja", listOf("soja", "soya"))
+)
+
+private fun normalizarTexto(texto: String): String = texto
+    .lowercase()
+    .replace('á', 'a')
+    .replace('é', 'e')
+    .replace('í', 'i')
+    .replace('ó', 'o')
+    .replace('ú', 'u')
+    .replace('ü', 'u')
+    .replace('ñ', 'n')
+    .trim()
