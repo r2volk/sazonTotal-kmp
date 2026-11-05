@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +51,7 @@ fun DashboardAdmin(
     onLogoutClick: () -> Unit = {},
     repositorio: SazonRepository? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     // estos flujos traen empleados y pedidos de room y se actualizan al cambiar la base.
     val empleadosEnVivo = repositorio?.observarEmpleados()
     val empleados = empleadosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
@@ -73,7 +77,7 @@ fun DashboardAdmin(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -97,13 +101,13 @@ fun DashboardAdmin(
                         text = "Panel de administrador",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Colores.TextoTenue
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO)
                     )
                     Text(
                         text = nombreAdmin,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO)
                     )
                 }
                 LogoutButton(
@@ -114,14 +118,14 @@ fun DashboardAdmin(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF1C2E22)),
+                        .background(colorDeTema(Color(0xFF1C2E22), temaOscuro, UsoColor.FONDO)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = iniciales,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676)
+                        color = colorDeTema(Color(0xFF00E676), temaOscuro, UsoColor.TEXTO)
                     )
                 }
             }
@@ -170,7 +174,7 @@ fun DashboardAdmin(
                 text = "Accesos rápidos",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.padding(top = 24.dp, bottom = 14.dp)
             )
 
@@ -205,5 +209,6 @@ fun DashboardAdmin(
 @Preview
 @Composable
 fun DashboardAdminPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     DashboardAdmin()
 }

@@ -1,6 +1,6 @@
 package org.sazontotal.project
 
-import androidx.compose.material3.MaterialTheme
+import org.sazontotal.project.theme.SazonTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import org.sazontotal.project.data.CarritoCompra
@@ -31,7 +31,7 @@ import org.sazontotal.project.utils.BackHandlerApp
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    SazonTheme {
         var pantallaActual by remember { mutableStateOf("login") }
         var ultimoPedidoId by remember { mutableStateOf(0L) }
 

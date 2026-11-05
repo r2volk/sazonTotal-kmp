@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin.editarEmpleado
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +49,7 @@ import org.sazontotal.project.utils.ahoraMillis
 fun CrearEmpleado(
     onGuardar: (EmpleadoEntity) -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
 
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
@@ -58,7 +62,7 @@ fun CrearEmpleado(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 20.dp)
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -66,7 +70,7 @@ fun CrearEmpleado(
         Row(){
             Text(
                 text = "Nuevo Empleado",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f).padding(top = 10.dp)
@@ -83,7 +87,7 @@ fun CrearEmpleado(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Nombre completo",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -96,7 +100,7 @@ fun CrearEmpleado(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Teléfono",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -109,7 +113,7 @@ fun CrearEmpleado(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Rol",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             Row(
@@ -140,7 +144,7 @@ fun CrearEmpleado(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "PIN inicial (4 dígitos)",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -158,13 +162,13 @@ fun CrearEmpleado(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Empleado activo",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
@@ -178,7 +182,7 @@ fun CrearEmpleado(
         if (error != null) {
             Text(
                 text = error!!,
-                color = Color(0xFFFF453A),
+                color = colorDeTema(Color(0xFFFF453A), temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -189,7 +193,7 @@ fun CrearEmpleado(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF5DF08A))
+                .background(colorDeTema(Color(0xFF5DF08A), temaOscuro, UsoColor.FONDO))
                 .clickable {
                     val faltaNombre = nombre.isBlank()
                     val faltaPin = pin.isBlank()
@@ -224,7 +228,7 @@ fun CrearEmpleado(
         ) {
             Text(
                 text = "Guardar empleado",
-                color = Color.Black,
+                color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

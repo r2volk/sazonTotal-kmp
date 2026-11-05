@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero.carrito
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -61,6 +64,7 @@ fun MenuScreen(
     deliveryFee: Double = 0.0,
     onHistorialReparto: () -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
 
@@ -82,7 +86,7 @@ fun MenuScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -100,21 +104,21 @@ fun MenuScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Atrás",
-                    tint = Color.White,
+                    tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Menú",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Box {
                     Text(
                         text = "${if (mesa == "Delivery") "Delivery" else "Mesa $mesa"} · $nombreMesero ▾",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 13.sp,
                         modifier = Modifier.clickable { mostrarMesas = true }
                     )
@@ -123,7 +127,7 @@ fun MenuScreen(
                         onDismissRequest = { mostrarMesas = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Delivery", color = Colores.Superficie) },
+                            text = { Text("Delivery", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface) },
                             onClick = { onMesaChange("Delivery"); mostrarMesas = false }
                         )
                         (1..15).forEach { numero ->
@@ -131,7 +135,7 @@ fun MenuScreen(
                                 text = {
                                     Text(
                                         text = "Mesa $numero",
-                                        color = Colores.Superficie,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                                         fontSize = 15.sp
                                     )
                                 },
@@ -145,7 +149,7 @@ fun MenuScreen(
                 }
             }
             if (mesa == "Delivery") {
-                Text("Entregas anteriores", color = Colores.VerdePrimario, fontSize = 12.sp,
+                Text("Entregas anteriores", color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO), fontSize = 12.sp,
                     modifier = Modifier.clickable { onHistorialReparto() })
             }
         }
@@ -233,7 +237,7 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -246,7 +250,7 @@ fun MenuScreen(
                         .then(if (indice > 0) Modifier.offset(x = (-10).dp) else Modifier)
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(coloresCuadrito[indice])
+                        .background(colorDeTema(coloresCuadrito[indice], temaOscuro, UsoColor.FONDO))
                 )
             }
             Column(
@@ -256,19 +260,19 @@ fun MenuScreen(
             ) {
                 Text(
                     text = "${carrito?.totalItems() ?: 0} ítems",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
                 Text(
                     text = moneda((carrito?.total() ?: 0.0) + if (mesa == "Delivery") deliveryFee else 0.0),
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 if (mesa == "Delivery" && deliveryFee > 0.0) {
                     Text(
                         text = "Incluye ${moneda(deliveryFee)} de delivery",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 11.sp
                     )
                 }
@@ -278,13 +282,13 @@ fun MenuScreen(
                     .width(110.dp)
                     .height(52.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Colores.VerdeBoton)
+                    .background(colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO))
                     .clickable { verCarrito() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Ver carrito",
-                    color = Color.Black,
+                    color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -307,10 +311,11 @@ private fun PlatoCard(
     onPlus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -319,13 +324,13 @@ private fun PlatoCard(
                 .fillMaxWidth()
                 .height(90.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(fondoImagen),
+                .background(colorDeTema(fondoImagen, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icono,
                 contentDescription = null,
-                tint = tintaIcono,
+                tint = colorDeTema(tintaIcono, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -333,13 +338,13 @@ private fun PlatoCard(
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = nombre,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = etiqueta,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 12.sp
             )
         }
@@ -350,7 +355,7 @@ private fun PlatoCard(
         ) {
             Text(
                 text = precio,
-                color = Color(0xFFB0B0B0),
+                color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 modifier = Modifier.weight(1f)
             )
@@ -359,13 +364,13 @@ private fun PlatoCard(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(Colores.VerdePrimario)
+                        .background(colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.FONDO))
                         .clickable { onPlus() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "+",
-                        color = Color.Black,
+                        color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -374,26 +379,26 @@ private fun PlatoCard(
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Colores.GrisMedio)
+                        .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO))
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
                         text = "−",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 18.sp,
                         modifier = Modifier.clickable { onMinus() }
                     )
                     Text(
                         text = "$cantidad",
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "+",
-                        color = Colores.VerdePrimario,
+                        color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable { onPlus() }
@@ -407,6 +412,7 @@ private fun PlatoCard(
 @Composable
 @Preview
 fun MenuScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     MenuScreen(
         backMenuScreen = {},
         verCarrito = {}

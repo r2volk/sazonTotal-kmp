@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -107,6 +110,7 @@ fun RepartoScreen(
     nombreMesero: String = "Mesero",
     entregasPendientes: Int = 0
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     // una sola imagen loader con descarga por red para AsyncImage (coil).
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
@@ -241,7 +245,7 @@ fun RepartoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -275,7 +279,7 @@ fun RepartoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF1C1C1E))
+                    .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
             ) {
                 sugerencias.take(5).forEachIndexed { index, sugerido ->
                     SugerenciaRow(texto = sugerido, onClick = { elegir(sugerido) })
@@ -285,7 +289,7 @@ fun RepartoScreen(
                                 .fillMaxWidth()
                                 .padding(start = 68.dp)
                                 .height(1.dp)
-                                .background(Color(0xFF2C2C2E))
+                                .background(colorDeTema(Color(0xFF2C2C2E), temaOscuro, UsoColor.FONDO))
                         )
                     }
                 }
@@ -298,7 +302,7 @@ fun RepartoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF3A1414))
+                    .background(colorDeTema(Color(0xFF3A1414), temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -306,12 +310,12 @@ fun RepartoScreen(
                 Icon(
                     imageVector = Icons.Filled.Info,
                     contentDescription = null,
-                    tint = RojoSuave,
+                    tint = colorDeTema(RojoSuave, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
                     text = error ?: "",
-                    color = RojoSuave,
+                    color = colorDeTema(RojoSuave, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -354,19 +358,19 @@ fun RepartoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF1C1C1E))
+                    .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "Delivery · hasta $tramos km × S/ 3.00",
-                    color = Color(0xFFB0B0B0),
+                    color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp
                 )
                 Text(
                     text = moneda(costo),
-                    color = VerdeModulo,
+                    color = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -380,7 +384,7 @@ fun RepartoScreen(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(if (resultado != null) VerdeModulo else Color(0xFF3A3A3C))
+                .background(colorDeTema(if (resultado != null) VerdeModulo else Color(0xFF3A3A3C), temaOscuro, UsoColor.FONDO))
                 .clickable(enabled = resultado != null) {
                     val direccionPedido = direccionElegida ?: direccion
                     val ruta = resultado ?: return@clickable
@@ -398,12 +402,12 @@ fun RepartoScreen(
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = null,
-                    tint = if (resultado != null) Color.Black else Color(0xFF5A5A5E),
+                    tint = colorDeTema(if (resultado != null) Color.Black else Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
                     text = "Continuar a crear pedido",
-                    color = if (resultado != null) Color.Black else Color(0xFF5A5A5E),
+                    color = colorDeTema(if (resultado != null) Color.Black else Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -415,6 +419,7 @@ fun RepartoScreen(
 @Preview
 @Composable
 private fun RepartoScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     RepartoScreen(
         backReparto = {},
         onVerEntregas = {}
@@ -427,6 +432,7 @@ private fun RepartoHeader(
     onVerEntregas: () -> Unit,
     entregasPendientes: Int
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -439,7 +445,7 @@ private fun RepartoHeader(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Atrás",
-                tint = Color.White,
+                tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -447,20 +453,20 @@ private fun RepartoHeader(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(VerdeModuloOscuro),
+                .background(colorDeTema(VerdeModuloOscuro, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.TwoWheeler,
                 contentDescription = null,
-                tint = VerdeModulo,
+                tint = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(24.dp)
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "Pedidos a domicilio",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -472,11 +478,11 @@ private fun RepartoHeader(
                     modifier = Modifier
                         .size(7.dp)
                         .clip(CircleShape)
-                        .background(VerdeModulo)
+                        .background(colorDeTema(VerdeModulo, temaOscuro, UsoColor.FONDO))
                 )
                 Text(
                     text = "Sede: $DIRECCION_SEDE",
-                    color = Color(0xFF8E8E93),
+                    color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
             }
@@ -490,7 +496,7 @@ private fun RepartoHeader(
                 Icon(
                     imageVector = Icons.Filled.History,
                     contentDescription = "Entregas de hoy",
-                    tint = VerdeModulo,
+                    tint = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -499,13 +505,13 @@ private fun RepartoHeader(
                     modifier = Modifier
                         .offset(x = (-2).dp, y = (-4).dp)
                         .clip(CircleShape)
-                        .background(Ambar)
+                        .background(colorDeTema(Ambar, temaOscuro, UsoColor.FONDO))
                         .padding(horizontal = 5.dp, vertical = 1.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = entregasPendientes.toString(),
-                        color = Color.Black,
+                        color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -517,11 +523,12 @@ private fun RepartoHeader(
 
 @Composable
 private fun BannerDemo() {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF3A2B08))
+            .background(colorDeTema(Color(0xFF3A2B08), temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -529,12 +536,12 @@ private fun BannerDemo() {
         Icon(
             imageVector = Icons.Filled.Info,
             contentDescription = null,
-            tint = Ambar,
+            tint = colorDeTema(Ambar, temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(18.dp)
         )
         Text(
             text = "Módulo en modo demostración",
-            color = Ambar,
+            color = colorDeTema(Ambar, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
@@ -555,12 +562,13 @@ private fun MapaReparto(
     direccionElegida: String?,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .fillMaxWidth()
             .drawBehind {
                 drawRoundRect(
-                    color = Color(0xFF3A3A3C),
+                    color = colorDeTema(Color(0xFF3A3A3C), temaOscuro, UsoColor.TEXTO),
                     style = Stroke(
                         width = 2f,
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
@@ -592,22 +600,22 @@ private fun MapaReparto(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (cargandoRuta) {
-                        CircularProgressIndicator(color = VerdeModulo, strokeWidth = 3.dp, modifier = Modifier.size(28.dp))
+                        CircularProgressIndicator(color = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO), strokeWidth = 3.dp, modifier = Modifier.size(28.dp))
                         Text(
                             text = if (direccionElegida != null) "Calculando ruta…" else "",
-                            color = Color(0xFFB0B0B0),
+                            color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
                             fontSize = 15.sp
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Outlined.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF3A3A3C),
+                            tint = colorDeTema(Color(0xFF3A3A3C), temaOscuro, UsoColor.TEXTO),
                             modifier = Modifier.size(34.dp)
                         )
                         Text(
                             text = "Escribe la dirección del cliente\npara dibujar la ruta",
-                            color = Color(0xFF5A5A5E),
+                            color = colorDeTema(Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
                             fontSize = 15.sp,
                             textAlign = TextAlign.Center
                         )
@@ -624,10 +632,11 @@ private fun MapaReparto(
  */
 @Composable
 private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF131719)) // tono mapa oscuro
+            .background(colorDeTema(Color(0xFF131719), temaOscuro, UsoColor.FONDO)) // tono mapa oscuro
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val ancho = size.width
@@ -636,7 +645,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
             // calles de fondo (3 horizontales, 3 verticales).
             listOf(0.18f, 0.52f, 0.84f).forEach { fraccion ->
                 drawLine(
-                    color = Color(0xFF20262A),
+                    color = colorDeTema(Color(0xFF20262A), temaOscuro, UsoColor.TEXTO),
                     start = Offset(0f, alto * fraccion),
                     end = Offset(ancho, alto * fraccion),
                     strokeWidth = alto * 0.055f
@@ -644,7 +653,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
             }
             listOf(0.24f, 0.56f, 0.86f).forEach { fraccion ->
                 drawLine(
-                    color = Color(0xFF20262A),
+                    color = colorDeTema(Color(0xFF20262A), temaOscuro, UsoColor.TEXTO),
                     start = Offset(ancho * fraccion, 0f),
                     end = Offset(ancho * fraccion, alto),
                     strokeWidth = ancho * 0.035f
@@ -666,7 +675,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
             }
             drawPath(
                 path = ruta,
-                color = VerdeModulo,
+                color = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                 style = Stroke(
                     width = 5f,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(22f, 14f))
@@ -675,19 +684,19 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
 
             // pin de la sede (verde) con halo.
             drawCircle(
-                color = Color(0xFF30D158).copy(alpha = 0.25f),
+                color = colorDeTema(Color(0xFF30D158).copy(alpha = 0.25f), temaOscuro, UsoColor.TEXTO),
                 radius = 30f,
                 center = inicio
             )
-            drawCircle(color = Color(0xFF30D158), radius = 14f, center = inicio)
+            drawCircle(color = colorDeTema(Color(0xFF30D158), temaOscuro, UsoColor.TEXTO), radius = 14f, center = inicio)
 
             // pin del cliente (rojo) con halo.
             drawCircle(
-                color = Color(0xFFFF453A).copy(alpha = 0.25f),
+                color = colorDeTema(Color(0xFFFF453A).copy(alpha = 0.25f), temaOscuro, UsoColor.TEXTO),
                 radius = 30f,
                 center = fin
             )
-            drawCircle(color = Color(0xFFFF453A), radius = 14f, center = fin)
+            drawCircle(color = colorDeTema(Color(0xFFFF453A), temaOscuro, UsoColor.TEXTO), radius = 14f, center = fin)
         }
 
         // etiquetas flotantes de los pines.
@@ -714,10 +723,11 @@ private fun EtiquetaMapa(
     colorPunto: Color,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xCC101214))
+            .background(colorDeTema(Color(0xCC101214), temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -726,11 +736,11 @@ private fun EtiquetaMapa(
             modifier = Modifier
                 .size(8.dp)
                 .clip(CircleShape)
-                .background(colorPunto)
+                .background(colorDeTema(colorPunto, temaOscuro, UsoColor.FONDO))
         )
         Text(
             text = texto,
-            color = Color(0xFFB0B0B0),
+            color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
             fontSize = 11.sp
         )
     }
@@ -755,13 +765,14 @@ private fun BuscadorReparto(
     onSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .drawBehind {
                 if (conBordeVerde) {
                     drawRoundRect(
-                        color = VerdeModulo,
+                        color = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                         style = Stroke(
                             width = 6f,
                             pathEffect = PathEffect.cornerPathEffect(48f)
@@ -771,14 +782,14 @@ private fun BuscadorReparto(
                 }
             }
             .clip(RoundedCornerShape(30.dp))
-            .background(Color(0xFF1C1C1E))
+            .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
             .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Outlined.LocationOn,
             contentDescription = null,
-            tint = Color(0xFF8E8E93),
+            tint = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.size(12.dp))
@@ -789,11 +800,11 @@ private fun BuscadorReparto(
             enabled = editable,
             singleLine = true,
             textStyle = TextStyle(
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             ),
-            cursorBrush = SolidColor(VerdeModulo),
+            cursorBrush = SolidColor(colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO)),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearch() }),
             decorationBox = { campoInterno ->
@@ -801,7 +812,7 @@ private fun BuscadorReparto(
                     if (texto.isEmpty()) {
                         Text(
                             text = "Dirección del cliente…",
-                            color = Color(0xFF5A5A5E),
+                            color = colorDeTema(Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -814,14 +825,14 @@ private fun BuscadorReparto(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(if (conBordeVerde) VerdeModulo else Color(0xFF235B31))
+                .background(colorDeTema(if (conBordeVerde) VerdeModulo else Color(0xFF235B31), temaOscuro, UsoColor.FONDO))
                 .clickable { onSearch() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = if (conBordeVerde) "Buscar" else "Editar dirección",
-                tint = if (conBordeVerde) Color(0xFF0D2818) else VerdeModulo,
+                tint = if (conBordeVerde) Color.Black else colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -833,6 +844,7 @@ private fun SugerenciaRow(
     texto: String,
     onClick: () -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -845,19 +857,19 @@ private fun SugerenciaRow(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF2A2A2C)),
+                .background(colorDeTema(Color(0xFF2A2A2C), temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.LocationOn,
                 contentDescription = null,
-                tint = Color(0xFF8E8E93),
+                tint = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(20.dp)
             )
         }
         Text(
             text = texto,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )
@@ -873,11 +885,12 @@ private fun StatReparto(
     iconoTint: Color,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .height(72.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1C1C1E))
+            .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -886,26 +899,26 @@ private fun StatReparto(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(iconoBg),
+                .background(colorDeTema(iconoBg, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icono,
                 contentDescription = null,
-                tint = iconoTint,
+                tint = colorDeTema(iconoTint, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(20.dp)
             )
         }
         Column {
             Text(
                 text = valor,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = etiqueta,
-                color = Color(0xFF8E8E93),
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                 fontSize = 12.sp
             )
         }

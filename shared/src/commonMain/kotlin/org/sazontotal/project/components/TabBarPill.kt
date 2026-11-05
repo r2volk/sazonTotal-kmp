@@ -1,5 +1,9 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.coloresNavegacion
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,12 +47,14 @@ fun TabBarPill(
     items: List<TabItem>,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
+    val colores = coloresNavegacion(temaOscuro)
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(colorDeTema(Color(0xFF000000), temaOscuro, UsoColor.FONDO))
     ) {
 
         Column(
@@ -69,8 +75,8 @@ fun TabBarPill(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(28.dp))
-                    .background(Color(0xFF111111))
-                    .border(1.dp, Color(0xFF2A2A2A), RoundedCornerShape(28.dp))
+                    .background(colores.superficie)
+                    .border(1.dp, colores.borde, RoundedCornerShape(28.dp))
                     .padding(6.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
@@ -97,15 +103,14 @@ private fun PillTabItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val pillColor = Color(0xFF143D2B)
-    val activeContent = Color(0xFF4ADE80)
-    val inactiveContent = Color(0xFF6B7280)
+    val temaOscuro = LocalTemaOscuro.current
+    val colores = coloresNavegacion(temaOscuro)
 
     Box(
         modifier = modifier
             .height(48.dp)
             .clip(RoundedCornerShape(22.dp))
-            .background(if (selected) pillColor else Color.Transparent)
+            .background(if (selected) colores.seleccion else Color.Transparent)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -117,13 +122,13 @@ private fun PillTabItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = text,
-                    tint = activeContent,
+                    tint = colores.sobreSeleccion,
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = text,
-                    color = activeContent,
+                    color = colores.sobreSeleccion,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -132,7 +137,7 @@ private fun PillTabItem(
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                tint = inactiveContent,
+                tint = colores.inactivo,
                 modifier = Modifier.size(24.dp)
             )
         }

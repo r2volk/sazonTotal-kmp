@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,11 +28,12 @@ fun StatCardCentrado(
     colorSuperior: Color = Color.White,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .heightIn(min = 60.dp)
             .background(
-                color = Colores.Superficie,
+                color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(
@@ -41,13 +45,13 @@ fun StatCardCentrado(
     ) {
         Text(
             text = textoSuperior,
-            color = colorSuperior,
+            color = colorDeTema(colorSuperior, temaOscuro, UsoColor.TEXTO),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = textoInferior,
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal
         )
@@ -58,6 +62,7 @@ fun StatCardCentrado(
 @Composable
 @Preview
 fun PreviewStat(){
+    val temaOscuro = LocalTemaOscuro.current
     StatCardCentrado(
         textoSuperior = "2",
         textoInferior = "Pendientes",

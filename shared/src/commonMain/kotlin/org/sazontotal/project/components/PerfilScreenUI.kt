@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,16 +58,17 @@ fun PerfilScreenUI(
     onCambiarPinClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "Perfil",
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -87,7 +91,7 @@ fun PerfilScreenUI(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = Color(0xFF6E6E73),
+                    tint = colorDeTema(Color(0xFF6E6E73), temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -107,12 +111,13 @@ private fun PerfilHeroCard(
     empleadoId: String,
     accent: Color
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(accent.copy(alpha = 0.10f))
-            .border(1.dp, accent.copy(alpha = 0.22f), RoundedCornerShape(28.dp))
+            .background(colorDeTema(accent.copy(alpha = 0.10f), temaOscuro, UsoColor.FONDO))
+            .border(1.dp, colorDeTema(accent.copy(alpha = 0.22f), temaOscuro, UsoColor.BORDE), RoundedCornerShape(28.dp))
             .padding(horizontal = 20.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -121,13 +126,13 @@ private fun PerfilHeroCard(
             modifier = Modifier
                 .size(88.dp)
                 .clip(CircleShape)
-                .background(accent.copy(alpha = 0.14f))
-                .border(2.dp, accent, CircleShape),
+                .background(colorDeTema(accent.copy(alpha = 0.14f), temaOscuro, UsoColor.FONDO))
+                .border(2.dp, colorDeTema(accent, temaOscuro, UsoColor.BORDE), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = iniciales,
-                color = accent,
+                color = colorDeTema(accent, temaOscuro, UsoColor.TEXTO),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -135,7 +140,7 @@ private fun PerfilHeroCard(
 
         Text(
             text = nombre,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -147,12 +152,12 @@ private fun PerfilHeroCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(accent.copy(alpha = 0.18f))
+                    .background(colorDeTema(accent.copy(alpha = 0.18f), temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = rol,
-                    color = accent,
+                    color = colorDeTema(accent, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -160,12 +165,12 @@ private fun PerfilHeroCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(PerfilChipFondo)
+                    .background(colorDeTema(PerfilChipFondo, temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = "ID: $empleadoId",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -176,11 +181,12 @@ private fun PerfilHeroCard(
 
 @Composable
 private fun PerfilStatsCard(stats: List<PerfilStat>) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(PerfilSuperficie)
+            .background(colorDeTema(PerfilSuperficie, temaOscuro, UsoColor.FONDO))
             .padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -192,13 +198,13 @@ private fun PerfilStatsCard(stats: List<PerfilStat>) {
             ) {
                 Text(
                     text = stat.valor,
-                    color = stat.color,
+                    color = colorDeTema(stat.color, temaOscuro, UsoColor.TEXTO),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = stat.etiqueta,
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 11.sp
                 )
             }
@@ -207,7 +213,7 @@ private fun PerfilStatsCard(stats: List<PerfilStat>) {
                     modifier = Modifier
                         .width(1.dp)
                         .height(32.dp)
-                        .background(PerfilDivisor)
+                        .background(colorDeTema(PerfilDivisor, temaOscuro, UsoColor.FONDO))
                 )
             }
         }
@@ -216,12 +222,13 @@ private fun PerfilStatsCard(stats: List<PerfilStat>) {
 
 @Composable
 private fun CerrarSesionButton(onClick: () -> Unit) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .clip(RoundedCornerShape(50))
-            .background(PerfilRojoFondo)
+            .background(colorDeTema(PerfilRojoFondo, temaOscuro, UsoColor.FONDO))
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -229,13 +236,13 @@ private fun CerrarSesionButton(onClick: () -> Unit) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = null,
-            tint = Colores.Rojo,
+            tint = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Cerrar sesión",
-            color = Colores.Rojo,
+            color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold
         )

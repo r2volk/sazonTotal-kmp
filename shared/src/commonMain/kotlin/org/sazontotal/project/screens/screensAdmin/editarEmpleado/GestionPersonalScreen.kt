@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin.editarEmpleado
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +52,7 @@ fun GestionPersonalScreen(
     backGestionPersonal: () -> Unit,
     repositorio: SazonRepository? = null
 ){
+    val temaOscuro = LocalTemaOscuro.current
 
     var nombreBuscado by remember { mutableStateOf("") }
     var mostrarFormulario by remember { mutableStateOf(false) }
@@ -68,7 +72,7 @@ fun GestionPersonalScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
 
     ) {
         Column(
@@ -89,13 +93,13 @@ fun GestionPersonalScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Atrás",
-                        tint = Color.White,
+                        tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Gestionar personal",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -164,7 +168,7 @@ fun GestionPersonalScreen(
             if (aviso != null) {
                 Text(
                     text = aviso!!,
-                    color = Color(0xFFFF453A),
+                    color = colorDeTema(Color(0xFFFF453A), temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -213,7 +217,7 @@ fun GestionPersonalScreen(
                 .padding(end = 20.dp, bottom = 20.dp)
                 .size(52.dp)
                 .clip(CircleShape)
-                .background(Colores.VerdeBoton)
+                .background(colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO))
                 .clickable {
                     aviso = null
                     mostrarFormulario = true
@@ -222,7 +226,7 @@ fun GestionPersonalScreen(
         ) {
             Text(
                 text = "+",
-                color = Color.Black,
+                color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -266,6 +270,7 @@ private fun EmpleadoCard(
     modifier: Modifier = Modifier,
     onActivoChange: (Boolean) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val isCocina = trabajo.equals("Cocina", ignoreCase = true)
     val badgeBg = when {
         !isActive -> Colores.GrisMedio
@@ -281,7 +286,7 @@ private fun EmpleadoCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .padding(
                 horizontal = 14.dp,
                 vertical = 12.dp
@@ -293,12 +298,12 @@ private fun EmpleadoCard(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Colores.GrisMedio),
+                .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "ツ",
-                color = Color(0xFF9A9A9A),
+                color = colorDeTema(Color(0xFF9A9A9A), temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -312,11 +317,11 @@ private fun EmpleadoCard(
         ) {
             Text(
                 text = nombre,
-                color = if (isActive) {
+                color = colorDeTema(if (isActive) {
                     Color(0xFFE8E8E8)
                 } else {
                     Color(0xFF777777)
-                },
+                }, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -327,7 +332,7 @@ private fun EmpleadoCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(badgeBg)
+                        .background(colorDeTema(badgeBg, temaOscuro, UsoColor.FONDO))
                         .padding(
                             horizontal = 8.dp,
                             vertical = 2.dp
@@ -335,7 +340,7 @@ private fun EmpleadoCard(
                 ) {
                     Text(
                         text = trabajo,
-                        color = badgeText,
+                        color = colorDeTema(badgeText, temaOscuro, UsoColor.TEXTO),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -345,11 +350,11 @@ private fun EmpleadoCard(
 
                 Text(
                     text = "ID: $id",
-                    color = if (isActive) {
+                    color = colorDeTema(if (isActive) {
                         Color(0xFF5F5F5F)
                     } else {
                         Color(0xFF444444)
-                    },
+                    }, temaOscuro, UsoColor.TEXTO),
                     fontSize = 12.sp
                 )
             }
@@ -363,6 +368,7 @@ private fun EmpleadoCard(
 @Preview
 @Composable
 fun GestionPersonalScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     GestionPersonalScreen(
         backGestionPersonal = {},
         repositorio = null

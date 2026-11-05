@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,6 +53,7 @@ fun MeseroHistorialScreen(
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     var textoBusqueda by remember { mutableStateOf("") }
 
     // el historial lee pedidos de room y conserva solo los del mesero conectado.
@@ -78,7 +82,7 @@ fun MeseroHistorialScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -86,13 +90,13 @@ fun MeseroHistorialScreen(
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = "Historial",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "Pedidos completados",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
         }
@@ -126,7 +130,7 @@ fun MeseroHistorialScreen(
 
         Text(
             text = "COMPLETADOS · ${completados.size} PEDIDOS",
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             letterSpacing = 1.sp
@@ -146,6 +150,7 @@ private fun HistorialDePedido(
     pedido: PedidoEntity,
     repositorio: SazonRepository?
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -167,11 +172,12 @@ private fun HistorialCard(
     precio: String,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -179,13 +185,13 @@ private fun HistorialCard(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF143D2B)),
+                .background(colorDeTema(Color(0xFF143D2B), temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = null,
-                tint = Colores.VerdePrimario,
+                tint = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -202,14 +208,14 @@ private fun HistorialCard(
             ) {
                 Text(
                     text = mesa,
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = hora,
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
             }
@@ -219,7 +225,7 @@ private fun HistorialCard(
             ) {
                 Text(
                     text = detalle,
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     modifier = Modifier
                         .weight(1f)
@@ -227,7 +233,7 @@ private fun HistorialCard(
                 )
                 Text(
                     text = precio,
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,16 +43,17 @@ fun PedidoCard(
     onCambiarEstado: () -> Unit,
     lineas: List<String> = emptyList()
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Colores.Superficie,
+                colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 RoundedCornerShape(16.dp)
             )
             .border(
                 1.dp,
-                Colores.GrisMedio,
+                colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE),
                 RoundedCornerShape(16.dp)
             )
             .padding(16.dp)
@@ -61,7 +65,7 @@ fun PedidoCard(
         ) {
             Text(
                 text = destinoPedido(numeroMesa),
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -70,7 +74,7 @@ fun PedidoCard(
 
             Text(
                 text = tiempo,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -79,7 +83,7 @@ fun PedidoCard(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (esDelivery(numeroMesa)) {
-            Text(text = direccionDelivery(numeroMesa), color = Colores.TextoTenue, fontSize = 14.sp)
+            Text(text = direccionDelivery(numeroMesa), color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO), fontSize = 14.sp)
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -99,7 +103,7 @@ fun PedidoCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Nota: $nota",
-                color = Color(0xFF9A9AA0),
+                color = colorDeTema(Color(0xFF9A9AA0), temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp,
                 fontStyle = FontStyle.Italic
             )
@@ -117,12 +121,12 @@ fun PedidoCard(
                 ) {
                     Text(
                         text = "Preparando en cocina",
-                        color = Colores.Naranja,
+                        color = colorDeTema(Colores.Naranja, temaOscuro, UsoColor.TEXTO),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(Colores.Naranja.copy(alpha = 0.12f))
+                            .background(colorDeTema(Colores.Naranja.copy(alpha = 0.12f), temaOscuro, UsoColor.FONDO))
                             .padding(horizontal = 14.dp, vertical = 7.dp)
                     )
                 }
@@ -135,13 +139,13 @@ fun PedidoCard(
                         .fillMaxWidth()
                         .height(52.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Colores.VerdeBoton
+                        containerColor = colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         if (esDelivery(numeroMesa)) "Enviar con motorizado" else "Marcar entregado",
-                        color = Color.Black,
+                        color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -150,17 +154,17 @@ fun PedidoCard(
 
             EstadoPedido.EN_CAMINO -> {
                 Button(onClick = onCambiarEstado, modifier = Modifier.fillMaxWidth().height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Colores.VerdeBoton),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO)),
                     shape = RoundedCornerShape(12.dp)) {
-                    Text("Marcar entregado", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Marcar entregado", color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
-                Text("En camino", color = Colores.VerdePrimario, fontSize = 14.sp)
+                Text("En camino", color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO), fontSize = 14.sp)
             }
 
             EstadoPedido.ENTREGADO -> {
                 Text(
                     text = "✓ Pedido entregado",
-                    color = Colores.VerdePrimario,
+                    color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -169,7 +173,7 @@ fun PedidoCard(
             EstadoPedido.ANULADO -> {
                 Text(
                     text = "Anulado",
-                    color = Colores.Rojo,
+                    color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -184,6 +188,7 @@ private fun ItemFila(
     texto: String,
     bg: Color
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -192,7 +197,7 @@ private fun ItemFila(
             modifier = Modifier
                 .size(28.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(bg),
+                .background(colorDeTema(bg, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -202,7 +207,7 @@ private fun ItemFila(
         }
         Text(
             text = texto,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )

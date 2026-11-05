@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +51,7 @@ fun ReportesScreen(
     backReportes: () -> Unit,
     repositorio: SazonRepository? = null
 ){
+    val temaOscuro = LocalTemaOscuro.current
 
     // reportes calcula ventas solo con pedidos entregados que vienen de room.
     val pedidosEnVivo = repositorio?.observarPedidos()
@@ -161,7 +165,7 @@ fun ReportesScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(colorDeTema(Color(0xFF000000), temaOscuro, UsoColor.FONDO))
 
     ) {
         Column(
@@ -185,13 +189,13 @@ fun ReportesScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Atrás",
-                        tint = Color.White,
+                        tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Reportes",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -227,7 +231,7 @@ fun ReportesScreen(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 60.dp)
-                        .background(color = Colores.Superficie,
+                        .background(color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                             shape = RoundedCornerShape(12.dp))
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -235,18 +239,18 @@ fun ReportesScreen(
                 ) {
                     Text(
                         text = moneda(ganancias),
-                        color = Color.Green,
+                        color = colorDeTema(Color.Green, temaOscuro, UsoColor.TEXTO),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (periodo == "month") "Ventas del mes" else if (periodo == "year") "Ventas del año" else "Ventas de la semana",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 14.sp
                     )
                     Text(
                         text = textoComparacion,
-                        color = colorComparacion,
+                        color = colorDeTema(colorComparacion, temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -257,7 +261,7 @@ fun ReportesScreen(
                         .weight(1f)
                         .heightIn(min = 60.dp)
                         .background(
-                            color = Colores.Superficie,
+                            color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                             shape = RoundedCornerShape(12.dp)
                         )
                         .padding(
@@ -269,18 +273,18 @@ fun ReportesScreen(
                 ) {
                     Text(
                         text = pedidosTotales.toString(),
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Pedidos Totales",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 14.sp
                     )
                     Text(
                         text = "Prom: ${decimales(promedio)}",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -293,7 +297,7 @@ fun ReportesScreen(
                        else "Ventas por dia",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             )
 
             graficoStatReporte(
@@ -308,7 +312,7 @@ fun ReportesScreen(
                 text = "Platos mas vendidos",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             )
 
             top.forEachIndexed { indice, venta ->
@@ -331,15 +335,16 @@ private fun platosMasVendidos(
     puesto: Int,
     cantidad: Int
 ){
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
-            .background(color = Colores.Superficie,
+            .background(color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 shape = RoundedCornerShape(13.dp))
             .padding(15.dp),
     ) {
         Text(
             text = puesto.toString(),
-            color = if (puesto==1) Color.Green else Colores.TextoTenue,
+            color = colorDeTema(if (puesto==1) Color.Green else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontWeight = FontWeight.Bold
         )
 
@@ -348,13 +353,13 @@ private fun platosMasVendidos(
                 .weight(1f)
                 .padding(start = 32.dp),
             text = plato,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = cantidad.toString()+" uds",
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontWeight = FontWeight.Bold,
         )
 
@@ -370,14 +375,15 @@ private fun graficoStatReporte(
     hayVentas: Boolean,
     tipo: String = "week"
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val anchoBarra = when (tipo) {
         "month" -> 40.dp
         "year" -> 20.dp
         else -> 35.dp
     }
 
-    val colorBarra = Colores.GrisDeshabilitado
-    val colorBarraDestacada = Color(0xFF34C759)
+    val colorBarra = colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.BORDE)
+    val colorBarraDestacada = if (temaOscuro) Color(0xFF34C759) else colorDeTema(Color(0xFF34C759), false)
 
     // sin ventas no se dibuja una grafica vacia; se avisa que no hay.
     if (!hayVentas) {
@@ -385,14 +391,14 @@ private fun graficoStatReporte(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
-                .background(color = Colores.Superficie, shape = RoundedCornerShape(12.dp))
+                .background(color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO), shape = RoundedCornerShape(12.dp))
                 .padding(15.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Sin ventas en este período",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp
             )
         }
@@ -402,7 +408,7 @@ private fun graficoStatReporte(
     Column(
         modifier = Modifier
             .heightIn(min = 60.dp)
-            .background(color = Colores.Superficie,
+            .background(color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 shape = RoundedCornerShape(12.dp))
             .padding(15.dp),
     ) {
@@ -436,7 +442,7 @@ private fun graficoStatReporte(
             etiquetas.forEachIndexed { index, label ->
                 Text(
                     text = label,
-                    color = if (index == indiceDestacado) colorBarraDestacada else Color.Gray,
+                    color = colorDeTema(if (index == indiceDestacado) colorBarraDestacada else Color.Gray, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = if (index == indiceDestacado) FontWeight.Bold else FontWeight.Normal
                 )
@@ -448,6 +454,7 @@ private fun graficoStatReporte(
 @Composable
 @Preview
 fun ReportesScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     ReportesScreen(
         backReportes = {}
     )

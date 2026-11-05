@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero.carrito
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -88,6 +91,7 @@ fun CarritoScreen(
     deliveryFee: Double = 0.0,
     entregaPendiente: EntregaEntity? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val scope = rememberCoroutineScope()
 
     // el repositorio lee todos los platos; el carrito conserva una copia del seleccionado.
@@ -147,7 +151,7 @@ fun CarritoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .imePadding()
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -165,13 +169,13 @@ fun CarritoScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Atrás",
-                    tint = Color.White,
+                    tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
             Text(
                 text = if (esDelivery) "Carrito · Delivery" else "Carrito · Mesa $mesa",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
@@ -212,13 +216,13 @@ fun CarritoScreen(
             if (!hayAlgo) {
                 Text(
                     text = "Carrito vacío: suma platos con + desde el menú",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp
                 )
             }
 
             if (hayAlgo) {
-                Text("Nota general del pedido", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Nota general del pedido", color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO), fontWeight = FontWeight.Bold)
                 CampoTextoAdmin(
                     valor = carrito?.notaGeneral ?: "",
                     onValorChange = {
@@ -237,7 +241,7 @@ fun CarritoScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFF161619))
+                .background(colorDeTema(Color(0xFF161619), temaOscuro, UsoColor.FONDO))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
@@ -249,19 +253,19 @@ fun CarritoScreen(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF1F1F23)),
+                        .background(colorDeTema(Color(0xFF1F1F23), temaOscuro, UsoColor.FONDO)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Chair,
                         contentDescription = null,
-                        tint = Color(0xFFA9D9B3),
+                        tint = colorDeTema(Color(0xFFA9D9B3), temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Destino:",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -293,12 +297,12 @@ fun CarritoScreen(
                     ) {
                         Text(
                             text = "Delivery · hasta ${kilometrosTarifados(deliveryDistanceKm)} km × S/ 3.00",
-                            color = Colores.TextoTenue,
+                            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                             fontSize = 14.sp
                         )
                         Text(
                             text = moneda(deliveryFee),
-                            color = Color.White,
+                            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -313,19 +317,19 @@ fun CarritoScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Total",
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = textoItems,
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 13.sp
                     )
                 }
                 Text(
                     text = moneda(total),
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -337,11 +341,11 @@ fun CarritoScreen(
         if (aviso != null) {
             Text(
                 text = aviso,
-                color = if (errorGuardado != null || mensajeBloqueo != "Cargando el menú...") {
+                color = colorDeTema(if (errorGuardado != null || mensajeBloqueo != "Cargando el menú...") {
                     Color(0xFFFF453A)
                 } else {
                     Colores.TextoTenue
-                },
+                }, temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -352,7 +356,7 @@ fun CarritoScreen(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(if (puedeConfirmar) Colores.VerdeBoton else Colores.GrisDeshabilitado)
+                .background(colorDeTema(if (puedeConfirmar) Colores.VerdeBoton else Colores.GrisDeshabilitado, temaOscuro, UsoColor.FONDO))
                 .clickable(enabled = puedeConfirmar) {
                     val carritoConfirmado = carrito ?: return@clickable
                     val repositorioConfirmado = repositorio ?: return@clickable
@@ -398,7 +402,7 @@ fun CarritoScreen(
         ) {
             Text(
                 text = if (guardando) "Enviando..." else "Confirmar y enviar a cocina",
-                color = if (puedeConfirmar) Color.Black else Colores.TextoTenue,
+                color = colorDeTema(if (puedeConfirmar) Color.Black else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -432,18 +436,19 @@ private fun SelectorDeMesa(
     onToggle: () -> Unit,
     onAncla: (Rect) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .onGloballyPositioned { onAncla(it.boundsInRoot()) }
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1C1C1F))
+            .background(colorDeTema(Color(0xFF1C1C1F), temaOscuro, UsoColor.FONDO))
             .border(
                 width = if (abierto) 1.5.dp else 1.dp,
-                color = when {
+                color = colorDeTema(when {
                     abierto -> Colores.VerdeBoton
                     !activo -> Color(0xFF2E2E32)
                     else -> Color(0xFF3A3A3E)
-                },
+                }, temaOscuro, UsoColor.TEXTO),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(enabled = activo) { onToggle() }
@@ -456,14 +461,14 @@ private fun SelectorDeMesa(
         ) {
             Text(
                 text = mesa,
-                color = if (activo) Color.White else Colores.TextoTenue,
+                color = colorDeTema(if (activo) Color.White else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = if (abierto) "Cerrar lista de mesas" else "Elegir mesa",
-                tint = if (activo) Color(0xFF9A9AA0) else Colores.TextoTenue,
+                tint = colorDeTema(if (activo) Color(0xFF9A9AA0) else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier
                     .size(22.dp)
                     .rotate(if (abierto) 180f else 0f)
@@ -478,12 +483,13 @@ private fun ListaDeMesas(
     mesaActual: String,
     onSelecciona: (String) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = Modifier
             .width(112.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF232327))
-            .border(1.dp, Color(0xFF36363B), RoundedCornerShape(16.dp))
+            .background(colorDeTema(Color(0xFF232327), temaOscuro, UsoColor.FONDO))
+            .border(1.dp, colorDeTema(Color(0xFF36363B), temaOscuro, UsoColor.BORDE), RoundedCornerShape(16.dp))
             .padding(6.dp)
             .heightIn(max = 240.dp)
             .verticalScroll(rememberScrollState()),
@@ -493,7 +499,7 @@ private fun ListaDeMesas(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
                 .clickable { onSelecciona("Delivery") }.padding(horizontal = 14.dp, vertical = 11.dp)
         ) {
-            Text("Delivery", color = if (mesaActual == "Delivery") Colores.VerdeBoton else Color.White, fontSize = 15.sp)
+            Text("Delivery", color = colorDeTema(if (mesaActual == "Delivery") Colores.VerdeBoton else Color.White, temaOscuro, UsoColor.TEXTO), fontSize = 15.sp)
         }
         (1..15).forEach { numero ->
             val textoMesa = "$numero"
@@ -502,7 +508,7 @@ private fun ListaDeMesas(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (elegida) Color(0xFF14311F) else Color.Transparent)
+                    .background(colorDeTema(if (elegida) Color(0xFF14311F) else Color.Transparent, temaOscuro, UsoColor.FONDO))
                     .clickable(enabled = !elegida) { onSelecciona(textoMesa) }
                     .padding(horizontal = 14.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -510,7 +516,7 @@ private fun ListaDeMesas(
             ) {
                 Text(
                     text = textoMesa,
-                    color = if (elegida) Colores.VerdeBoton else Color(0xFFB3B3B8),
+                    color = colorDeTema(if (elegida) Colores.VerdeBoton else Color(0xFFB3B3B8), temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = if (elegida) FontWeight.Bold else FontWeight.Normal
                 )
@@ -518,7 +524,7 @@ private fun ListaDeMesas(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
-                        tint = Colores.VerdeBoton,
+                        tint = colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -563,11 +569,12 @@ private fun CarritoItemCard(
     onPlus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -579,13 +586,13 @@ private fun CarritoItemCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(fondoImagen),
+                    .background(colorDeTema(fondoImagen, temaOscuro, UsoColor.FONDO)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icono,
                     contentDescription = null,
-                    tint = tintaIcono,
+                    tint = colorDeTema(tintaIcono, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -597,13 +604,13 @@ private fun CarritoItemCard(
             ) {
                 Text(
                     text = nombre,
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = precioUnitario,
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
             }
@@ -618,7 +625,7 @@ private fun CarritoItemCard(
         if (!disponible) {
             Text(
                 text = "No disponible · reduce la cantidad a cero para quitarlo",
-                color = Color(0xFFFFA500),
+                color = colorDeTema(Color(0xFFFFA500), temaOscuro, UsoColor.TEXTO),
                 fontSize = 12.sp
             )
         }
@@ -628,6 +635,7 @@ private fun CarritoItemCard(
 @Composable
 @Preview
 fun CarritoPreviewScreen(){
+    val temaOscuro = LocalTemaOscuro.current
     CarritoScreen(
         backCarritoScreen = {},
         confirmarCarrito = { _ -> }

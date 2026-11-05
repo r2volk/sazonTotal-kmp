@@ -1,5 +1,8 @@
 package org.sazontotal.project.icons
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -21,17 +24,18 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PersonalIcon() {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0B3820)),
+            .background(colorDeTema(Color(0xFF0B3820), temaOscuro, UsoColor.FONDO)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.People,
             contentDescription = null,
-            tint = Color(0xFF00E676),
+            tint = colorDeTema(Color(0xFF00E676), temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(26.dp)
         )
     }
@@ -39,17 +43,18 @@ fun PersonalIcon() {
 
 @Composable
 fun PedidosIcon() {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF092D40)),
+            .background(colorDeTema(Color(0xFF092D40), temaOscuro, UsoColor.FONDO)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.Assignment,
             contentDescription = null,
-            tint = Color(0xFF29B6F6),
+            tint = colorDeTema(Color(0xFF29B6F6), temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(26.dp)
         )
     }
@@ -57,17 +62,18 @@ fun PedidosIcon() {
 
 @Composable
 fun ReportesIcon() {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF3D2905)),
+            .background(colorDeTema(Color(0xFF3D2905), temaOscuro, UsoColor.FONDO)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.BarChart,
             contentDescription = null,
-            tint = Color(0xFFFFA000),
+            tint = colorDeTema(Color(0xFFFFA000), temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(26.dp)
         )
     }
@@ -75,17 +81,18 @@ fun ReportesIcon() {
 
 @Composable
 fun MenuIcon() {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF291B3D)),
+            .background(colorDeTema(Color(0xFF291B3D), temaOscuro, UsoColor.FONDO)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Restaurant,
             contentDescription = null,
-            tint = Color(0xFFB388FF),
+            tint = colorDeTema(Color(0xFFB388FF), temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(26.dp)
         )
     }

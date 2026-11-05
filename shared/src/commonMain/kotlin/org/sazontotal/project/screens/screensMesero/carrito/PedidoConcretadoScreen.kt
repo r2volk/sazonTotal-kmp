@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero.carrito
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,6 +54,7 @@ fun PedidoConcretadoScreen(
     pedidoId: Long = 0L,
     repositorio: SazonRepository? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     // Evita que un segundo toque de confirmación active el botón en la misma posición.
     var accionesDisponibles by remember(pedidoId) { mutableStateOf(false) }
     LaunchedEffect(pedidoId) {
@@ -74,7 +78,7 @@ fun PedidoConcretadoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -92,13 +96,13 @@ fun PedidoConcretadoScreen(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF143D2B)),
+                    .background(colorDeTema(Color(0xFF143D2B), temaOscuro, UsoColor.FONDO)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.Check,
                     contentDescription = null,
-                    tint = Colores.VerdePrimario,
+                    tint = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(36.dp)
                 )
             }
@@ -111,13 +115,13 @@ fun PedidoConcretadoScreen(
         ) {
             Text(
                 text = "Pedido enviado",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "Ticket #${pedidoId.toString().padStart(4, '0')} · ${pedido?.let { destinoPedido(it.mesa) } ?: "–"}",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
         }
@@ -133,13 +137,13 @@ fun PedidoConcretadoScreen(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(Colores.VerdePrimario),
+                        .background(colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.FONDO)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Check,
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -149,21 +153,21 @@ fun PedidoConcretadoScreen(
                         .height(2.dp)
                         .padding(horizontal = 6.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(Colores.VerdePrimario)
+                        .background(colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.FONDO))
                 )
                 // preparando (actual)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF3D2905))
-                        .border(2.dp, Colores.Ambar, CircleShape),
+                        .background(colorDeTema(Color(0xFF3D2905), temaOscuro, UsoColor.FONDO))
+                        .border(2.dp, colorDeTema(Colores.Ambar, temaOscuro, UsoColor.BORDE), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Schedule,
                         contentDescription = null,
-                        tint = Colores.Ambar,
+                        tint = colorDeTema(Colores.Ambar, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -173,20 +177,20 @@ fun PedidoConcretadoScreen(
                         .height(2.dp)
                         .padding(horizontal = 6.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(Colores.GrisDeshabilitado)
+                        .background(colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.FONDO))
                 )
                 // listo (pendiente)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .border(2.dp, Colores.GrisDeshabilitado, CircleShape)
+                        .border(2.dp, colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.BORDE), CircleShape)
                 )
             }
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Enviado",
-                    color = Colores.VerdePrimario,
+                    color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
@@ -194,7 +198,7 @@ fun PedidoConcretadoScreen(
                 )
                 Text(
                     text = "Preparando",
-                    color = Colores.Ambar,
+                    color = colorDeTema(Colores.Ambar, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
@@ -202,7 +206,7 @@ fun PedidoConcretadoScreen(
                 )
                 Text(
                     text = "Listo",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
@@ -215,7 +219,7 @@ fun PedidoConcretadoScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -229,7 +233,7 @@ fun PedidoConcretadoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Colores.GrisMedio)
+                    .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO))
             )
             // base imponible e IGV incluidos en los precios del menu.
             Row(
@@ -238,13 +242,13 @@ fun PedidoConcretadoScreen(
             ) {
                 Text(
                     text = "Base imponible",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = moneda(subtotal),
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp
                 )
             }
@@ -254,13 +258,13 @@ fun PedidoConcretadoScreen(
             ) {
                 Text(
                     text = "IGV incluido (18%)",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = moneda(igv),
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp
                 )
             }
@@ -268,7 +272,7 @@ fun PedidoConcretadoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Colores.GrisMedio)
+                    .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO))
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -276,14 +280,14 @@ fun PedidoConcretadoScreen(
             ) {
                 Text(
                     text = "Total",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = moneda(total),
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -294,19 +298,19 @@ fun PedidoConcretadoScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Tiempo estimado",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = "~15 min",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -318,7 +322,7 @@ fun PedidoConcretadoScreen(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Colores.VerdeBoton)
+                .background(colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO))
                 .clickable(enabled = accionesDisponibles) {
                         volverDashboard()
                 },
@@ -326,7 +330,7 @@ fun PedidoConcretadoScreen(
         ) {
             Text(
                 text = "Volver al dashboard",
-                color = Color.Black,
+                color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -336,7 +340,7 @@ fun PedidoConcretadoScreen(
                 .fillMaxWidth()
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, Colores.GrisMedio, RoundedCornerShape(12.dp))
+                .border(1.dp, colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE), RoundedCornerShape(12.dp))
                 .clickable(enabled = accionesDisponibles) {
                     otroPedido()
                 },
@@ -344,7 +348,7 @@ fun PedidoConcretadoScreen(
         ) {
             Text(
                 text = "Iniciar otro pedido",
-                color = Color(0xFFB0B0B0),
+                color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp
             )
         }
@@ -356,19 +360,20 @@ private fun ResumenRow(
     plato: String,
     precio: String
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = plato,
-            color = Color(0xFFB0B0B0),
+            color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = precio,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp
         )
     }
@@ -377,6 +382,7 @@ private fun ResumenRow(
 @Composable
 @Preview
 fun PedidoConcretadoPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     PedidoConcretadoScreen(
         volverDashboard = {},
         otroPedido = {}

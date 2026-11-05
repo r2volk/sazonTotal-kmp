@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.tooling.preview.Preview
@@ -16,6 +19,7 @@ fun MeseroPerfilScreen(
     empleado: EmpleadoEntity? = null,
     repositorio: SazonRepository? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
 
     // iniciales para el avatar ("Ricardo Sanchez" -> "RS").
     val iniciales = empleado?.nombre
@@ -39,7 +43,7 @@ fun MeseroPerfilScreen(
         stats = listOf(
             PerfilStat(valor = "22", etiqueta = "Turnos"),
             PerfilStat(valor = "$misPedidos", etiqueta = "Pedidos"),
-            PerfilStat(valor = "6m", etiqueta = "Prom. prep.", color = Colores.VerdePrimario)
+            PerfilStat(valor = "6m", etiqueta = "Prom. prep.", color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO))
         ),
         onCambiarPinClick = onCambiarPinClick,
         onLogoutClick = onLogoutClick
@@ -49,6 +53,7 @@ fun MeseroPerfilScreen(
 @Preview
 @Composable
 fun MeseroPerfilScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     MeseroPerfilScreen(
         onLogoutClick = {},
         empleado = EmpleadoEntity(id = "EMP-104", nombre = "José Paredes", pin = "1234", rol = "Mesero")

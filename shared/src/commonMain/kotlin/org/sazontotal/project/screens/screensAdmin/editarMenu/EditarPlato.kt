@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin.editarMenu
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +53,7 @@ fun EditarPlato(
     onGuardar: (PlatoEntity) -> Unit = {},
     onEliminar: (Long) -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     // con plato el formulario arranca lleno (editar); con nulo, vacio (crear); al cambiar se reinicia.
     var nombre by remember(plato) { mutableStateOf(plato?.nombre ?: "") }
     var categoria by remember(plato) { mutableStateOf(plato?.categoria ?: "Platos") }
@@ -73,7 +77,7 @@ fun EditarPlato(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 20.dp)
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -81,7 +85,7 @@ fun EditarPlato(
         Row(){
             Text(
                 text = if (plato == null) "Nuevo plato" else "Editar plato",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f).padding(top = 10.dp)
@@ -93,7 +97,7 @@ fun EditarPlato(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Nombre del plato",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -112,7 +116,7 @@ fun EditarPlato(
             ) {
                 Text(
                     text = "Categoría",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp
                 )
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -125,7 +129,7 @@ fun EditarPlato(
                                 Icon(
                                     imageVector = Icons.Filled.KeyboardArrowDown,
                                     contentDescription = "Elegir categoría",
-                                    tint = Colores.TextoTenue,
+                                    tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -143,7 +147,7 @@ fun EditarPlato(
                                 text = {
                                     Text(
                                         text = opcion,
-                                        color = Colores.Superficie,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                                         fontSize = 15.sp,
                                         fontWeight = if (elegida) FontWeight.Bold
                                         else FontWeight.Normal
@@ -158,7 +162,7 @@ fun EditarPlato(
                                         Icon(
                                             imageVector = Icons.Filled.Check,
                                             contentDescription = null,
-                                            tint = Colores.VerdePrimario
+                                            tint = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO)
                                         )
                                     }
                                 }
@@ -173,7 +177,7 @@ fun EditarPlato(
             ) {
                 Text(
                     text = "Precio (S/.)",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp
                 )
                 CampoTextoAdmin(
@@ -186,7 +190,7 @@ fun EditarPlato(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Descripción",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -201,7 +205,7 @@ fun EditarPlato(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Etiquetas",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             Row(
@@ -230,13 +234,13 @@ fun EditarPlato(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Disponible",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
@@ -250,7 +254,7 @@ fun EditarPlato(
         if (error != null) {
             Text(
                 text = error!!,
-                color = Color(0xFFFF453A),
+                color = colorDeTema(Color(0xFFFF453A), temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -269,13 +273,13 @@ fun EditarPlato(
                         .weight(1f)
                         .height(52.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(0xFF3A1A1A), RoundedCornerShape(12.dp))
+                        .border(1.dp, colorDeTema(Color(0xFF3A1A1A), temaOscuro, UsoColor.BORDE), RoundedCornerShape(12.dp))
                         .clickable { onEliminar(plato.id) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Eliminar",
-                        color = Color(0xFFE5484D),
+                        color = colorDeTema(Color(0xFFE5484D), temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -286,7 +290,7 @@ fun EditarPlato(
                     .weight(1.6f)
                     .height(52.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF5DF08A))
+                    .background(colorDeTema(Color(0xFF5DF08A), temaOscuro, UsoColor.FONDO))
                     .clickable {
                         val precioNumero = precio
                             .trim()
@@ -318,7 +322,7 @@ fun EditarPlato(
             ) {
                 Text(
                     text = "Guardar cambios",
-                    color = Color.Black,
+                    color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

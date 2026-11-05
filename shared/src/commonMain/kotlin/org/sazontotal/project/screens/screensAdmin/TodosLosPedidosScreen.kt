@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -55,6 +58,7 @@ fun TodosLosPedidosScreen(
     backTodosLosPedidos: () -> Unit,
     repositorio: SazonRepository? = null
 ){
+    val temaOscuro = LocalTemaOscuro.current
 
     var textoBusqueda by remember { mutableStateOf("") }
     var errorAnulacion by remember { mutableStateOf(false) }
@@ -89,7 +93,7 @@ fun TodosLosPedidosScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
     ) {
         Column(
             modifier = Modifier
@@ -110,13 +114,13 @@ fun TodosLosPedidosScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Atrás",
-                        tint = Color.White,
+                        tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Todos los pedidos",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -242,6 +246,7 @@ private fun PedidoEnAdmin(
     nombreMesero: String,
     onAnular: (Long) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -276,6 +281,7 @@ private fun CardPedido(
     sePuedeAnular: Boolean = false,
     onAnular: () -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val (textoEstado, colorFondo, colorTexto) = when (estadoTodosLosPedidos) {
         EstadoTodosLosPedidos.PREPARANDO -> Triple(
             "Preparando",
@@ -308,7 +314,7 @@ private fun CardPedido(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Colores.Superficie,
+                color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(
@@ -325,7 +331,7 @@ private fun CardPedido(
         ) {
             Text(
                 text = titulo,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
@@ -333,12 +339,12 @@ private fun CardPedido(
 
             Text(
                 text = textoEstado,
-                color = colorTexto,
+                color = colorDeTema(colorTexto, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .background(
-                        color = colorFondo,
+                        color = colorDeTema(colorFondo, temaOscuro, UsoColor.FONDO),
                         shape = RoundedCornerShape(50)
                     )
                     .padding(
@@ -350,7 +356,7 @@ private fun CardPedido(
 
         Text(
             text = detalle,
-            color = Color.Gray,
+            color = colorDeTema(Color.Gray, temaOscuro, UsoColor.TEXTO),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
@@ -360,14 +366,14 @@ private fun CardPedido(
         ) {
             Text(
                 text = hora,
-                color = Color.Gray,
+                color = colorDeTema(Color.Gray, temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 modifier = Modifier.weight(1f)
             )
 
             Text(
                 text = total,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -376,7 +382,7 @@ private fun CardPedido(
         if (sePuedeAnular) {
             Text(
                 text = "Anular pedido",
-                color = Colores.Rojo,
+                color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -391,6 +397,7 @@ private fun CardPedido(
 @Composable
 @Preview
 fun TodosLosPedidosScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     TodosLosPedidosScreen(
         backTodosLosPedidos = {}
     )

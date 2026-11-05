@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +55,7 @@ fun CambioPinScreen(
     empleado: EmpleadoEntity? = null,
     repositorio: SazonRepository? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
 
     val scope = rememberCoroutineScope()
 
@@ -115,7 +119,7 @@ fun CambioPinScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .navigationBarsPadding()
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -132,13 +136,13 @@ fun CambioPinScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Atrás",
-                    tint = Color.White,
+                    tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
             Text(
                 text = "Cambiar PIN",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
@@ -147,14 +151,14 @@ fun CambioPinScreen(
 
         Text(
             text = "Ingresa tu PIN actual y elige uno nuevo de 4 dígitos.",
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "PIN actual",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -172,7 +176,7 @@ fun CambioPinScreen(
                     Icon(
                         imageVector = Icons.Filled.VisibilityOff,
                         contentDescription = null,
-                        tint = Colores.TextoTenue,
+                        tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -182,7 +186,7 @@ fun CambioPinScreen(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Nuevo PIN",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -194,21 +198,21 @@ fun CambioPinScreen(
                     }
                 },
                 placeholder = "Nuevo PIN",
-                borderColor = Colores.VerdePrimario,
+                borderColor = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.BORDE),
                 keyboardOptions = tecladoPin,
                 visualTransformation = enmascaramiento,
                 trailing = {
                     Icon(
                         imageVector = Icons.Filled.VisibilityOff,
                         contentDescription = null,
-                        tint = Colores.TextoTenue,
+                        tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(20.dp)
                     )
                 }
             )
             Text(
                 text = "Solo números, 4 dígitos",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp
             )
         }
@@ -216,7 +220,7 @@ fun CambioPinScreen(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Confirmar nuevo PIN",
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp
             )
             CampoTextoAdmin(
@@ -234,7 +238,7 @@ fun CambioPinScreen(
                     Icon(
                         imageVector = Icons.Filled.VisibilityOff,
                         contentDescription = null,
-                        tint = Colores.TextoTenue,
+                        tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -255,7 +259,7 @@ fun CambioPinScreen(
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(
-                    if (puedeGuardar) Colores.VerdePrimario else Color(0xFF1C2E22)
+                    colorDeTema(if (puedeGuardar) Colores.VerdePrimario else Color(0xFF1C2E22), temaOscuro, UsoColor.FONDO)
                 )
                 .clickable(enabled = puedeGuardar) { guardar() },
             contentAlignment = Alignment.Center
@@ -266,7 +270,7 @@ fun CambioPinScreen(
                     guardando.value -> "Guardando..."
                     else -> "Guardar nuevo PIN"
                 },
-                color = if (puedeGuardar) Color.Black else Color(0xFF3E6B4F),
+                color = colorDeTema(if (puedeGuardar) Color.Black else Color(0xFF3E6B4F), temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -276,16 +280,17 @@ fun CambioPinScreen(
 
 @Composable
 private fun cuandoMostrarEstado(exito: Boolean, error: String?) {
+    val temaOscuro = LocalTemaOscuro.current
     when {
         exito -> Text(
             text = "PIN actualizado con éxito",
-            color = Colores.VerdePrimario,
+            color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
         error != null -> Text(
             text = error,
-            color = Colores.Rojo,
+            color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp
         )
     }
@@ -294,6 +299,7 @@ private fun cuandoMostrarEstado(exito: Boolean, error: String?) {
 @Composable
 @Preview
 fun CambioPinScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     CambioPinScreen(
         backCambioPinScreen = {}
     )

@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +33,12 @@ fun OpcionPerfilRow(
     modifier: Modifier = Modifier,
     trailing: @Composable () -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF141417))
+            .background(colorDeTema(Color(0xFF141417), temaOscuro, UsoColor.FONDO))
             .clickable { onClick() }
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -44,19 +48,19 @@ fun OpcionPerfilRow(
             modifier = Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF0E0E11)),
+                .background(colorDeTema(Color(0xFF0E0E11), temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icono,
                 contentDescription = null,
-                tint = Colores.TextoTenue,
+                tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(18.dp)
             )
         }
         Text(
             text = texto,
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.weight(1f)

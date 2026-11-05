@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,11 +32,12 @@ fun AccesoRapidoCard(
     texto: String,
     modifier: Modifier = Modifier
 ){
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .clickable { onClick() }
     ) {
         Row(
@@ -43,7 +47,7 @@ fun AccesoRapidoCard(
             icon()
             Text(
                 texto,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
@@ -54,7 +58,7 @@ fun AccesoRapidoCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color(0xFF666666),
+                tint = colorDeTema(Color(0xFF666666), temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(24.dp)
             )
         }

@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensAdmin.editarMenu
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +56,7 @@ fun EditarMenuScreen(
     backEditarMenu: () -> Unit,
     repositorio: SazonRepository? = null
 ){
+    val temaOscuro = LocalTemaOscuro.current
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
 
@@ -76,7 +80,7 @@ fun EditarMenuScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
     ) {
         Column(
             modifier = Modifier
@@ -99,20 +103,20 @@ fun EditarMenuScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Atrás",
-                        tint = Color.White,
+                        tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Editar Menú",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "${platos.size} platos",
-                    color = Color.Gray,
+                    color = colorDeTema(Color.Gray, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -193,7 +197,7 @@ fun EditarMenuScreen(
                 .padding(end = 20.dp, bottom = 20.dp)
                 .size(52.dp)
                 .clip(CircleShape)
-                .background(Colores.VerdeBoton)
+                .background(colorDeTema(Colores.VerdeBoton, temaOscuro, UsoColor.FONDO))
                 .clickable {
                     platoEnEdicion = null
                     mostrarFormulario = true
@@ -202,7 +206,7 @@ fun EditarMenuScreen(
         ) {
             Text(
                 text = "+",
-                color = Color.Black,
+                color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -246,11 +250,12 @@ private fun menuCard(
     onActivoChange: (Boolean) -> Unit
 )
 {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .padding(
                 horizontal = 14.dp,
                 vertical = 12.dp
@@ -262,13 +267,13 @@ private fun menuCard(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF4A2620)),
+                .background(colorDeTema(Color(0xFF4A2620), temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.EmojiFoodBeverage,
                 contentDescription = null,
-                tint = Color(0xFFE8935A),
+                tint = colorDeTema(Color(0xFFE8935A), temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -281,11 +286,11 @@ private fun menuCard(
         ) {
             Text(
                 text = nombrePlato,
-                color = if (isActive) {
+                color = colorDeTema(if (isActive) {
                     Color(0xFFE8E8E8)
                 } else {
                     Color(0xFF777777)
-                },
+                }, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -295,11 +300,11 @@ private fun menuCard(
             ) {
                 Text(
                     text = "${moneda(precio)} •",
-                    color = if (isActive) {
+                    color = colorDeTema(if (isActive) {
                         Color(0xFF5F5F5F)
                     } else {
                         Color(0xFF444444)
-                    },
+                    }, temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp
                 )
 
@@ -307,11 +312,11 @@ private fun menuCard(
 
                 Text(
                     text = descipcion,
-                    color = if (isActive) {
+                    color = colorDeTema(if (isActive) {
                         Color(0xFF5F5F5F)
                     } else {
                         Color(0xFF444444)
-                    },
+                    }, temaOscuro, UsoColor.TEXTO),
                     fontSize = 12.sp
                 )
             }
@@ -321,7 +326,7 @@ private fun menuCard(
             Icon(
                 imageVector = Icons.Outlined.Edit,
                 contentDescription = "Editar",
-                tint = Color(0xFF9A9A9A),
+                tint = colorDeTema(Color(0xFF9A9A9A), temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -334,6 +339,7 @@ private fun menuCard(
 @Composable
 @Preview
 fun EditarMenuScreenPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     EditarMenuScreen(
         backEditarMenu = {}
     )

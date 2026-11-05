@@ -1,5 +1,9 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -24,16 +28,18 @@ fun BuscadorTextField(
     onNombreChanged: (String) -> Unit,
     texto: String
 ){
+    val temaOscuro = LocalTemaOscuro.current
     TextField(
         value = nombreBuscado,
         onValueChange = onNombreChanged,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .height(52.dp)
+            .border(1.dp, colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE), RoundedCornerShape(12.dp)),
         placeholder = {
             Text(
                 text = texto,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp
             )
         },
@@ -41,19 +47,19 @@ fun BuscadorTextField(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
-                tint = Colores.TextoTenue,
+                tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(20.dp)
             )
         },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
-        textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
+        textStyle = TextStyle(color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO), fontSize = 15.sp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Colores.Superficie,
-            unfocusedContainerColor = Colores.Superficie,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.White
+            focusedContainerColor = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
+            unfocusedContainerColor = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
+            focusedIndicatorColor = colorDeTema(Color.Transparent, temaOscuro, UsoColor.BORDE),
+            unfocusedIndicatorColor = colorDeTema(Color.Transparent, temaOscuro, UsoColor.BORDE),
+            cursorColor = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO)
         )
     )
 }

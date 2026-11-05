@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,14 +29,15 @@ fun FiltroButton(
     textoColor: Color = Color.White,
     fondoTextoColor: Color = Colores.GrisMedio,
 ){
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(if (activo) fondoTextoColor else Color.Transparent)
+            .background(colorDeTema(if (activo) fondoTextoColor else Color.Transparent, temaOscuro, UsoColor.FONDO))
             .then(
                 if (!activo) {
                     Modifier.border(1.dp
-                        , Colores.GrisMedio,
+                        , colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE),
                         RoundedCornerShape(50))
                 } else {
                     Modifier
@@ -45,7 +49,7 @@ fun FiltroButton(
     ) {
         Text(
             text = texto,
-            color = if (activo) textoColor else Colores.TextoTenue,
+            color = colorDeTema(if (activo) textoColor else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
@@ -56,6 +60,7 @@ fun FiltroButton(
 @Preview
 @Composable
 fun FiltroButtonPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     FiltroButton(
         activo = true,
         texto = "Todos",

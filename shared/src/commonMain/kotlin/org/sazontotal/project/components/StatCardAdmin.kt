@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,11 +26,12 @@ fun StatCardAdmin(
     colorSuperior: Color,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .heightIn(min = 80.dp)
             .background(
-                color = Colores.Superficie,
+                color = colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(
@@ -38,13 +42,13 @@ fun StatCardAdmin(
     ) {
         Text(
             text = textoSuperior,
-            color = colorSuperior,
+            color = colorDeTema(colorSuperior, temaOscuro, UsoColor.TEXTO),
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = textoInferior,
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal
         )

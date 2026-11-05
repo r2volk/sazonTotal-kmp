@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +50,7 @@ fun LoginScreen(
     onLogin:(String, String)-> Unit,
     mensajeError: String? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
 
     var empleadoId by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
@@ -73,7 +77,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(colorDeTema(Color(0xFF121212), temaOscuro, UsoColor.FONDO))
             .safeDrawingPadding(),
         contentAlignment = Alignment.Center
     ) {
@@ -89,14 +93,14 @@ fun LoginScreen(
                 text = "SazonTotal",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = "Inicia sesión para entrar",
                 fontSize = 14.sp,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 textAlign = TextAlign.Center
             )
 
@@ -105,25 +109,25 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1E1E20), RoundedCornerShape(16.dp))
+                    .background(colorDeTema(Color(0xFF1E1E20), temaOscuro, UsoColor.FONDO), RoundedCornerShape(16.dp))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = "ID de empleado",
                     fontSize = 12.sp,
-                    color = Colores.TextoTenue
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO)
                 )
                 BasicTextField(
                     value = empleadoId,
                     onValueChange = { empleadoId = it },
                     singleLine = true,
                     textStyle = TextStyle(
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    cursorBrush = SolidColor(Colores.VerdeAcento),
+                    cursorBrush = SolidColor(colorDeTema(Colores.VerdeAcento, temaOscuro, UsoColor.TEXTO)),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -140,7 +144,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(CircleShape)
-                            .background(if (isFilled) Colores.VerdeAcento else Color(0xFF2E2E32))
+                            .background(colorDeTema(if (isFilled) Colores.VerdeAcento else Color(0xFF2E2E32), temaOscuro, UsoColor.FONDO))
                     )
                 }
             }
@@ -150,7 +154,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = mensajeError,
-                    color = Colores.Rojo,
+                    color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -205,7 +209,7 @@ fun LoginScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CheckIcon(
-                            color = Colores.VerdeAcento,
+                            color = colorDeTema(Colores.VerdeAcento, temaOscuro, UsoColor.TEXTO),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -225,7 +229,7 @@ fun LoginScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         BackspaceIcon(
-                            color = Colores.TextoTenue,
+                            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -238,5 +242,6 @@ fun LoginScreen(
 @Composable
 @Preview
 fun LoginScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     App()
 }

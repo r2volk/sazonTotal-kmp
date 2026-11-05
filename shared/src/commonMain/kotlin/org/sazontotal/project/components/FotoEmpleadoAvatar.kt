@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,12 +26,13 @@ fun FotoEmpleadoAvatar(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .size(80.dp)
             .drawBehind {
                 drawCircle(
-                    color = Colores.GrisDeshabilitado,
+                    color = colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.TEXTO),
                     style = Stroke(
                         width = 2f,
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f)
@@ -36,14 +40,14 @@ fun FotoEmpleadoAvatar(
                 )
             }
             .clip(CircleShape)
-            .background(Colores.Superficie.copy(alpha = 0.6f))
+            .background(colorDeTema(Colores.Superficie.copy(alpha = 0.6f), temaOscuro, UsoColor.FONDO))
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Filled.PhotoCamera,
             contentDescription = "Foto del empleado",
-            tint = Colores.TextoTenue,
+            tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(24.dp)
         )
     }

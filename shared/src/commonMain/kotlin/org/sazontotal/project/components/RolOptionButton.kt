@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,14 +26,15 @@ fun RolOptionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .height(48.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (seleccionado) Colores.VerdeOscuro else Colores.Superficie)
+            .background(colorDeTema(if (seleccionado) Colores.VerdeOscuro else Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .then(
                 if (seleccionado) {
-                    Modifier.border(1.dp, Colores.VerdePrimario, RoundedCornerShape(12.dp))
+                    Modifier.border(1.dp, colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.BORDE), RoundedCornerShape(12.dp))
                 } else {
                     Modifier
                 }
@@ -40,7 +44,7 @@ fun RolOptionButton(
     ) {
         Text(
             text = texto,
-            color = if (seleccionado) Colores.VerdePrimario else Colores.TextoTenue,
+            color = colorDeTema(if (seleccionado) Colores.VerdePrimario else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )

@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,29 +29,30 @@ fun CantidadStepper(
     minusEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Colores.GrisMedio)
+            .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
             text = "−",
-            color = if (minusEnabled) Colores.TextoTenue else Color(0xFF55555A),
+            color = colorDeTema(if (minusEnabled) Colores.TextoTenue else Color(0xFF55555A), temaOscuro, UsoColor.TEXTO),
             fontSize = 18.sp,
             modifier = Modifier.clickable(enabled = minusEnabled) { onMinus() }
         )
         Text(
             text = "$cantidad",
-            color = Color.White,
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = "+",
-            color = if (plusEnabled) Colores.VerdePrimario else Colores.TextoTenue,
+            color = colorDeTema(if (plusEnabled) Colores.VerdePrimario else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable(enabled = plusEnabled) { onPlus() }

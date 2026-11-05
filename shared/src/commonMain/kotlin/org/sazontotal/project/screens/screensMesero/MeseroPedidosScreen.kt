@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -65,6 +68,7 @@ fun MeseroPedidosScreen(
     empleado: EmpleadoEntity? = null,
     carrito: CarritoCompra? = null
 ){
+    val temaOscuro = LocalTemaOscuro.current
 
     // room entrega pedidos actualizados; despues se filtran por el mesero conectado.
     val pedidosEnVivo = repositorio?.observarPedidos()
@@ -105,7 +109,7 @@ fun MeseroPedidosScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
     ) {
     Column(
         modifier = Modifier
@@ -123,13 +127,13 @@ fun MeseroPedidosScreen(
                     text = "Mis pedidos",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO)
                 )
                 Text(
                     text = "Hola $primerNombre · $pedidosHoy pedidos hoy",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Colores.TextoTenue
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO)
                 )
             }
 
@@ -141,12 +145,12 @@ fun MeseroPedidosScreen(
                     modifier = Modifier
                         .size(50.dp)
                         .clip(CircleShape)
-                        .background(Colores.GrisMedio),
+                        .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = iniciales,
-                        color = Color(0xFF7DD3FC),
+                        color = colorDeTema(Color(0xFF7DD3FC), temaOscuro, UsoColor.TEXTO),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -193,8 +197,8 @@ fun MeseroPedidosScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF2B2113))
-                            .border(1.dp, Color(0xFF8A6A2F), RoundedCornerShape(16.dp))
+                            .background(colorDeTema(Color(0xFF2B2113), temaOscuro, UsoColor.FONDO))
+                            .border(1.dp, colorDeTema(Color(0xFF8A6A2F), temaOscuro, UsoColor.BORDE), RoundedCornerShape(16.dp))
                             .clickable { onCarritoClick() }
                             .height(62.dp)
                             .padding(horizontal = 4.dp),
@@ -207,12 +211,12 @@ fun MeseroPedidosScreen(
                             Icon(
                                 imageVector = Icons.Default.ShoppingCart,
                                 contentDescription = "Ir al carrito",
-                                tint = Color(0xFFFFC266),
+                                tint = colorDeTema(Color(0xFFFFC266), temaOscuro, UsoColor.TEXTO),
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
                                 text = "Carrito",
-                                color = Color(0xFFFFD791),
+                                color = colorDeTema(Color(0xFFFFD791), temaOscuro, UsoColor.TEXTO),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
@@ -225,12 +229,12 @@ fun MeseroPedidosScreen(
                             .offset(x = (-12).dp, y = (-8).dp)
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(Colores.Naranja),
+                            .background(colorDeTema(Colores.Naranja, temaOscuro, UsoColor.FONDO)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = (carrito?.totalItems() ?: 0).toString(),
-                            color = Color.Black,
+                            color = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -241,8 +245,8 @@ fun MeseroPedidosScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF2A2350))
-                        .border(1.dp, Color(0xFF6B5FC7), RoundedCornerShape(16.dp))
+                        .background(colorDeTema(Color(0xFF2A2350), temaOscuro, UsoColor.FONDO))
+                        .border(1.dp, colorDeTema(Color(0xFF6B5FC7), temaOscuro, UsoColor.BORDE), RoundedCornerShape(16.dp))
                         .clickable { onAsistenteClick() }
                         .height(62.dp)
                         .padding(horizontal = 4.dp),
@@ -255,12 +259,12 @@ fun MeseroPedidosScreen(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Ir al asistente",
-                            tint = Color(0xFFB39DFF),
+                            tint = colorDeTema(Color(0xFFB39DFF), temaOscuro, UsoColor.TEXTO),
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = "Asistente IA",
-                            color = Color(0xFFD6C9FF),
+                            color = colorDeTema(Color(0xFFD6C9FF), temaOscuro, UsoColor.TEXTO),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
@@ -274,8 +278,8 @@ fun MeseroPedidosScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF0E2B18))
-                        .border(1.dp, Color(0xFF2F8A4F), RoundedCornerShape(16.dp))
+                        .background(colorDeTema(Color(0xFF0E2B18), temaOscuro, UsoColor.FONDO))
+                        .border(1.dp, colorDeTema(Color(0xFF2F8A4F), temaOscuro, UsoColor.BORDE), RoundedCornerShape(16.dp))
                         .clickable { onRepartoClick() }
                         .height(62.dp)
                         .padding(horizontal = 4.dp),
@@ -288,12 +292,12 @@ fun MeseroPedidosScreen(
                         Icon(
                             imageVector = Icons.Filled.TwoWheeler,
                             contentDescription = "Ir al reparto",
-                            tint = Color(0xFF7BE382),
+                            tint = colorDeTema(Color(0xFF7BE382), temaOscuro, UsoColor.TEXTO),
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = "Reparto",
-                            color = Color(0xFF7BE382),
+                            color = colorDeTema(Color(0xFF7BE382), temaOscuro, UsoColor.TEXTO),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
@@ -340,13 +344,13 @@ fun MeseroPedidosScreen(
                 ) {
                     Text(
                         text = "Sin pedidos por aquí",
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Tus pedidos servidos aparecen en el Historial",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 13.sp
                     )
                 }
@@ -380,6 +384,7 @@ private fun PedidoEnCocina(
     repositorio: SazonRepository?,
     onMarcarListo: (Long) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -409,6 +414,7 @@ private fun PedidoEnCocina(
 @Preview
 @Composable
 fun PedidosPreview(){
+    val temaOscuro = LocalTemaOscuro.current
     DashboardMesero(
         onLogoutClick = {},
         onCarritoClick = {},

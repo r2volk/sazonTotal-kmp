@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -74,6 +77,7 @@ fun EntregasScreen(
     onDeshacerEntrega: (Long) -> Unit = {},
     onEliminarEntrega: (Long) -> Unit = {}
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     var filtro by remember { mutableStateOf(FILTRO_TODAS) }
     var pedidoProtegido by remember { mutableStateOf<Long?>(null) }
     val enCamino = entregas.count { !it.entregada && !it.cancelada && !it.preparando }
@@ -87,7 +91,7 @@ fun EntregasScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -138,7 +142,7 @@ fun EntregasScreen(
             ) {
                 Text(
                     text = "Nada en \"$filtro\" por ahora",
-                    color = Color(0xFF8E8E93),
+                    color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                     fontSize = 15.sp
                 )
             }
@@ -200,6 +204,7 @@ private fun textoHaceCuanto(fecha: Long): String {
 @Preview
 @Composable
 private fun EntregasVaciasPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     EntregasScreen(
         backEntregas = {},
         entregas = emptyList()
@@ -210,6 +215,7 @@ private fun EntregasVaciasPreview() {
 private fun EstadoVacioEntregas(
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .fillMaxWidth(),
@@ -221,14 +227,14 @@ private fun EstadoVacioEntregas(
         ) {
             Text(
                 text = "Aún no hay entregas hoy",
-                color = Color(0xFFB0B0B0),
+                color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Las entregas que registres\naparecerán aquí.",
-                color = Color(0xFF8E8E93),
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center
             )
@@ -241,6 +247,7 @@ private fun EntregasHeader(
     resumen: String,
     onBack: () -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -253,7 +260,7 @@ private fun EntregasHeader(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Atrás",
-                tint = Color.White,
+                tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -261,26 +268,26 @@ private fun EntregasHeader(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(VerdeModuloOscuro),
+                .background(colorDeTema(VerdeModuloOscuro, temaOscuro, UsoColor.FONDO)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.History,
                 contentDescription = null,
-                tint = VerdeModulo,
+                tint = colorDeTema(VerdeModulo, temaOscuro, UsoColor.TEXTO),
                 modifier = Modifier.size(24.dp)
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "Entregas anteriores",
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = resumen,
-                color = Color(0xFF8E8E93),
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp
             )
         }
@@ -294,6 +301,7 @@ private fun EntregaCard(
     onAccion: () -> Unit,
     onEliminar: () -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val entregada = entrega.entregada
     val acento = if (entrega.cancelada) Color(0xFFFF7770) else if (entregada) VerdeModulo else Ambar
     val badgeBg = if (entrega.cancelada) Color(0xFF3A1414) else if (entregada) Color(0xFF12331B) else Color(0xFF3A2B08)
@@ -302,7 +310,7 @@ private fun EntregaCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1C1C1E))
+            .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
@@ -313,13 +321,13 @@ private fun EntregaCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (entregada) VerdeModuloOscuro else Color(0xFF3D2905)),
+                    .background(colorDeTema(if (entregada) VerdeModuloOscuro else Color(0xFF3D2905), temaOscuro, UsoColor.FONDO)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Home,
                     contentDescription = null,
-                    tint = acento,
+                    tint = colorDeTema(acento, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -327,16 +335,16 @@ private fun EntregaCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = entrega.direccion,
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 entrega.pedidoId?.let { pedidoId ->
-                    Text(text = "Pedido #$pedidoId", color = Color(0xFF8E8E93), fontSize = 13.sp)
+                    Text(text = "Pedido #$pedidoId", color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO), fontSize = 13.sp)
                 }
                 Text(
                     text = "${entrega.kmTexto} · ${entrega.minutosTexto}",
-                    color = Color(0xFF8E8E93),
+                    color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
             }
@@ -345,7 +353,7 @@ private fun EntregaCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(badgeBg)
+                    .background(colorDeTema(badgeBg, temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
@@ -355,7 +363,7 @@ private fun EntregaCard(
                         entregada -> ESTADO_ENTREGADA
                         else -> ESTADO_EN_CAMINO
                     },
-                    color = acento,
+                    color = colorDeTema(acento, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -368,7 +376,7 @@ private fun EntregaCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color(0xFF2C2C2E))
+                .background(colorDeTema(Color(0xFF2C2C2E), temaOscuro, UsoColor.FONDO))
         )
 
         Spacer(modifier = Modifier.size(8.dp))
@@ -380,7 +388,7 @@ private fun EntregaCard(
         ) {
             Text(
                 text = "$hace · ${entrega.meseroNombre}",
-                color = Color(0xFF8E8E93),
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                 fontSize = 12.sp,
                 modifier = Modifier.weight(1f)
             )
@@ -391,7 +399,7 @@ private fun EntregaCard(
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = "Eliminar entrega",
-                    tint = Color(0xFFB4554E),
+                    tint = colorDeTema(Color(0xFFB4554E), temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -399,10 +407,10 @@ private fun EntregaCard(
             if (!entrega.cancelada && !entrega.preparando && !(entregada && entrega.pedidoId != null)) Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(if (entregada) Color.Transparent else Color(0xFF12331B))
+                    .background(colorDeTema(if (entregada) Color.Transparent else Color(0xFF12331B), temaOscuro, UsoColor.FONDO))
                     .border(
                         width = 1.dp,
-                        color = if (entregada) Color(0xFF2C2C2E) else Color.Transparent,
+                        color = colorDeTema(if (entregada) Color(0xFF2C2C2E) else Color.Transparent, temaOscuro, UsoColor.TEXTO),
                         shape = RoundedCornerShape(50)
                     )
                     .clickable { onAccion() }
@@ -415,12 +423,12 @@ private fun EntregaCard(
                     Icon(
                         imageVector = if (entregada) Icons.Filled.Undo else Icons.Filled.CheckCircle,
                         contentDescription = null,
-                        tint = if (entregada) Color(0xFF8E8E93) else VerdeModulo,
+                        tint = colorDeTema(if (entregada) Color(0xFF8E8E93) else VerdeModulo, temaOscuro, UsoColor.TEXTO),
                         modifier = Modifier.size(15.dp)
                     )
                     Text(
                         text = if (entregada) "Deshacer" else "Marcar entregada",
-                        color = if (entregada) Color(0xFF8E8E93) else VerdeModulo,
+                        color = colorDeTema(if (entregada) Color(0xFF8E8E93) else VerdeModulo, temaOscuro, UsoColor.TEXTO),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -433,6 +441,7 @@ private fun EntregaCard(
 @Preview
 @Composable
 private fun EntregasConDatosPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     val ahora = ahoraMillis()
     val MIN = 60_000L
     EntregasScreen(

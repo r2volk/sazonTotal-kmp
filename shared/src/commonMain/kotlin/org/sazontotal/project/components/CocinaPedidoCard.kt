@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -46,16 +49,17 @@ fun CocinaPedidoCard(
     yaListo: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Column(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                Colores.Superficie,
+                colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO),
                 RoundedCornerShape(16.dp)
             )
             .border(
                 1.dp,
-                Colores.GrisMedio,
+                colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE),
                 RoundedCornerShape(16.dp)
             )
             .padding(14.dp),
@@ -67,7 +71,7 @@ fun CocinaPedidoCard(
         ) {
             Text(
                 text = destinoPedido(mesa),
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -76,7 +80,7 @@ fun CocinaPedidoCard(
 
             Text(
                 text = tiempo,
-                color = Colores.TextoTenue,
+                color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -84,7 +88,7 @@ fun CocinaPedidoCard(
 
         Text(
             text = "#$numeroPedido · Mesero: $mesero",
-            color = Colores.TextoTenue,
+            color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal
         )
@@ -103,7 +107,7 @@ fun CocinaPedidoCard(
                         modifier = Modifier
                             .size(26.dp)
                             .clip(RoundedCornerShape(7.dp))
-                            .background(plato.fondoIcono),
+                            .background(colorDeTema(plato.fondoIcono, temaOscuro, UsoColor.FONDO)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -114,14 +118,14 @@ fun CocinaPedidoCard(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = plato.nombre,
-                        color = Color.White,
+                        color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "x${plato.cantidad}",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -135,7 +139,7 @@ fun CocinaPedidoCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF2C2C1E))
+                    .background(colorDeTema(Color(0xFF2C2C1E), temaOscuro, UsoColor.FONDO))
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -146,7 +150,7 @@ fun CocinaPedidoCard(
                 )
                 Text(
                     text = nota,
-                    color = Color(0xFFD6C48A),
+                    color = colorDeTema(Color(0xFFD6C48A), temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -159,7 +163,7 @@ fun CocinaPedidoCard(
         if (yaListo) {
             Text(
                 text = "✓ Listo",
-                color = Colores.VerdePrimario,
+                color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -170,13 +174,13 @@ fun CocinaPedidoCard(
                     .fillMaxWidth()
                     .height(46.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Colores.VerdeAcento
+                    containerColor = colorDeTema(Colores.VerdeAcento, temaOscuro, UsoColor.FONDO)
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = "✓  Listo",
-                    color = Color.White,
+                    color = Color.Black,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )

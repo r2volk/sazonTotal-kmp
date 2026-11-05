@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,12 +22,13 @@ fun PinButton(
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Button(
         onClick = { onClick(number) },
         modifier = modifier.aspectRatio(1.05f),
         shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1E1E20)
+            containerColor = colorDeTema(Color(0xFF1E1E20), temaOscuro, UsoColor.FONDO)
         ),
         contentPadding = PaddingValues(0.dp)
     ) {
@@ -32,7 +36,7 @@ fun PinButton(
             text = number.toString(),
             fontSize = 24.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.White
+            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO)
         )
     }
 }

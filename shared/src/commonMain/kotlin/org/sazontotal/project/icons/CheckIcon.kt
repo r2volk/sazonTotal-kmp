@@ -1,5 +1,8 @@
 package org.sazontotal.project.icons
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -15,13 +18,14 @@ fun CheckIcon(
     modifier: Modifier = Modifier,
     color: Color = Colores.VerdeAcento
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Canvas(modifier = modifier.size(28.dp)) {
         val w = size.width
         val h = size.height
         val strokeWidth = 2.2.dp.toPx()
 
         drawLine(
-            color = color,
+            color = colorDeTema(color, temaOscuro, UsoColor.TEXTO),
             start = Offset(w * 0.20f, h * 0.55f),
             end = Offset(w * 0.44f, h * 0.75f),
             strokeWidth = strokeWidth,
@@ -29,7 +33,7 @@ fun CheckIcon(
             // sin join: igual quedan los extremos redondeados
         )
         drawLine(
-            color = color,
+            color = colorDeTema(color, temaOscuro, UsoColor.TEXTO),
             start = Offset(w * 0.44f, h * 0.75f),
             end = Offset(w * 0.80f, h * 0.28f),
             strokeWidth = strokeWidth,

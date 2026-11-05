@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensCocina
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
@@ -17,6 +20,7 @@ fun CocinaPerfilScreen(
     empleado: EmpleadoEntity? = null,
     repositorio: SazonRepository? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
 
     // iniciales para el avatar ("Joaquin Gutierrez" -> "JG").
     val iniciales = empleado?.nombre
@@ -40,7 +44,7 @@ fun CocinaPerfilScreen(
         stats = listOf(
             PerfilStat(valor = "18", etiqueta = "Turnos"),
             PerfilStat(valor = "$listos", etiqueta = "Pedidos"),
-            PerfilStat(valor = "8m", etiqueta = "Prom. prep.", color = Colores.VerdePrimario)
+            PerfilStat(valor = "8m", etiqueta = "Prom. prep.", color = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.TEXTO))
         ),
         onCambiarPinClick = onCambiarPinClick,
         onLogoutClick = onLogoutClick
@@ -50,6 +54,7 @@ fun CocinaPerfilScreen(
 @Preview
 @Composable
 fun CocinaPerfilScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     CocinaPerfilScreen(
         onLogoutClick = {},
         empleado = EmpleadoEntity(id = "EMP-108", nombre = "María Rojas", pin = "1234", rol = "Cocina")

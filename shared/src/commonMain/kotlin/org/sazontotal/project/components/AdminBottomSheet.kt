@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -25,6 +28,7 @@ fun AdminBottomSheet(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -32,15 +36,15 @@ fun AdminBottomSheet(
         modifier = modifier,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = Color.Black,
-        contentColor = Color.White,
+        containerColor = colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO),
+        contentColor = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
         tonalElevation = 0.dp,
         scrimColor = Color.Black.copy(alpha = 0.6f),
         dragHandle = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black)
+                    .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
                     .padding(top = 12.dp, bottom = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -48,7 +52,7 @@ fun AdminBottomSheet(
                     modifier = Modifier
                         .size(width = 40.dp, height = 5.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(Colores.GrisDeshabilitado)
+                        .background(colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.FONDO))
                 )
             }
         },

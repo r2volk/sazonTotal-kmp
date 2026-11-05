@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensCocina
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +51,7 @@ fun CocinaPedidosScreen(
     repositorio: SazonRepository? = null,
     empleado: EmpleadoEntity? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     // cocina recibe pedidos, empleados y platos desde los flujos del repositorio.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
@@ -81,7 +85,7 @@ fun CocinaPedidosScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -93,13 +97,13 @@ fun CocinaPedidosScreen(
             Column {
                 Text(
                     text = "Cocina",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Hola $primerNombre · Turno tarde",
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal
                 )
@@ -109,12 +113,12 @@ fun CocinaPedidosScreen(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(Colores.GrisMedio),
+                    .background(colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.FONDO)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = iniciales,
-                    color = Colores.TextoTenue,
+                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -199,6 +203,7 @@ private fun PedidoEnCocina(
     categoriaPorPlato: Map<Long, String>,
     onListoClick: (Long) -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -237,5 +242,6 @@ private fun emojiYFondo(categoria: String): Pair<String, Color> = when (categori
 @Preview
 @Composable
 fun CocinaPedidosScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     CocinaPedidosScreen()
 }

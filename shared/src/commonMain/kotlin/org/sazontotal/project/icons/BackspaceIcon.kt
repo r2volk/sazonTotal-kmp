@@ -1,5 +1,8 @@
 package org.sazontotal.project.icons
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -18,6 +21,7 @@ fun BackspaceIcon(
     modifier: Modifier = Modifier,
     color: Color = Colores.TextoTenue
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Canvas(modifier = modifier.size(24.dp)) {
         val w = size.width
         val h = size.height
@@ -33,7 +37,7 @@ fun BackspaceIcon(
         }
         drawPath(
             path = tagPath,
-            color = color,
+            color = colorDeTema(color, temaOscuro, UsoColor.TEXTO),
             style = Stroke(
                 width = strokeWidth,
                 join = StrokeJoin.Round,
@@ -46,14 +50,14 @@ fun BackspaceIcon(
         val yMin = h * 0.36f
         val yMax = h * 0.64f
         drawLine(
-            color = color,
+            color = colorDeTema(color, temaOscuro, UsoColor.TEXTO),
             start = Offset(xMin, yMin),
             end = Offset(xMax, yMax),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round
         )
         drawLine(
-            color = color,
+            color = colorDeTema(color, temaOscuro, UsoColor.TEXTO),
             start = Offset(xMax, yMin),
             end = Offset(xMin, yMax),
             strokeWidth = strokeWidth,

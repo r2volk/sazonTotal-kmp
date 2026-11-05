@@ -1,5 +1,8 @@
 package org.sazontotal.project.icons
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,18 +26,19 @@ fun LogoutButton(
     size: Dp = 44.dp,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(Color(0xFF3A1A1A))
+            .background(colorDeTema(Color(0xFF3A1A1A), temaOscuro, UsoColor.FONDO))
             .clickable { onLogout() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = "Cerrar sesión",
-            tint = Colores.Rojo,
+            tint = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
             modifier = Modifier.size(size * 0.55f)
         )
     }

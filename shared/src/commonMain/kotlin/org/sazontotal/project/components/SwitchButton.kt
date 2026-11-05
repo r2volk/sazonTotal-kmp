@@ -1,5 +1,8 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
@@ -14,19 +17,20 @@ fun SwitchButton(
     modifier: Modifier = Modifier,
     onCambio: (Boolean) -> Unit
 ){
+    val temaOscuro = LocalTemaOscuro.current
     Switch(
         checked = isActive,
         onCheckedChange = onCambio,
         modifier = modifier.scale(0.8f),
         colors = SwitchDefaults.colors(
-            checkedThumbColor = Color(0xFF000000),
-            checkedTrackColor = Colores.VerdePrimario,
+            checkedThumbColor = colorDeTema(Color(0xFF000000), temaOscuro, UsoColor.TEXTO),
+            checkedTrackColor = colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.FONDO),
 
-            uncheckedThumbColor = Color(0xFF000000),
-            uncheckedTrackColor = Colores.GrisDeshabilitado,
+            uncheckedThumbColor = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
+            uncheckedTrackColor = colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.FONDO),
 
-            checkedBorderColor = Color.Transparent,
-            uncheckedBorderColor = Color.Transparent
+            checkedBorderColor = colorDeTema(Color.Transparent, temaOscuro, UsoColor.BORDE),
+            uncheckedBorderColor = colorDeTema(Colores.GrisMedio, temaOscuro, UsoColor.BORDE)
         )
     )
 }

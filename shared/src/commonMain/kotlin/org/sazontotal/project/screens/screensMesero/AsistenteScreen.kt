@@ -1,5 +1,8 @@
 package org.sazontotal.project.screens.screensMesero
 
+import org.sazontotal.project.theme.LocalTemaOscuro
+import org.sazontotal.project.theme.UsoColor
+import org.sazontotal.project.theme.colorDeTema
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -74,6 +77,7 @@ fun AsistenteScreen(
     empleado: EmpleadoEntity? = null,
     mesa: String = "4",
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     var consulta by remember { mutableStateOf("") }
     var enviando by remember { mutableStateOf(false) }
 
@@ -148,7 +152,7 @@ fun AsistenteScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -164,7 +168,7 @@ fun AsistenteScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Atrás",
-                    tint = Color.White,
+                    tint = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -172,20 +176,20 @@ fun AsistenteScreen(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF291B3D)),
+                    .background(colorDeTema(Color(0xFF291B3D), temaOscuro, UsoColor.FONDO)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.AutoAwesome,
                     contentDescription = null,
-                    tint = Color(0xFFB388FF),
+                    tint = colorDeTema(Color(0xFFB388FF), temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(26.dp)
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Asistente IA",
-                    color = Color.White,
+                    color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -197,11 +201,11 @@ fun AsistenteScreen(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(if (enviando) Colores.Naranja else Colores.VerdePrimario)
+                            .background(colorDeTema(if (enviando) Colores.Naranja else Colores.VerdePrimario, temaOscuro, UsoColor.FONDO))
                     )
                     Text(
                         text = if (enviando) "Escribiendo · Mesa $mesa" else "En línea · Mesa $mesa",
-                        color = Colores.TextoTenue,
+                        color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                         fontSize = 13.sp
                     )
                 }
@@ -217,7 +221,7 @@ fun AsistenteScreen(
                 Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = "Nueva conversación",
-                    tint = Colores.TextoTenue,
+                    tint = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -249,7 +253,7 @@ fun AsistenteScreen(
                                         modifier = Modifier
                                             .size(8.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFFB388FF))
+                                            .background(colorDeTema(Color(0xFFB388FF), temaOscuro, UsoColor.FONDO))
                                     )
                                 }
                             }
@@ -283,7 +287,7 @@ fun AsistenteScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -291,8 +295,8 @@ fun AsistenteScreen(
                 value = consulta,
                 onValueChange = { consulta = it },
                 modifier = Modifier.weight(1f),
-                textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-                cursorBrush = SolidColor(Colores.VerdeAcento),
+                textStyle = TextStyle(color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO), fontSize = 16.sp),
+                cursorBrush = SolidColor(colorDeTema(Colores.VerdeAcento, temaOscuro, UsoColor.TEXTO)),
                 enabled = !enviando,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
@@ -302,7 +306,7 @@ fun AsistenteScreen(
                         if (consulta.isEmpty() && !enviando) {
                             Text(
                                 text = "Escribe tu consulta",
-                                color = Color(0xFF5A5A5E),
+                                color = colorDeTema(Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
                                 fontSize = 16.sp
                             )
                         }
@@ -314,14 +318,14 @@ fun AsistenteScreen(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(if (enviando) Colores.GrisDeshabilitado else Colores.VerdeBoton)
+                    .background(colorDeTema(if (enviando) Colores.GrisDeshabilitado else Colores.VerdeBoton, temaOscuro, UsoColor.FONDO))
                     .clickable { enviar(consulta) },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowUpward,
                     contentDescription = "Enviar",
-                    tint = Color.Black,
+                    tint = colorDeTema(Color.Black, temaOscuro, UsoColor.TEXTO),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -329,7 +333,7 @@ fun AsistenteScreen(
 
         Text(
             text = "La IA puede equivocarse. Confirma alérgenos con cocina.",
-            color = Color(0xFF5A5A5E),
+            color = colorDeTema(Color(0xFF5A5A5E), temaOscuro, UsoColor.TEXTO),
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -349,6 +353,7 @@ private fun BurbujaAsistente(
     modifier: Modifier = Modifier,
     contenidoPersonalizado: (@Composable () -> Unit)? = null
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
@@ -361,13 +366,13 @@ private fun BurbujaAsistente(
                         bottomEnd = 20.dp
                     )
                 )
-                .background(Color(0xFF232040))
+                .background(colorDeTema(Color(0xFF232040), temaOscuro, UsoColor.FONDO))
                 .padding(16.dp)
         ) {
             if (contenidoPersonalizado != null) contenidoPersonalizado() else {
                 Text(
                     text = texto,
-                    color = Color(0xFFE8E4F5),
+                    color = colorDeTema(Color(0xFFE8E4F5), temaOscuro, UsoColor.TEXTO),
                     fontSize = 16.sp
                 )
             }
@@ -381,6 +386,7 @@ private fun BurbujaMesero(
     texto: String,
     modifier: Modifier = Modifier
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
@@ -396,12 +402,12 @@ private fun BurbujaMesero(
                         bottomEnd = 20.dp
                     )
                 )
-                .background(Colores.Superficie)
+                .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
                 .padding(16.dp)
         ) {
             Text(
                 text = texto,
-                color = Color.White,
+                color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -414,17 +420,18 @@ private fun AtajoChip(
     texto: String,
     onClick: () -> Unit
 ) {
+    val temaOscuro = LocalTemaOscuro.current
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Colores.Superficie)
+            .background(colorDeTema(Colores.Superficie, temaOscuro, UsoColor.FONDO))
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = texto,
-            color = Color(0xFFB0B0B0),
+            color = colorDeTema(Color(0xFFB0B0B0), temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp
         )
     }
@@ -433,6 +440,7 @@ private fun AtajoChip(
 @Composable
 @Preview
 fun AsistenteScreenPreview() {
+    val temaOscuro = LocalTemaOscuro.current
     AsistenteScreen(
         backAsistente = {}
         // repositorio nulo: la preview muestra solo el saludo sin llamar a la API.
