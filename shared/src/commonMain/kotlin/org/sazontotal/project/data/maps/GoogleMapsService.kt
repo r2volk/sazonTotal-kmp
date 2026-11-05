@@ -11,7 +11,11 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -49,13 +53,12 @@ data class ResultadoDistancia(
  *
  * servicios usados:
  *  - Geocoding API: direccion escrita -> coordenadas
- *  - Places API (New) Text Search: sugerencias mientras se escribe
+ *  - Places Autocomplete (New): sugerencias mientras se escribe
  *  - Distance Matrix API: km y minutos entre la sede y el cliente
  *  - Maps Static API: URL de la imagen del mapa con los dos pines
  *
- * MODO DEMO: si no hay API key (constante vacia o placeholder "PEGA_...")
- * no se llama a la red: se devuelven datos de ejemplo y el mapa se dibuja
- * a mano en la pantalla, para que la app siga 100% jugable sin key.
+ * Las búsquedas siempre consultan proveedores reales. Si Google no está disponible,
+ * Photon y el geocodificador de plataforma publican sus resultados en paralelo.
  */
 class GoogleMapsService(
     private val apiKey: String,
@@ -70,99 +73,94 @@ class GoogleMapsService(
         }
     }
 
-    // sin key (ceficiente vacia o placeholder) todo se resuelve en modo demo.
+    // Sin clave, la búsqueda continúa con los proveedores públicos y de plataforma.
     private val modoDemo: Boolean
         get() = apiKey.isBlank() || apiKey.startsWith("PEGA_")
 
-    // sugerencias de direcciones mientras es el mesero (Places API (New) Text Search).
-    suspend fun autocompletar(textoParcial: String): List<String> {
-        if (modoDemo) return listaDemo.filter { contieneAlgunaPalabra(it, textoParcial) }
+    private var placesNoDisponible = false
 
+    suspend fun buscarDirecciones(
+        consulta: String,
+        onResultados: (List<SugerenciaDireccion>) -> Unit
+    ): List<SugerenciaDireccion> = buscarEnParalelo(consulta, listOf(
+        { autocompletar(consulta) },
+        { autocompletarPhoton(consulta) },
+        { sugerirDireccionesLocales(consulta) }
+    ), onResultados)
+
+    // Autocomplete está pensado para prefijos, nombres de lugares y direcciones.
+    suspend fun autocompletar(textoParcial: String): List<SugerenciaDireccion> {
+        if (modoDemo || placesNoDisponible) return emptyList()
         val cuerpo = buildJsonObject {
-            put("textQuery", textoParcial.trim())
-            put("pageSize", 5)  // el buscador muestra maximo 5 sugerencias
+            put("input", consultaDireccion(textoParcial))
             put("languageCode", "es")
+            put("includedRegionCodes", buildJsonArray { add("pe") })
+            put("locationBias", buildJsonObject {
+                put("circle", buildJsonObject {
+                    put("center", buildJsonObject {
+                        put("latitude", sede.latitud)
+                        put("longitude", sede.longitud)
+                    })
+                    put("radius", 40000.0)
+                })
+            })
         }
-
-                val respuesta = cliente.post("https://places.googleapis.com/v1/places:searchText") {
+        val respuesta = cliente.post("https://places.googleapis.com/v1/places:autocomplete") {
             header("X-Goog-Api-Key", apiKey)
-            // la mascara define que campos baja la respuesta (menos datos = menos costo).
-            header("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
+            header("X-Goog-FieldMask", "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat")
             contentType(ContentType.Application.Json)
             setBody(cuerpo.toString())
         }
-        val textoRespuesta = respuesta.bodyAsText()
-
+        val json = respuesta.bodyAsText()
         if (!respuesta.status.isSuccess()) {
-            throw ErrorMaps(mensajeErrorDe(textoRespuesta, respuesta.status.value))
+            if (respuesta.status.value == 403) placesNoDisponible = true
+            throw ErrorMaps("No se pudieron consultar las sugerencias de Google Maps.")
         }
-
-        // la respuesta trae {"places":[{"displayName":{"text":...},"formattedAddress":...}]}.
-        return try {
-            val raiz = Json.parseToJsonElement(textoRespuesta).jsonObject
-            raiz.getArray("places").orEmpty().mapNotNull { lugar ->
-                val objeto = lugar as? JsonObject ?: return@mapNotNull null
-                // la direccion formal es la que se guardara; el displayName es el plano.
-                objeto.get("formattedAddress")?.jsonPrimitive?.contentOrNull
-                    ?: objeto.getJsonObject("displayName")?.get("text")?.jsonPrimitive?.contentOrNull
-            }
-        } catch (e: Exception) {
-            throw ErrorMaps("No se pudieron leer las sugerencias de Google Maps. Intenta de nuevo.")
-        }
+        return leerSugerenciasGoogle(json)
     }
 
-    /** Búsqueda de direcciones OSM para sugerir resultados si Places no está habilitado. */
-    suspend fun autocompletarPhoton(textoParcial: String): List<String> {
-        val consulta = textoParcial.trim()
-        if (consulta.length < 3) return emptyList()
-
+    // Fuente real de respaldo: conserva nombre, dirección y coordenadas OSM.
+    suspend fun autocompletarPhoton(textoParcial: String): List<SugerenciaDireccion> {
+        if (textoParcial.trim().length < 3) return emptyList()
         val respuesta = cliente.get("https://photon.komoot.io/api/") {
-            parameter("q", consulta)
-            parameter("limit", 5)
+            parameter("q", consultaDireccion(textoParcial))
+            parameter("limit", 8)
             parameter("lat", sede.latitud)
             parameter("lon", sede.longitud)
+            parameter("bbox", "-77.4,-12.5,-76.6,-11.5")
         }
-        if (!respuesta.status.isSuccess()) return emptyList()
+        if (!respuesta.status.isSuccess()) throw ErrorMaps("No se pudieron consultar las direcciones. Intenta nuevamente.")
+        return leerSugerenciasPhoton(respuesta.bodyAsText(), textoParcial)
+    }
 
-        val raiz = leerJson(respuesta.bodyAsText()) ?: return emptyList()
-        return raiz.getArray("features").orEmpty().mapNotNull { feature ->
-            val propiedades = (feature as? JsonObject)?.getJsonObject("properties") ?: return@mapNotNull null
-            fun campo(nombre: String): String? =
-                propiedades[nombre]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf(String::isNotEmpty)
-
-            val calle = campo("street")
-            val numero = campo("housenumber")
-            val nombre = campo("name")
-            val titulo = when {
-                calle != null && numero != null -> "$calle $numero"
-                calle != null -> calle
-                else -> nombre
-            } ?: return@mapNotNull null
-            val distrito = campo("district")
-            val ciudad = campo("city")
-            listOfNotNull(
-                titulo,
-                distrito,
-                ciudad?.takeUnless { it.equals(distrito, ignoreCase = true) },
-                campo("postcode"),
-                campo("country")
-            ).distinctBy { it.lowercase() }.joinToString(", ")
-        }.distinct().take(5)
+    suspend fun resolverSugerencia(lugar: SugerenciaDireccion): Coordenada {
+        lugar.coordenada?.let { return it }
+        if (lugar.placeId != null && !modoDemo && !placesNoDisponible) {
+            try {
+                val respuesta = cliente.get("https://places.googleapis.com/v1/places/${lugar.placeId}") {
+                    header("X-Goog-Api-Key", apiKey)
+                    header("X-Goog-FieldMask", "location")
+                }
+                if (respuesta.status.isSuccess()) {
+                    val location = leerJson(respuesta.bodyAsText())?.getJsonObject("location")
+                    val lat = location?.get("latitude")?.jsonPrimitive?.doubleOrNull
+                    val lon = location?.get("longitude")?.jsonPrimitive?.doubleOrNull
+                    if (lat != null && lon != null && coordenadaValida(lat, lon)) return Coordenada(lat, lon)
+                }
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { /* Resolver el mismo lugar por dirección, sin escoger otro resultado. */ }
+        }
+        return geocodificar(lugar.textoCompleto)
     }
 
     // convierte la direccion elegida en coordenadas (Geocoding API).
     suspend fun geocodificar(direccion: String): Coordenada {
-        if (modoDemo) {
-            // en demo se reconocen las direcciones demo exactas; el resto cae
-            // un poco lejos de la sede para que se vea la ruta dibujada.
-            return mapaDemo.entries
-                .firstOrNull { it.key.lowercase() == direccion.trim().lowercase() }
-                ?.value
-                ?: Coordenada(latitud = SEDE_COORDENADA.latitud + 0.005, longitud = SEDE_COORDENADA.longitud + 0.004)
-        }
+        if (modoDemo) throw ErrorMaps("Selecciona un resultado que incluya una ubicación.")
 
         val respuesta = cliente.get("https://maps.googleapis.com/maps/api/geocode/json") {
-            parameter("address", direccion.trim())
+            parameter("address", consultaDireccion(direccion))
+            parameter("components", "country:PE")
+            parameter("region", "pe")
             parameter("language", "es")  // la direccion formateada viene en español
             parameter("key", apiKey)
         }
@@ -368,22 +366,7 @@ class GoogleMapsService(
     private fun JsonElement.getArray(clave: String) =
         (this as? JsonObject)?.get(clave) as? kotlinx.serialization.json.JsonArray
 
-    // demo: direcciones de Lima tipicas de una zona de entrega.
-    private val listaDemo = listOf(
-        "Parque Kennedy, Av. José Larco 900, Miraflores",
-        "Calle Berlín 500, Miraflores",
-        "Av. Arequipa 2500, Lince",
-        "Jr. de la Unión 1000, Lima Centro",
-        "Av. Oscar R. Benavides 2000, Cercado de Lima"
-    )
 
-    private val mapaDemo = mapOf(
-        "Parque Kennedy, Av. José Larco 900, Miraflores" to Coordenada(latitud = -12.1207, longitud = -77.0297),
-        "Calle Berlín 500, Miraflores" to Coordenada(latitud = -12.1199, longitud = -77.0359),
-        "Av. Arequipa 2500, Lince" to Coordenada(latitud = -12.0900, longitud = -77.0321),
-        "Jr. de la Unión 1000, Lima Centro" to Coordenada(latitud = -12.0463, longitud = -77.0297),
-        "Av. Oscar R. Benavides 2000, Cercado de Lima" to Coordenada(latitud = -12.0523, longitud = -77.0846)
-    )
 }
 
 // distancia en km entre dos coordenadas (formula de haversine).
@@ -396,12 +379,4 @@ private fun haversineKm(a: Coordenada, b: Coordenada): Double {
         cos(a.latitud * PI / 180.0) * cos(b.latitud * PI / 180.0) *
         sin(dLng / 2) * sin(dLng / 2)
     return 2 * tierra * asin(sqrt(h))
-}
-
-private fun contieneAlgunaPalabra(texto: String, parcial: String): Boolean {
-    val abajo = parcial.trim().lowercase()
-    if (abajo.isEmpty()) return false
-    return texto.lowercase().split(" ", ",").any { palabra ->
-        palabra.startsWith(abajo.take(4))
-    } || texto.lowercase().contains(abajo)
 }

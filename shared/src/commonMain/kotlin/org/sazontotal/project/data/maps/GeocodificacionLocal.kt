@@ -6,7 +6,7 @@ import kotlin.math.*
 expect suspend fun geocodificarDireccionLocal(direccion: String): Coordenada?
 
 /** Busca direcciones parecidas para usarlas como sugerencias cuando Places no responde. */
-expect suspend fun sugerirDireccionesLocales(textoParcial: String): List<String>
+expect suspend fun sugerirDireccionesLocales(textoParcial: String): List<SugerenciaDireccion>
 
 fun distanciaEnKilometros(a: Coordenada, b: Coordenada): Double {
     val radio = 6371.0

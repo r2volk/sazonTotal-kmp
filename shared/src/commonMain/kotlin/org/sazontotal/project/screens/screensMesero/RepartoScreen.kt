@@ -3,6 +3,10 @@ package org.sazontotal.project.screens.screensMesero
 import org.sazontotal.project.theme.LocalTemaOscuro
 import org.sazontotal.project.theme.UsoColor
 import org.sazontotal.project.theme.colorDeTema
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -67,6 +71,7 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.sazontotal.project.data.maps.Coordenada
@@ -79,7 +84,7 @@ import org.sazontotal.project.data.maps.kilometrosTarifados
 import org.sazontotal.project.data.maps.costoDelivery
 import org.sazontotal.project.data.maps.geocodificarDireccionLocal
 import org.sazontotal.project.data.maps.distanciaEnKilometros
-import org.sazontotal.project.data.maps.sugerirDireccionesLocales
+import org.sazontotal.project.data.maps.SugerenciaDireccion
 import org.sazontotal.project.data.maps.GoogleMapsService
 import org.sazontotal.project.data.maps.ResultadoDistancia
 import org.sazontotal.project.data.maps.SEDE_COORDENADA
@@ -98,9 +103,8 @@ private val RojoSuave = Color(0xFFFF6B6B)
  * sugerencia y la app muestra el mapa, la distancia y el tiempo del reparto,
  * con botones para abrir la ruta y registrar la entrega.
  *
- * todavia no usa la red de maps: las sugerencias/distancias salen del
- * servicio de maps (en modo demo devuelve datos de ejemplo si no hay key) y
- * las entregas registradas se guardan en Room a traves de App.kt.
+ * Busca lugares y direcciones reales, conserva el resultado elegido y calcula
+ * la ruta antes de preparar los datos de la entrega vinculada.
  */
 @Composable
 fun RepartoScreen(
@@ -119,54 +123,44 @@ fun RepartoScreen(
     }
 
     val maps = remember { GoogleMapsService(apiKey = KEY_MAPS) }
-    val modoDemo = KEY_MAPS.isBlank() || KEY_MAPS.startsWith("PEGA_")
     val scope = rememberCoroutineScope()
 
     // texto que el mesero esta escribiendo.
     var direccion by remember { mutableStateOf("") }
     // direccion fijada (null = aun elige); cuando se fija, deja de sugerir.
     var direccionElegida by remember { mutableStateOf<String?>(null) }
-    var sugerencias by remember { mutableStateOf<List<String>>(emptyList()) }
+    var sugerencias by remember { mutableStateOf<List<SugerenciaDireccion>>(emptyList()) }
+    var buscandoDirecciones by remember { mutableStateOf(false) }
+    var busquedaTerminada by remember { mutableStateOf(false) }
+    var intentoBusqueda by remember { mutableStateOf(0) }
     var cargandoRuta by remember { mutableStateOf(false) }
     var coordenada by remember { mutableStateOf<Coordenada?>(null) }
     var resultado by remember { mutableStateOf<ResultadoDistancia?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // sugerencias con pausa de 600ms para no pedir en cada tecla.
-    LaunchedEffect(direccion, direccionElegida) {
-        if (direccionElegida != null) {
-            sugerencias = emptyList()
-        } else {
-            val texto = direccion.trim()
-            if (texto.length >= 3) {
-                delay(600)
-                val sugerenciasGoogle = try {
-                    maps.autocompletar(texto)
-                } catch (_: Exception) {
-                    emptyList()
+    // Los proveedores responden en paralelo; al cambiar el texto se cancela la búsqueda anterior.
+    LaunchedEffect(direccion, direccionElegida, intentoBusqueda) {
+        sugerencias = emptyList()
+        busquedaTerminada = false
+        buscandoDirecciones = false
+        val consulta = direccion.trim()
+        if (direccionElegida == null && consulta.length >= 3) {
+            buscandoDirecciones = true
+            try {
+                delay(350)
+                maps.buscarDirecciones(consulta) { resultados ->
+                    sugerencias = resultados
                 }
-                // Si Places no está habilitado, usar OSM y después el geocoder local de Android.
-                val sugerenciasAlternas = if (sugerenciasGoogle.isNotEmpty()) emptyList() else try {
-                    maps.autocompletarPhoton(texto)
-                } catch (_: Exception) {
-                    emptyList()
-                }
-                sugerencias = sugerenciasGoogle.ifEmpty { sugerenciasAlternas }.ifEmpty {
-                    try {
-                        sugerirDireccionesLocales(texto)
-                    } catch (_: Exception) {
-                        emptyList()
-                    }
-                }
-            } else {
-                sugerencias = emptyList()
+                busquedaTerminada = true
+            } finally {
+                if (direccion.trim() == consulta && direccionElegida == null) buscandoDirecciones = false
             }
         }
     }
 
     // fija una direccion y calcula su ruta (coordenada + distancia/tiempo).
-    fun elegir(texto: String) {
-        val limpia = texto.trim()
+    fun elegir(lugar: SugerenciaDireccion) {
+        val limpia = lugar.textoCompleto.trim()
         if (limpia.isEmpty() || cargandoRuta) return
         direccion = limpia
         direccionElegida = limpia
@@ -178,17 +172,17 @@ fun RepartoScreen(
         scope.launch {
             try {
                 val punto = try {
-                    maps.geocodificar(limpia)
-                } catch (_: Exception) {
+                    maps.resolverSugerencia(lugar)
+                } catch (e: CancellationException) { throw e } catch (_: Exception) {
                     geocodificarDireccionLocal(limpia)
                         ?: throw ErrorMaps("No se encontró esa dirección. Prueba con una dirección más completa.")
                 }
                 val dista = try {
                     maps.distancia(punto)
-                } catch (_: Exception) {
+                } catch (e: CancellationException) { throw e } catch (_: Exception) {
                     try {
                         maps.distanciaPorCarretera(punto)
-                    } catch (_: Exception) {
+                    } catch (e: CancellationException) { throw e } catch (_: Exception) {
                         // Estimación de último recurso si Google y OSRM no responden.
                         val km = distanciaEnKilometros(SEDE_COORDENADA, punto)
                         val minutos = (km / 22.0 * 60).toInt().coerceAtLeast(2)
@@ -201,6 +195,7 @@ fun RepartoScreen(
                 }
                 coordenada = punto
                 resultado = dista
+            } catch (e: CancellationException) { throw e
             } catch (e: ErrorMaps) {
                 // el servicio ya traduce el fallo (key invalida, cuota, sin resultados).
                 error = e.message
@@ -216,6 +211,7 @@ fun RepartoScreen(
 
     // La lupa no elige por el mesero; una direccion fijada se puede editar.
     fun buscar() {
+        if (cargandoRuta) return
         if (direccionElegida != null) {
             // la lupa pasa a ser "editar": libera la direccion elegida.
             direccionElegida = null
@@ -224,7 +220,8 @@ fun RepartoScreen(
             error = null
             return
         }
-        error = "Selecciona una dirección de las sugerencias para calcular la ruta."
+        error = if (direccion.trim().length < 3) "Escribe al menos 3 caracteres para buscar una dirección." else null
+        intentoBusqueda += 1
     }
 
     // prepara los datos de ruta, pero no persiste una entrega hasta que el pedido exista.
@@ -245,6 +242,7 @@ fun RepartoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .background(colorDeTema(Color.Black, temaOscuro, UsoColor.FONDO))
             .padding(start = 20.dp, end = 20.dp, top = 60.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -254,7 +252,6 @@ fun RepartoScreen(
             onVerEntregas = onVerEntregas,
             entregasPendientes = entregasPendientes
         )
-        if (modoDemo) BannerDemo()
 
         // Buscador: editable hasta fijar la direccion; al tocarlo de nuevo vuelve a editar.
         BuscadorReparto(
@@ -273,27 +270,32 @@ fun RepartoScreen(
             onSearch = { buscar() }
         )
 
-        // Sugerencias mientras se escribe (max 5).
+        if (buscandoDirecciones || cargandoRuta) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp,
+                    color = colorDeTema(VerdeModulo, temaOscuro))
+                Text(if (cargandoRuta) "Calculando ruta…" else "Buscando direcciones…",
+                    color = colorDeTema(Color(0xFF8E8E93), temaOscuro), fontSize = 13.sp)
+            }
+        }
         if (direccionElegida == null && sugerencias.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
-            ) {
-                sugerencias.take(5).forEachIndexed { index, sugerido ->
-                    SugerenciaRow(texto = sugerido, onClick = { elegir(sugerido) })
+            Column(modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(colorDeTema(Color(0xFF1C1C1E), temaOscuro, UsoColor.FONDO))
+                .verticalScroll(rememberScrollState())) {
+                sugerencias.forEachIndexed { index, sugerido ->
+                    SugerenciaRow(lugar = sugerido, onClick = { elegir(sugerido) })
                     if (index < sugerencias.lastIndex) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 68.dp)
-                                .height(1.dp)
-                                .background(colorDeTema(Color(0xFF2C2C2E), temaOscuro, UsoColor.FONDO))
-                        )
+                        Box(modifier = Modifier.fillMaxWidth().padding(start = 68.dp).height(1.dp)
+                            .background(colorDeTema(Color(0xFF2C2C2E), temaOscuro, UsoColor.FONDO)))
                     }
                 }
             }
+            Text("Elige una ubicación · " + sugerencias.map { it.fuente.etiqueta }.distinct().joinToString(" / "),
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro), fontSize = 11.sp)
+        } else if (direccionElegida == null && busquedaTerminada && !buscandoDirecciones) {
+            Text("No se encontraron ubicaciones. Prueba con la calle, número y distrito, o pulsa Buscar para reintentar.",
+                color = colorDeTema(Color(0xFF8E8E93), temaOscuro), fontSize = 14.sp)
         }
 
         // aviso de error (geocoding fallo, texto corto, etc.).
@@ -481,7 +483,7 @@ private fun RepartoHeader(
                         .background(colorDeTema(VerdeModulo, temaOscuro, UsoColor.FONDO))
                 )
                 Text(
-                    text = "Sede: $DIRECCION_SEDE",
+                    text = "Local: UPN Los Olivos\n$DIRECCION_SEDE",
                     color = colorDeTema(Color(0xFF8E8E93), temaOscuro, UsoColor.TEXTO),
                     fontSize = 13.sp
                 )
@@ -798,7 +800,8 @@ private fun BuscadorReparto(
             onValueChange = { onTextoChange(it) },
             modifier = Modifier.weight(1f),
             enabled = editable,
-            singleLine = true,
+            singleLine = editable,
+            maxLines = if (editable) 1 else 3,
             textStyle = TextStyle(
                 color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
                 fontSize = 16.sp,
@@ -841,7 +844,7 @@ private fun BuscadorReparto(
 
 @Composable
 private fun SugerenciaRow(
-    texto: String,
+    lugar: SugerenciaDireccion,
     onClick: () -> Unit
 ) {
     val temaOscuro = LocalTemaOscuro.current
@@ -867,12 +870,16 @@ private fun SugerenciaRow(
                 modifier = Modifier.size(20.dp)
             )
         }
-        Text(
-            text = texto,
-            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(text = lugar.nombre, color = colorDeTema(Color.White, temaOscuro),
+                fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            if (lugar.direccion.isNotBlank() && lugar.direccion != lugar.nombre) {
+                Text(text = lugar.direccion, color = colorDeTema(Color(0xFF8E8E93), temaOscuro), fontSize = 12.sp)
+            }
+            if (lugar.aproximada) {
+                Text("Ubicación de la vía; número no confirmado", color = colorDeTema(Ambar, temaOscuro), fontSize = 11.sp)
+            }
+        }
     }
 }
 

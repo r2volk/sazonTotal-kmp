@@ -92,7 +92,7 @@ Las transiciones se validan en [`TipoPedido.kt`](shared/src/commonMain/kotlin/or
 
 ## Delivery
 
-El módulo de reparto parte de una sede de referencia en **Av. Larco 512, Miraflores, Lima**. El mesero escribe una dirección, revisa las sugerencias y **elige explícitamente una** antes de calcular la ruta. Pulsar la lupa no selecciona automáticamente la primera coincidencia.
+El módulo de reparto parte de **UPN Los Olivos: Av. Alfredo Mendiola 6062, Los Olivos, Lima** (coordenadas `-11.9595307, -77.0677791`). El mesero escribe una dirección, revisa las sugerencias y **elige explícitamente una** antes de calcular la ruta. Pulsar la lupa no selecciona automáticamente la primera coincidencia.
 
 Después de elegir, se muestran la distancia, el tiempo estimado, el tramo cobrado y la tarifa. La ruta preparada todavía no constituye una entrega persistida: el registro se crea junto con el pedido y sus platos al confirmar la comanda.
 
@@ -133,7 +133,7 @@ La distancia debe ser finita y no negativa. La regla está centralizada en [`Tar
 - Las canceladas no cuentan como En camino y no permiten confirmar la entrega.
 - Pueden existir entregas de demostración o históricas sin `pedidoId`; se distinguen de las entregas vinculadas del flujo actual.
 
-Para direcciones y rutas se utilizan Google Maps y respaldos implementados con Photon, geocodificación local y OSRM. Cuando se recurre a una estimación, la interfaz puede mostrar distancia o duración aproximadas. La disponibilidad de estos servicios depende de la conexión y de la configuración de sus proveedores.
+Para direcciones se consultan en paralelo Places Autocomplete (New), Photon/OpenStreetMap y el geocodificador del dispositivo. Los resultados conservan nombre, dirección, proveedor y coordenadas o `placeId`; al elegir uno se utiliza su ubicación. Las coincidencias de vía sin número confirmado se identifican como aproximadas. Para rutas se utilizan Google Maps y OSRM. Cuando se recurre a una estimación, la interfaz puede mostrar distancia o duración aproximadas. La disponibilidad de estos servicios depende de la conexión y de la configuración de sus proveedores.
 
 ## Asistente IA
 

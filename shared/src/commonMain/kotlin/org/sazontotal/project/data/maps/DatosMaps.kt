@@ -5,10 +5,9 @@ package org.sazontotal.project.data.maps
 // Distance Matrix API y Maps Static API.
 const val KEY_MAPS = "AIzaSyBMEsg4VvuPQXbkAN8RQlpiDhnH5cvl_eQ"
 
-// sede ficticia de Sazontotal: direccion real de una avenida de Lima para
-// que Google la geocodifique de verdad, aunque el restaurante sea de demostracion.
-const val DIRECCION_SEDE = "Av. Larco 512, Miraflores 15074, Perú"
-const val NOMBRE_SEDE = "SazónTotal · Sede Miraflores"
-
-// coordenadas reales de esa direccion (aproximadas del geocoder de Google).
-val SEDE_COORDENADA = Coordenada(latitud = -12.1241, longitud = -77.0295)
+// Campus verificado: dirección oficial UPN y punto del campus en OpenStreetMap.
+// https://www.upn.edu.pe/universidad-en-los-olivos
+// https://www.openstreetmap.org/way/405584319
+const val DIRECCION_SEDE = "Av. Alfredo Mendiola 6062, Los Olivos, Lima, Perú"
+const val NOMBRE_SEDE = "Sazón Total · UPN Los Olivos"
+val SEDE_COORDENADA = Coordenada(latitud = -11.9595307, longitud = -77.0677791)
