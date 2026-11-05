@@ -127,9 +127,9 @@ Al cerrar sesión, o al volver desde un dashboard a la pantalla de acceso, se de
 
 ### Delivery
 
-Desde **Reparto**, el mesero abre el menú con delivery seleccionado. También puede elegir delivery en el selector de destino del menú o carrito. Agrega los platos, escribe la dirección en el carrito y confirma: se crea un pedido normal que cocina recibe como delivery. En **Mis pedidos**, cuando cocina lo marque listo, el mesero pulsa **Enviar con motorizado** y después **Marcar entregado**. Solo entonces cuenta como venta en reportes. La dirección permite abrir Google Maps; no se calcula una ruta ni una distancia automáticamente.
+Desde **Reparto**, el mesero selecciona una sugerencia de dirección, calcula la ruta y continúa al menú. La tarifa es de S/ 3 por cada kilómetro iniciado: hasta 1 km cuesta S/ 3, más de 1 y hasta 2 km cuesta S/ 6, y así sucesivamente. Al confirmar, se crea el pedido para cocina con su entrega vinculada. Cuando cocina lo marque listo, el mesero pulsa **Enviar con motorizado** y después **Marcar entregado**. Solo entonces cuenta como venta en reportes.
 
-Para conservar la base existente sin cambiar su esquema, la dirección de los nuevos deliverys se guarda en el campo `mesa` con el prefijo `Delivery: `. Los registros antiguos de la tabla `entregas` son independientes y no se convierten en pedidos; se pueden consultar desde **Entregas anteriores** en el menú de delivery.
+La dirección de los nuevos deliverys se guarda en el campo `mesa` con el prefijo `Delivery: ` y la entrega se vincula al pedido. Los registros antiguos de la tabla `entregas` son independientes y no se convierten en pedidos; se pueden consultar desde **Entregas anteriores**.
 
 1. El mesero agrega platos y cantidades desde `MenuScreen`.
 2. El carrito conserva el detalle de los platos seleccionados, la cantidad, una nota general y el precio de ese momento. Esto evita que el pedido cambie si el plato se edita o se elimina del menú mientras está en el carrito.

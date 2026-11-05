@@ -15,12 +15,16 @@ data class EntregaReparto(
     val minutosTexto: String,
     val fecha: Long,          // epoch millis (util Reloj.ahoraMillis())
     val entregada: Boolean,
-    val meseroNombre: String
+    val meseroNombre: String,
+    val pedidoId: Long? = null,
+    val cancelada: Boolean = false,
+    val preparando: Boolean = false
 )
 
 // estado del chip de cada entrega en la lista.
 const val ESTADO_EN_CAMINO = "En camino"
 const val ESTADO_ENTREGADA = "Entregada"
+const val ESTADO_CANCELADA = "Cancelada"
 
 // pasa una fila de Room al modelo que usan las pantallas.
 fun EntregaEntity.aEntregaReparto(): EntregaReparto = EntregaReparto(
@@ -30,7 +34,8 @@ fun EntregaEntity.aEntregaReparto(): EntregaReparto = EntregaReparto(
     minutosTexto = minutosTexto,
     fecha = fecha,
     entregada = entregada,
-    meseroNombre = meseroNombre
+    meseroNombre = meseroNombre,
+    pedidoId = pedidoId
 )
 
 // pasa el modelo de pantalla a fila de Room; el id va en 0 para que room genere el suyo.

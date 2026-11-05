@@ -6,9 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.sazontotal.project.data.db.PlatoEntity
+import kotlin.random.Random
 
 // vive aqui para que menu y carrito compartan cantidades, se crea en App y se pasa a ambos.
 class CarritoCompra {
+    var solicitudId: String = nuevaSolicitudId()
+        private set
+
+    private fun nuevaSolicitudId(): String = "${Random.nextLong()}-${Random.nextLong()}"
     // id del plato -> cuantos pidio. si no esta anotado, es 0.
     val cantidades: SnapshotStateMap<Long, Int> = mutableStateMapOf()
 
@@ -59,5 +64,6 @@ class CarritoCompra {
         cantidades.clear()
         platosGuardados.clear()
         notaGeneral = ""
+        solicitudId = nuevaSolicitudId()
     }
 }

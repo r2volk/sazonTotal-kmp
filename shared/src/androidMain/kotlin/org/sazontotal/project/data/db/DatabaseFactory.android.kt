@@ -3,8 +3,19 @@ package org.sazontotal.project.data.db
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 private var appContext: Context? = null
+
+actual fun migration8To9(): Migration = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE entregas ADD COLUMN pedidoId INTEGER")
+        db.execSQL("CREATE UNIQUE INDEX index_entregas_pedidoId ON entregas (pedidoId)")
+        db.execSQL("ALTER TABLE pedidos ADD COLUMN solicitudId TEXT")
+        db.execSQL("CREATE UNIQUE INDEX index_pedidos_solicitudId ON pedidos (solicitudId)")
+    }
+}
 
 fun initAndroidContext(context: Context) {
     appContext = context.applicationContext

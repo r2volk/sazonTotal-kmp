@@ -100,7 +100,13 @@ fun App() {
         // la lista de entregas se actualiza sola cuando room inserta o borra algo.
         LaunchedEffect(repositorio) {
             repositorio?.observarEntregas()?.collect { filas ->
-                entregasReparto = filas.map { fila -> fila.aEntregaReparto() }
+                entregasReparto = filas.map { fila ->
+                    fila.entrega.aEntregaReparto().copy(
+                        cancelada = fila.estadoPedido == "ANULADO",
+                        preparando = fila.estadoPedido == "PENDIENTE" || fila.estadoPedido == "LISTO",
+                        entregada = if (fila.entrega.pedidoId != null) fila.estadoPedido == "ENTREGADO" else fila.entrega.entregada
+                    )
+                }
             }
         }
 
@@ -212,14 +218,7 @@ fun App() {
                 backCarritoScreen = {pantallaActual = "menuMesero"},
                 confirmarCarrito = { id ->
                     ultimoPedidoId = id
-                    val entregaConfirmada = entregaDeliveryPendiente
                     entregaDeliveryPendiente = null
-                    if (mesaActual == "Delivery" && entregaConfirmada != null) {
-                        // Solo guardar ruta cuando Room ya confirmó cabecera y renglones del pedido.
-                        scope.launch {
-                            repositorio?.registrarEntrega(entregaConfirmada.aEntregaEntity())
-                        }
-                    }
                     direccionActual = ""
                     distanciaDeliveryKm = 0.0
                     costoDelivery = 0.0
@@ -233,7 +232,8 @@ fun App() {
                 direccion = direccionActual,
                 onDireccionChange = { direccionActual = it },
                 deliveryDistanceKm = distanciaDeliveryKm,
-                deliveryFee = costoDelivery
+                deliveryFee = costoDelivery,
+                entregaPendiente = entregaDeliveryPendiente?.aEntregaEntity()
             )
             "pedidoConcretado" -> PedidoConcretadoScreen(
                 volverDashboard = {pantallaActual = "dashboardMesero"},
@@ -260,13 +260,17 @@ fun App() {
                 onVerEntregas = {pantallaActual = "entregas"},
                 nombreMesero = empleadoLogueado?.nombre ?: "Mesero",
                 // resaltado del historial: cuantas quedan por entregar.
-                entregasPendientes = entregasReparto.count { !it.entregada }
+                entregasPendientes = entregasReparto.count { !it.entregada && !it.cancelada && !it.preparando }
             )
             "entregas" -> EntregasScreen(
                 backEntregas = {pantallaActual = "menuMesero"},
                 entregas = entregasReparto,
                 onMarcarEntregada = { id ->
-                    scope.launch { repositorio?.cambiarEntregada(id, true) }
+                    val pedidoId = entregasReparto.find { it.id == id }?.pedidoId
+                    scope.launch {
+                        if (pedidoId != null) repositorio?.cambiarEstadoPedido(pedidoId, "ENTREGADO")
+                        else repositorio?.cambiarEntregada(id, true)
+                    }
                 },
                 onDeshacerEntrega = { id ->
                     // por si marco entregada por error: vuelve a En camino.

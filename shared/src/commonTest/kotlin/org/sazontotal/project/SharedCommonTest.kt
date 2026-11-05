@@ -10,8 +10,20 @@ import org.sazontotal.project.data.direccionDelivery
 import org.sazontotal.project.data.esDelivery
 import org.sazontotal.project.data.transicionPedidoPermitida
 import kotlin.test.assertEquals
+import org.sazontotal.project.data.maps.costoDelivery
 
 class SharedCommonTest {
+
+    @Test
+    fun deliveryCobraTresSolesPorKilometroIniciado() {
+        assertEquals(3.0, costoDelivery(0.001))
+        assertEquals(3.0, costoDelivery(0.5))
+        assertEquals(3.0, costoDelivery(1.0))
+        assertEquals(6.0, costoDelivery(1.001))
+        assertEquals(6.0, costoDelivery(1.5))
+        assertEquals(6.0, costoDelivery(2.0))
+        assertEquals(9.0, costoDelivery(2.001))
+    }
 
     @Test
     fun deliveryConservaDireccionYSeDistingueDeMesa() {

@@ -18,7 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,6 +57,7 @@ fun TodosLosPedidosScreen(
 ){
 
     var textoBusqueda by remember { mutableStateOf("") }
+    var errorAnulacion by remember { mutableStateOf(false) }
 
     // la lista y los nombres de mesero vienen de consultas observables del repositorio.
     val pedidosEnVivo = repositorio?.observarPedidos()
@@ -205,8 +209,13 @@ fun TodosLosPedidosScreen(
                         nombreMesero = empleados.find { it.id == pedido.meseroID }?.nombre ?: pedido.meseroID,
                         onAnular = { id ->
                             scope.launch {
-                                // el cambio de estado se guarda en la tabla pedidos.
-                                repositorio?.cambiarEstadoPedido(id, "ANULADO")
+                                try {
+                                    repositorio?.cambiarEstadoPedido(id, "ANULADO")
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    errorAnulacion = true
+                                }
                             }
                         }
                     )
@@ -216,6 +225,14 @@ fun TodosLosPedidosScreen(
 
 
         }
+    }
+    if (errorAnulacion) {
+        AlertDialog(
+            onDismissRequest = { errorAnulacion = false },
+            title = { Text("No se pudo anular") },
+            text = { Text("El pedido y su entrega conservan su estado. Intenta de nuevo.") },
+            confirmButton = { TextButton(onClick = { errorAnulacion = false }) { Text("Entendido") } }
+        )
     }
 }
 @Composable
@@ -240,7 +257,7 @@ private fun PedidoEnAdmin(
     CardPedido(
         estadoTodosLosPedidos = insignia,
         titulo = "${destinoPedido(pedido.mesa)} • #${pedido.id}",
-        detalle = "Mesero: $nombreMesero • ${items.size} items",
+        detalle = "Mesero: $nombreMesero • ${items.sumOf { it.cantidad }} items",
         hora = textoHora(pedido.fecha),
         total = moneda(pedido.total),
         // solo se puede anular lo que aun no se entrego ni se anulo.

@@ -25,7 +25,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import org.sazontotal.project.components.FiltroButton
 import org.sazontotal.project.data.maps.ESTADO_ENTREGADA
 import org.sazontotal.project.data.maps.ESTADO_EN_CAMINO
+import org.sazontotal.project.data.maps.ESTADO_CANCELADA
 import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.utils.ahoraMillis
 
@@ -72,11 +75,12 @@ fun EntregasScreen(
     onEliminarEntrega: (Long) -> Unit = {}
 ) {
     var filtro by remember { mutableStateOf(FILTRO_TODAS) }
-    val enCamino = entregas.count { !it.entregada }
-    val entregadas = entregas.count { it.entregada }
+    var pedidoProtegido by remember { mutableStateOf<Long?>(null) }
+    val enCamino = entregas.count { !it.entregada && !it.cancelada && !it.preparando }
+    val entregadas = entregas.count { it.entregada && !it.cancelada }
     val visibles = when (filtro) {
-        FILTRO_EN_CAMINO -> entregas.filter { !it.entregada }
-        FILTRO_ENTREGADAS -> entregas.filter { it.entregada }
+        FILTRO_EN_CAMINO -> entregas.filter { !it.entregada && !it.cancelada && !it.preparando }
+        FILTRO_ENTREGADAS -> entregas.filter { it.entregada && !it.cancelada }
         else -> entregas
     }
 
@@ -153,19 +157,32 @@ fun EntregasScreen(
                             if (entrega.entregada) onDeshacerEntrega(entrega.id)
                             else onMarcarEntregada(entrega.id)
                         },
-                        onEliminar = { onEliminarEntrega(entrega.id) }
+                        onEliminar = {
+                            if (entrega.pedidoId != null) pedidoProtegido = entrega.pedidoId
+                            else onEliminarEntrega(entrega.id)
+                        }
                     )
                 }
             }
         }
+    }
+    pedidoProtegido?.let { pedidoId ->
+        AlertDialog(
+            onDismissRequest = { pedidoProtegido = null },
+            title = { Text("Entrega vinculada") },
+            text = { Text("Esta entrega pertenece al pedido #$pedidoId y no se puede eliminar.") },
+            confirmButton = {
+                TextButton(onClick = { pedidoProtegido = null }) { Text("Entendido") }
+            }
+        )
     }
 }
 
 // linea de resumen del header: total y cuantas van en camino.
 private fun resumenDe(entregas: List<EntregaReparto>): String {
     if (entregas.isEmpty()) return "Sin entregas todavía"
-    val enCamino = entregas.count { !it.entregada }
-    return if (enCamino == 0) "${entregas.size} entregas · todas entregadas"
+    val enCamino = entregas.count { !it.entregada && !it.cancelada && !it.preparando }
+    return if (enCamino == 0) "${entregas.size} entregas · ninguna en camino"
     else "${entregas.size} entregas · $enCamino en camino"
 }
 
@@ -278,8 +295,8 @@ private fun EntregaCard(
     onEliminar: () -> Unit
 ) {
     val entregada = entrega.entregada
-    val acento = if (entregada) VerdeModulo else Ambar
-    val badgeBg = if (entregada) Color(0xFF12331B) else Color(0xFF3A2B08)
+    val acento = if (entrega.cancelada) Color(0xFFFF7770) else if (entregada) VerdeModulo else Ambar
+    val badgeBg = if (entrega.cancelada) Color(0xFF3A1414) else if (entregada) Color(0xFF12331B) else Color(0xFF3A2B08)
 
     Column(
         modifier = Modifier
@@ -314,6 +331,9 @@ private fun EntregaCard(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
+                entrega.pedidoId?.let { pedidoId ->
+                    Text(text = "Pedido #$pedidoId", color = Color(0xFF8E8E93), fontSize = 13.sp)
+                }
                 Text(
                     text = "${entrega.kmTexto} · ${entrega.minutosTexto}",
                     color = Color(0xFF8E8E93),
@@ -329,7 +349,12 @@ private fun EntregaCard(
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = if (entregada) ESTADO_ENTREGADA else ESTADO_EN_CAMINO,
+                    text = when {
+                        entrega.cancelada -> ESTADO_CANCELADA
+                        entrega.preparando -> "Preparando"
+                        entregada -> ESTADO_ENTREGADA
+                        else -> ESTADO_EN_CAMINO
+                    },
                     color = acento,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -371,7 +396,7 @@ private fun EntregaCard(
                 )
             }
             // accion principal de la tarjeta: marcar entregada / deshacer.
-            Box(
+            if (!entrega.cancelada && !entrega.preparando && !(entregada && entrega.pedidoId != null)) Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
                     .background(if (entregada) Color.Transparent else Color(0xFF12331B))

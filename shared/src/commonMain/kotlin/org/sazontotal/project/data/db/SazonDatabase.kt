@@ -8,7 +8,7 @@ import androidx.room.RoomDatabaseConstructor
 // esta clase registra las tablas y entrega el dao para consultar cada una.
 @Database(
     entities = [EmpleadoEntity::class, PlatoEntity::class, PedidoEntity::class, PedidoItemEntity::class, EntregaEntity::class],
-    version = 8,
+    version = 9,
     exportSchema = false)
 @ConstructedBy(SazonDatabaseConstructor::class)
 abstract class SazonDatabase : RoomDatabase() {

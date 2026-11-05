@@ -63,6 +63,8 @@ import org.sazontotal.project.components.visualDeCategoria
 import org.sazontotal.project.data.CarritoCompra
 import org.sazontotal.project.data.crearDestinoDelivery
 import org.sazontotal.project.data.db.PedidoEntity
+import org.sazontotal.project.data.db.EntregaEntity
+import org.sazontotal.project.data.maps.kilometrosTarifados
 import org.sazontotal.project.data.db.PedidoItemEntity
 import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.repository.SazonRepository
@@ -83,7 +85,8 @@ fun CarritoScreen(
     direccion: String = "",
     onDireccionChange: (String) -> Unit = {},
     deliveryDistanceKm: Double = 0.0,
-    deliveryFee: Double = 0.0
+    deliveryFee: Double = 0.0,
+    entregaPendiente: EntregaEntity? = null
 ) {
     val scope = rememberCoroutineScope()
 
@@ -119,6 +122,7 @@ fun CarritoScreen(
         catalogo != null &&
         todosLosPlatosDisponibles &&
         mesaValida &&
+        (!esDelivery || entregaPendiente != null) &&
         !guardando
 
     // la mesa se puede cambiar mientras haya productos y no se este guardando; el envio valida 1..15.
@@ -132,6 +136,7 @@ fun CarritoScreen(
         repositorio == null -> "No se puede enviar el pedido en este momento."
         catalogo == null -> "Cargando el menú..."
         !mesaValida -> if (esDelivery) "Escribe la dirección de entrega." else "Selecciona una mesa del 1 al 15."
+        esDelivery && entregaPendiente == null -> "Calcula una ruta antes de enviar el pedido Delivery."
         !todosLosPlatosDisponibles -> "Hay platos que ya no están disponibles. Reduce su cantidad a cero para quitarlos."
         else -> null
     }
@@ -280,14 +285,14 @@ fun CarritoScreen(
                     // La tarifa corresponde a la ubicación calculada en Reparto.
                     readOnly = guardando || deliveryDistanceKm > 0.0
                 )
-                if (deliveryDistanceKm > 0.0) {
+                if (entregaPendiente != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Delivery · ${decimales(deliveryDistanceKm)} km × S/ 3.00/km",
+                            text = "Delivery · hasta ${kilometrosTarifados(deliveryDistanceKm)} km × S/ 3.00",
                             color = Colores.TextoTenue,
                             fontSize = 14.sp
                         )
@@ -371,9 +376,12 @@ fun CarritoScreen(
                                 meseroID = meseroId,
                                 estado = "PENDIENTE",
                                 total = total,
-                                fecha = ahoraMillis()
+                                fecha = ahoraMillis(),
+                                solicitudId = if (esDelivery) carritoConfirmado.solicitudId else null
                             )
-                            val numeroPedido = repositorioConfirmado.crearPedidoConItems(cabecera, renglones)
+                            val numeroPedido = repositorioConfirmado.crearPedidoConItems(
+                                cabecera, renglones, if (esDelivery) entregaPendiente else null
+                            )
                             check(numeroPedido > 0L) { "La base de datos no devolvió un número de pedido" }
                             // solo vaciar despues de que el pedido exista.
                             carritoConfirmado.limpiar()

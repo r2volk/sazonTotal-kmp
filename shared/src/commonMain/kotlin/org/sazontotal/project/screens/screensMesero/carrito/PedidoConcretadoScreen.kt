@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.destinoPedido
 import org.sazontotal.project.data.repository.SazonRepository
@@ -50,6 +51,12 @@ fun PedidoConcretadoScreen(
     pedidoId: Long = 0L,
     repositorio: SazonRepository? = null
 ) {
+    // Evita que un segundo toque de confirmación active el botón en la misma posición.
+    var accionesDisponibles by remember(pedidoId) { mutableStateOf(false) }
+    LaunchedEffect(pedidoId) {
+        delay(700)
+        accionesDisponibles = true
+    }
     // la cabecera se lee una vez y sus renglones se observan desde room para armar el ticket.
     var pedido by remember { mutableStateOf<PedidoEntity?>(null) }
     LaunchedEffect(pedidoId) {
@@ -312,7 +319,7 @@ fun PedidoConcretadoScreen(
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Colores.VerdeBoton)
-                .clickable {
+                .clickable(enabled = accionesDisponibles) {
                         volverDashboard()
                 },
             contentAlignment = Alignment.Center
@@ -330,7 +337,7 @@ fun PedidoConcretadoScreen(
                 .height(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Colores.GrisMedio, RoundedCornerShape(12.dp))
-                .clickable {
+                .clickable(enabled = accionesDisponibles) {
                     otroPedido()
                 },
             contentAlignment = Alignment.Center

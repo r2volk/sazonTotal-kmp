@@ -72,6 +72,8 @@ import org.sazontotal.project.data.maps.ErrorMaps
 import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.data.maps.KEY_MAPS
 import org.sazontotal.project.data.maps.MapaDelivery
+import org.sazontotal.project.data.maps.kilometrosTarifados
+import org.sazontotal.project.data.maps.costoDelivery
 import org.sazontotal.project.data.maps.geocodificarDireccionLocal
 import org.sazontotal.project.data.maps.distanciaEnKilometros
 import org.sazontotal.project.data.maps.sugerirDireccionesLocales
@@ -208,7 +210,7 @@ fun RepartoScreen(
         }
     }
 
-    // boton de la lupa: con sugerencias toma la primera; si ya hay elegida, vuelve a editar.
+    // La lupa no elige por el mesero; una direccion fijada se puede editar.
     fun buscar() {
         if (direccionElegida != null) {
             // la lupa pasa a ser "editar": libera la direccion elegida.
@@ -218,12 +220,7 @@ fun RepartoScreen(
             error = null
             return
         }
-        val candidata = sugerencias.firstOrNull() ?: direccion.takeIf { it.trim().length >= 3 }
-        if (candidata == null) {
-            error = "Escribe al menos 3 letras de la dirección."
-            return
-        }
-        elegir(candidata)
+        error = "Selecciona una dirección de las sugerencias para calcular la ruta."
     }
 
     // prepara los datos de ruta, pero no persiste una entrega hasta que el pedido exista.
@@ -329,15 +326,16 @@ fun RepartoScreen(
 
         // Distancia y tiempo (solo cuando ya se calculo la ruta).
         if (resultado != null) {
-            val distanciaTarifadaKm = kotlin.math.round(resultado!!.distanciaKm * 100.0) / 100.0
-            val costoDelivery = kotlin.math.round(distanciaTarifadaKm * 300.0) / 100.0
+            val distanciaKm = resultado!!.distanciaKm
+            val tramos = kilometrosTarifados(distanciaKm)
+            val costo = costoDelivery(distanciaKm)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatReparto(
                     icono = Icons.Outlined.Navigation,
-                    valor = "${decimales(distanciaTarifadaKm)} km",
+                    valor = "${decimales(distanciaKm)} km",
                     etiqueta = "distancia",
                     iconoBg = VerdeModuloOscuro,
                     iconoTint = VerdeModulo,
@@ -362,12 +360,12 @@ fun RepartoScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Delivery estimado · ${decimales(distanciaTarifadaKm)} km × S/ 3.00/km",
+                    text = "Delivery · hasta $tramos km × S/ 3.00",
                     color = Color(0xFFB0B0B0),
                     fontSize = 14.sp
                 )
                 Text(
-                    text = moneda(costoDelivery),
+                    text = moneda(costo),
                     color = VerdeModulo,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -386,8 +384,7 @@ fun RepartoScreen(
                 .clickable(enabled = resultado != null) {
                     val direccionPedido = direccionElegida ?: direccion
                     val ruta = resultado ?: return@clickable
-                    val distanciaTarifadaKm = kotlin.math.round(ruta.distanciaKm * 100.0) / 100.0
-                    val costoDelivery = kotlin.math.round(distanciaTarifadaKm * 300.0) / 100.0
+                    val costoDelivery = costoDelivery(ruta.distanciaKm)
                     val entrega = crearEntregaPendiente() ?: return@clickable
                     // El historial se actualiza después, cuando la base confirme el pedido.
                     onCrearPedido(direccionPedido, ruta.distanciaKm, costoDelivery, entrega)

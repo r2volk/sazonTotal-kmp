@@ -3,6 +3,7 @@ package org.sazontotal.project.data.repository
 import kotlinx.coroutines.flow.Flow
 import org.sazontotal.project.data.db.EmpleadoEntity
 import org.sazontotal.project.data.db.EntregaEntity
+import org.sazontotal.project.data.db.EntregaConEstadoPedido
 import org.sazontotal.project.data.db.esPinEmpleadoValido
 import org.sazontotal.project.data.db.PedidoEntity
 import org.sazontotal.project.data.db.PedidoItemEntity
@@ -11,6 +12,8 @@ import org.sazontotal.project.data.db.SazonDatabase
 import org.sazontotal.project.data.db.VentaPlato
 import org.sazontotal.project.utils.ahoraMillis
 import org.sazontotal.project.data.transicionPedidoPermitida
+import org.sazontotal.project.data.esDelivery
+import org.sazontotal.project.data.direccionDelivery
 
 // las pantallas llaman al repositorio; aqui se validan reglas y se coordinan los dao.
 class SazonRepository(private val db: SazonDatabase) {
@@ -82,25 +85,16 @@ class SazonRepository(private val db: SazonDatabase) {
     }
 
 
-    suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>): Long {
+    suspend fun crearPedidoConItems(pedido: PedidoEntity, items: List<PedidoItemEntity>, entrega: EntregaEntity? = null): Long {
         require(items.isNotEmpty()) { "El pedido no tiene renglones" }
         require(items.all { it.cantidad > 0 && it.precioUnit >= 0.0 }) {
             "El pedido contiene cantidades o precios no válidos"
         }
         val platosActivos = items.all { db.platoDao().contarActivo(it.platoId) > 0 }
         require(platosActivos) { "Uno o más platos ya no están disponibles" }
-        val numeroPedido = db.pedidoDao().insertar(pedido)
-        try {
-            // .copy() = copia del renglon cambiando solo el id del pedido
-            val renglonesMarcados = items.map { renglon ->
-                renglon.copy(pedidoId = numeroPedido)
-            }
-            db.pedidoItemDao().insertarTodos(renglonesMarcados)
-        } catch (e: Exception) {
-            db.pedidoDao().borrarPorId(numeroPedido)
-            throw e
-        }
-        return numeroPedido
+        require(esDelivery(pedido.mesa) == (entrega != null)) { "El pedido Delivery necesita una ruta de entrega" }
+        require(entrega == null || entrega.direccion == direccionDelivery(pedido.mesa)) { "La dirección de la entrega no coincide con el pedido" }
+        return db.pedidoDao().insertarPedidoCompleto(pedido, items, entrega)
     }
 
     fun observarPedidos(): Flow<List<PedidoEntity>> {
@@ -112,13 +106,8 @@ class SazonRepository(private val db: SazonDatabase) {
     }
 
     // entregas de domicilio del modulo reparto (ahora si en Room).
-    fun observarEntregas(): Flow<List<EntregaEntity>> {
+    fun observarEntregas(): Flow<List<EntregaConEstadoPedido>> {
         return db.entregaDao().observarTodas()
-    }
-
-    suspend fun registrarEntrega(entrega: EntregaEntity): Long {
-        require(entrega.direccion.isNotBlank()) { "La direccion de la entrega es obligatoria" }
-        return db.entregaDao().insertar(entrega)
     }
 
     // marca o deshace la entrega (true = Entregada, false = En camino).
