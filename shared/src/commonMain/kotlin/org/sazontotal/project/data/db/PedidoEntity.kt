@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Index
 
 
-// esta fila guarda los datos generales de una comanda; sus platos van en pedido_items.
+// esta fila guarda los datos generales de una comanda. sus platos van en pedido_items.
 @Entity(tableName = "pedidos", indices = [Index(value = ["solicitudId"], unique = true)])
 data class PedidoEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

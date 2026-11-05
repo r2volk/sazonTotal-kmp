@@ -4,7 +4,7 @@ import org.sazontotal.project.data.db.PlatoEntity
 import org.sazontotal.project.data.db.VentaPlato
 import org.sazontotal.project.utils.moneda
 
-// un mensaje del chat: quien lo dice (rol) y su texto. la pantalla lleva la
+// un mensaje del chat: el rol de quien lo dice y su texto. la pantalla lleva la
 // lista de mensajes y la envia completa en cada llamada para dar memoria a la IA.
 data class MensajeChat(
     val rol: Rol,
@@ -14,13 +14,8 @@ data class MensajeChat(
 }
 
 /**
- * capa de logica del chatbot: convierte los datos del restaurante (menu,
- * etiquetas de alergenos, platos mas vendidos) en el prompt de sistema y
- * delega la llamada HTTP al GeminiService.
- *
- * la clase no guarda estado del chat: la pantalla es quien lleva el historial
- * de mensajes y lo pasa completo en cada llamada (asi Gemini recuerda la
- * conversacion dentro de la pantalla).
+ * arma el contexto del restaurante y lo envia a Gemini. la pantalla guarda el
+ * historial y lo pasa completo en cada llamada para que la IA recuerde la conversacion.
  */
 class AsistenteIA(private val servicio: GeminiService) {
 
@@ -39,9 +34,9 @@ class AsistenteIA(private val servicio: GeminiService) {
     }
 
     /**
-     * Las consultas para evitar alergenos se responden usando etiquetas explicitas,
-     * sin delegar esa afirmacion al modelo generativo. Una etiqueta ausente significa
-     * "no confirmado", no "libre de".
+     * las consultas para evitar alergenos se responden usando etiquetas explicitas,
+     * sin delegar esa afirmacion al modelo generativo. una etiqueta ausente significa
+     * no confirmado, no libre de.
      */
     private fun respuestaRestriccionAlergenos(
         consulta: String,
@@ -92,7 +87,7 @@ class AsistenteIA(private val servicio: GeminiService) {
             "$nombresAlergenos: $opciones. Confirma los ingredientes y posibles trazas con cocina."
     }
 
-    // todo lo que la IA sabe del restaurante vive en este texto; sin internet
+    // todo lo que la IA sabe del restaurante vive en este texto. sin internet
     // ni datos la IA no puede inventar precios de verdad.
     private fun construirPromptSistema(
         platos: List<PlatoEntity>,

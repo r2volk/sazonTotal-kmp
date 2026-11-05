@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- La ventana inicial y las barras siguen el tema del dispositivo. -->
+    <!-- la ventana inicial y las barras siguen el tema del dispositivo. -->
     <style name="Theme.SazonTotal" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

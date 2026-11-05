@@ -12,11 +12,11 @@ interface PedidoItemDao {
     @Insert
     suspend fun insertarTodos(items: List<PedidoItemEntity>)
 
-    // los renglones de un pedido (se buscan por su numero)
+    // los renglones de un pedido, buscados por su numero.
     @Query("SELECT * FROM pedido_items WHERE pedidoId = :pedidoId")
     fun observarPorPedido(pedidoId: Long): Flow<List<PedidoItemEntity>>
 
-    // ranking para una ventana de fechas (semana o mes en reportes).
+    // ranking para una ventana de fechas: semana o mes en reportes.
     @Query("""
         SELECT i.nombrePlato, SUM(i.cantidad) AS total
         FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId
@@ -25,7 +25,7 @@ interface PedidoItemDao {
     """)
     fun observarTopPlatosEnRango(desde: Long, hasta: Long): Flow<List<VentaPlato>>
 
-    // ranking del ano calendario local (igual que el grafico anual).
+    // ranking del ano calendario local, igual que el grafico anual.
     @Query("""
         SELECT i.nombrePlato, SUM(i.cantidad) AS total
         FROM pedido_items i INNER JOIN pedidos p ON p.id = i.pedidoId

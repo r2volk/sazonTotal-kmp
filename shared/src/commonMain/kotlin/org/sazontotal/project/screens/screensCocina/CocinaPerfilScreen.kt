@@ -22,14 +22,14 @@ fun CocinaPerfilScreen(
 ) {
     val temaOscuro = LocalTemaOscuro.current
 
-    // iniciales para el avatar ("Joaquin Gutierrez" -> "JG").
+    // iniciales para el avatar. por ejemplo, Joaquin Gutierrez queda como JG.
     val iniciales = empleado?.nombre
         ?.split(" ")
         ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
         ?.take(2)
         ?.joinToString("") ?: "??"
 
-    // pedidos que cocina ya marco listos (trabajo del equipo).
+    // pedidos que cocina ya marco listos. cuenta como trabajo del equipo.
     // el perfil consulta pedidos persistidos para mostrar el contador de cocina.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()

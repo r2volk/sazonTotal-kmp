@@ -55,7 +55,7 @@ fun PedidoConcretadoScreen(
     repositorio: SazonRepository? = null
 ) {
     val temaOscuro = LocalTemaOscuro.current
-    // Evita que un segundo toque de confirmación active el botón en la misma posición.
+    // evita que un segundo toque de confirmacion active el boton en la misma posicion.
     var accionesDisponibles by remember(pedidoId) { mutableStateOf(false) }
     LaunchedEffect(pedidoId) {
         delay(700)
@@ -132,7 +132,7 @@ fun PedidoConcretadoScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // enviado (completado)
+                // el pedido ya se envio
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -155,7 +155,7 @@ fun PedidoConcretadoScreen(
                         .clip(RoundedCornerShape(50))
                         .background(colorDeTema(Colores.VerdePrimario, temaOscuro, UsoColor.FONDO))
                 )
-                // preparando (actual)
+                // el pedido se esta preparando
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -179,7 +179,7 @@ fun PedidoConcretadoScreen(
                         .clip(RoundedCornerShape(50))
                         .background(colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.FONDO))
                 )
-                // listo (pendiente)
+                // el pedido esta listo
                 Box(
                     modifier = Modifier
                         .size(36.dp)

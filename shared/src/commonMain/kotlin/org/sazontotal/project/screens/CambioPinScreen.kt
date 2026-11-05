@@ -245,7 +245,7 @@ fun CambioPinScreen(
             )
         }
 
-        // mensaje de estado (error en rojo, exito en verde)
+        // mensaje de estado: error en rojo y exito en verde.
         cuandoMostrarEstado(exito.value, error.value)
 
         Spacer(modifier = Modifier.weight(1f))

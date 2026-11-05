@@ -149,7 +149,7 @@ fun LoginScreen(
                 }
             }
 
-            // mensaje de error (solo aparece cuando App avisa que fallo).
+            // mensaje de error, solo aparece cuando App avisa que fallo.
             if (mensajeError != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(

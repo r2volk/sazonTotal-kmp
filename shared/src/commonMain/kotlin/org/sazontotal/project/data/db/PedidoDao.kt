@@ -40,7 +40,7 @@ interface PedidoDao {
     @Query("SELECT * FROM pedidos WHERE id = :id LIMIT 1")
     suspend fun buscarPorId(id: Long): PedidoEntity?
 
-    // cuenta los pedidos; el sembrado lo usa para no meter ejemplos si ya hay reales.
+    // cuenta los pedidos. el sembrado lo usa para no meter ejemplos si ya hay reales.
     @Query("SELECT COUNT(*) FROM pedidos")
     suspend fun contar(): Int
 

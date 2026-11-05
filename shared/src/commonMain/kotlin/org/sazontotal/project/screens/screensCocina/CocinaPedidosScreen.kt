@@ -69,7 +69,7 @@ fun CocinaPedidosScreen(
     val listosHoy = pedidos.count { it.estado == "LISTO" && esHoy(it.fecha, ahora) }
     val scope = rememberCoroutineScope()
 
-    // nombre corto e iniciales del que entro ("Joaquin Gutierrez" -> "Joaquin" / "JG").
+    // nombre corto e iniciales de quien entro. por ejemplo, Joaquin Gutierrez queda como Joaquin y JG.
     val primerNombre = empleado?.nombre?.split(" ")?.firstOrNull() ?: "María"
     val iniciales = empleado?.nombre
         ?.split(" ")

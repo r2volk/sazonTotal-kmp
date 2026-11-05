@@ -21,8 +21,8 @@ fun initAndroidContext(context: Context) {
     appContext = context.applicationContext
 }
 
-// contexto de aplicacion para utilidades del proyecto (ej. abrir rutas de
-// Google Maps con un Intent). nulo solo en vista previa.
+// contexto de aplicacion para utilidades del proyecto, por ejemplo abrir rutas de
+// Google Maps con un Intent. es nulo solo en la vista previa.
 fun contextoAndroid(): Context? = appContext
 
 actual fun createDatabaseBuilder(): RoomDatabase.Builder<SazonDatabase> {

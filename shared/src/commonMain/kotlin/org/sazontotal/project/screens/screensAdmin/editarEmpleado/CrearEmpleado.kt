@@ -178,7 +178,7 @@ fun CrearEmpleado(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-// aviso de validacion (solo aparece si falta algo).
+// aviso de validacion, solo aparece si falta algo.
         if (error != null) {
             Text(
                 text = error!!,
@@ -205,7 +205,7 @@ fun CrearEmpleado(
                         else -> null
                     }
                     if (error == null) {
-                        // el id sale del prefijo del rol y el numero de la hora (mas unico que random)
+                        // el id sale del prefijo del rol y del numero de la hora, mas unico que un random.
                         val prefijo = when (rol) {
                             "Administrador" -> "ADM"
                             "Mesero" -> "MSR"

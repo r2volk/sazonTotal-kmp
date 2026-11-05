@@ -250,7 +250,7 @@ private fun PedidoEnAdmin(
     val itemsEnVivo = repositorio?.observarItems(pedido.id)
     val items = itemsEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // LISTO = cocina termino y espera al mesero; PENDIENTE sigue como preparando.
+    // LISTO significa que cocina termino y espera al mesero. PENDIENTE sigue preparandose.
     val insignia = when (pedido.estado) {
         "ENTREGADO" -> EstadoTodosLosPedidos.ENTREGADO
         "LISTO" -> EstadoTodosLosPedidos.LISTO

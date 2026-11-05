@@ -92,19 +92,15 @@ import org.sazontotal.project.utils.decimales
 import org.sazontotal.project.utils.moneda
 import org.sazontotal.project.utils.ahoraMillis
 
-// paleta propia del modulo de reparto (verde lima sobre fondo oscuro).
+// paleta propia del modulo de reparto: verde lima sobre fondo oscuro.
 private val VerdeModulo = Color(0xFF7BE382)
 private val VerdeModuloOscuro = Color(0xFF143D2B)
 private val Ambar = Color(0xFFFFB340)
 private val RojoSuave = Color(0xFFFF6B6B)
 
 /**
- * pedidos a domicilio: el mesero escribe la direccion del cliente, elige una
- * sugerencia y la app muestra el mapa, la distancia y el tiempo del reparto,
- * con botones para abrir la ruta y registrar la entrega.
- *
- * Busca lugares y direcciones reales, conserva el resultado elegido y calcula
- * la ruta antes de preparar los datos de la entrega vinculada.
+ * pantalla de pedidos a domicilio. el mesero busca la direccion, elige una
+ * sugerencia y ve el mapa con la distancia y el tiempo antes de registrar la entrega.
  */
 @Composable
 fun RepartoScreen(
@@ -115,7 +111,7 @@ fun RepartoScreen(
     entregasPendientes: Int = 0
 ) {
     val temaOscuro = LocalTemaOscuro.current
-    // una sola imagen loader con descarga por red para AsyncImage (coil).
+    // una sola imagen loader con descarga por red para AsyncImage, usando coil.
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .components { add(KtorNetworkFetcherFactory()) }
@@ -127,7 +123,7 @@ fun RepartoScreen(
 
     // texto que el mesero esta escribiendo.
     var direccion by remember { mutableStateOf("") }
-    // direccion fijada (null = aun elige); cuando se fija, deja de sugerir.
+    // direccion fijada. mientras sea nula, el mesero aun esta eligiendo y se siguen mostrando sugerencias.
     var direccionElegida by remember { mutableStateOf<String?>(null) }
     var sugerencias by remember { mutableStateOf<List<SugerenciaDireccion>>(emptyList()) }
     var buscandoDirecciones by remember { mutableStateOf(false) }
@@ -138,7 +134,7 @@ fun RepartoScreen(
     var resultado by remember { mutableStateOf<ResultadoDistancia?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // Los proveedores responden en paralelo; al cambiar el texto se cancela la búsqueda anterior.
+    // los proveedores responden en paralelo. al cambiar el texto se cancela la busqueda anterior.
     LaunchedEffect(direccion, direccionElegida, intentoBusqueda) {
         sugerencias = emptyList()
         busquedaTerminada = false
@@ -158,7 +154,7 @@ fun RepartoScreen(
         }
     }
 
-    // fija una direccion y calcula su ruta (coordenada + distancia/tiempo).
+    // fija una direccion y calcula su ruta, la distancia y el tiempo.
     fun elegir(lugar: SugerenciaDireccion) {
         val limpia = lugar.textoCompleto.trim()
         if (limpia.isEmpty() || cargandoRuta) return
@@ -183,7 +179,7 @@ fun RepartoScreen(
                     try {
                         maps.distanciaPorCarretera(punto)
                     } catch (e: CancellationException) { throw e } catch (_: Exception) {
-                        // Estimación de último recurso si Google y OSRM no responden.
+                        // estimacion de ultimo recurso si Google y OSRM no responden.
                         val km = distanciaEnKilometros(SEDE_COORDENADA, punto)
                         val minutos = (km / 22.0 * 60).toInt().coerceAtLeast(2)
                         ResultadoDistancia(
@@ -197,7 +193,7 @@ fun RepartoScreen(
                 resultado = dista
             } catch (e: CancellationException) { throw e
             } catch (e: ErrorMaps) {
-                // el servicio ya traduce el fallo (key invalida, cuota, sin resultados).
+                // el servicio ya traduce el fallo: key invalida, cuota o sin resultados.
                 error = e.message
                 direccionElegida = null
             } catch (e: Exception) {
@@ -209,11 +205,11 @@ fun RepartoScreen(
         }
     }
 
-    // La lupa no elige por el mesero; una direccion fijada se puede editar.
+    // la lupa no elige por el mesero. una direccion fijada se puede editar.
     fun buscar() {
         if (cargandoRuta) return
         if (direccionElegida != null) {
-            // la lupa pasa a ser "editar": libera la direccion elegida.
+            // la lupa pasa a ser editar y libera la direccion elegida.
             direccionElegida = null
             coordenada = null
             resultado = null
@@ -253,7 +249,7 @@ fun RepartoScreen(
             entregasPendientes = entregasPendientes
         )
 
-        // Buscador: editable hasta fijar la direccion; al tocarlo de nuevo vuelve a editar.
+        // buscador: editable hasta fijar la direccion. al tocarlo de nuevo vuelve a editar.
         BuscadorReparto(
             texto = direccion,
             editable = direccionElegida == null,
@@ -298,7 +294,7 @@ fun RepartoScreen(
                 color = colorDeTema(Color(0xFF8E8E93), temaOscuro), fontSize = 14.sp)
         }
 
-        // aviso de error (geocoding fallo, texto corto, etc.).
+        // muestra el error cuando falla el geocoding o el texto es demasiado corto.
         if (error != null) {
             Row(
                 modifier = Modifier
@@ -330,7 +326,7 @@ fun RepartoScreen(
             direccion = direccionElegida
         )
 
-        // Distancia y tiempo (solo cuando ya se calculo la ruta).
+        // distancia y tiempo, solo cuando ya se calculo la ruta.
         if (resultado != null) {
             val distanciaKm = resultado!!.distanciaKm
             val tramos = kilometrosTarifados(distanciaKm)
@@ -379,7 +375,7 @@ fun RepartoScreen(
             }
         }
 
-        // El mesero consulta costo/tiempo aquí y continúa al pedido; el reparto
+        // el mesero consulta costo y tiempo aqui y continua al pedido. el reparto
         // se coordina fuera de esta app.
         Box(
             modifier = Modifier
@@ -392,7 +388,7 @@ fun RepartoScreen(
                     val ruta = resultado ?: return@clickable
                     val costoDelivery = costoDelivery(ruta.distanciaKm)
                     val entrega = crearEntregaPendiente() ?: return@clickable
-                    // El historial se actualiza después, cuando la base confirme el pedido.
+                    // el historial se actualiza despues, cuando la base confirme el pedido.
                     onCrearPedido(direccionPedido, ruta.distanciaKm, costoDelivery, entrega)
                 },
             contentAlignment = Alignment.Center
@@ -551,9 +547,8 @@ private fun BannerDemo() {
 }
 
 /**
- * el cuadro grande del centro: con API key muestra el mapa estatico de Google
- * (imagen descargada); en demo dibuja un mini-mapa ilustrativo con la ruta
- * punteada de la sede al cliente (sin red, puro Canvas).
+ * mapa del reparto. con API key muestra el mapa estatico de Google. en demo
+ * dibuja un mini-mapa con la ruta punteada de la sede al cliente.
  */
 @Composable
 private fun MapaReparto(
@@ -629,7 +624,7 @@ private fun MapaReparto(
 }
 
 /**
- * mini-mapa 100% dibujado (sin red ni API): calles de fondo, ruta punteada de
+ * mini-mapa dibujado a mano, sin red ni API: calles de fondo, ruta punteada de
  * la sede al cliente entre dos pines y etiquetas flotantes.
  */
 @Composable
@@ -644,7 +639,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
             val ancho = size.width
             val alto = size.height
 
-            // calles de fondo (3 horizontales, 3 verticales).
+            // calles de fondo: tres horizontales y tres verticales.
             listOf(0.18f, 0.52f, 0.84f).forEach { fraccion ->
                 drawLine(
                     color = colorDeTema(Color(0xFF20262A), temaOscuro, UsoColor.TEXTO),
@@ -662,7 +657,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
                 )
             }
 
-            // puntos de la ruta (norte arriba: y contrario a la latitud).
+            // puntos de la ruta. el norte va arriba, por eso la y crece al contrario que la latitud.
             val inicio = puntoEnMapa(sede, sede, ancho, alto)
             val fin = puntoEnMapa(cliente, sede, ancho, alto)
 
@@ -684,7 +679,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
                 )
             )
 
-            // pin de la sede (verde) con halo.
+            // pin verde de la sede con halo.
             drawCircle(
                 color = colorDeTema(Color(0xFF30D158).copy(alpha = 0.25f), temaOscuro, UsoColor.TEXTO),
                 radius = 30f,
@@ -692,7 +687,7 @@ private fun MapaDemoRuta(sede: Coordenada, cliente: Coordenada) {
             )
             drawCircle(color = colorDeTema(Color(0xFF30D158), temaOscuro, UsoColor.TEXTO), radius = 14f, center = inicio)
 
-            // pin del cliente (rojo) con halo.
+            // pin rojo del cliente con halo.
             drawCircle(
                 color = colorDeTema(Color(0xFFFF453A).copy(alpha = 0.25f), temaOscuro, UsoColor.TEXTO),
                 radius = 30f,
@@ -749,7 +744,7 @@ private fun EtiquetaMapa(
 }
 
 // convierte una coordenada en un punto de pantalla relativo a la sede
-// (escala: 0.02 grados = media pantalla aprox).
+// la escala es aproximada: 0.02 grados equivalen a media pantalla.
 private fun puntoEnMapa(coordenada: Coordenada, sede: Coordenada, ancho: Float, alto: Float): Offset {
     val dLat = coordenada.latitud - sede.latitud
     val dLng = coordenada.longitud - sede.longitud

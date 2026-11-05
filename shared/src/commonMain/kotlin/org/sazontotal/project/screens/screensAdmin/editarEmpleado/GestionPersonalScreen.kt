@@ -57,7 +57,7 @@ fun GestionPersonalScreen(
     var nombreBuscado by remember { mutableStateOf("") }
     var mostrarFormulario by remember { mutableStateOf(false) }
     var filtroRol by remember { mutableStateOf("Todos") }
-    // aviso cuando se bloquea un cambio (ej: no se puede apagar al ultimo admin).
+    // aviso cuando se bloquea un cambio, por ejemplo al intentar apagar al ultimo admin.
     var aviso by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -164,7 +164,7 @@ fun GestionPersonalScreen(
                 )
             }
 
-            // aviso de cambio bloqueado (solo aparece cuando pasa).
+            // aviso de cambio bloqueado, solo aparece cuando pasa.
             if (aviso != null) {
                 Text(
                     text = aviso!!,
@@ -197,7 +197,7 @@ fun GestionPersonalScreen(
                             scope.launch {
                                 // el repositorio protege al ultimo admin antes de actualizar la fila.
                                 val sePudo = repositorio?.cambiarActivoEmpleadoSeguro(empleado.id, prendido)
-                                // false = bloqueado (ultimo admin); el switch vuelve solo porque el estado sale de la base.
+                                // false significa que se bloqueo por ser el ultimo admin. el switch vuelve solo porque el estado sale de la base.
                                 aviso = if (sePudo == false) {
                                     "No se puede desactivar: debe quedar al menos un admin activo"
                                 } else {

@@ -111,7 +111,7 @@ fun PedidoCard(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // el card pasa por PENDIENTE (espera), LISTO (boton para entregar) y ENTREGADO (fin).
+        // el card pasa por PENDIENTE, LISTO y ENTREGADO. en LISTO aparece el boton para entregar.
         when (estado) {
             // PENDIENTE es estado, no boton: se muestra como etiqueta centrada para no parecer accionable.
             EstadoPedido.PENDIENTE -> {

@@ -15,7 +15,7 @@ import org.sazontotal.project.data.transicionPedidoPermitida
 import org.sazontotal.project.data.esDelivery
 import org.sazontotal.project.data.direccionDelivery
 
-// las pantallas llaman al repositorio; aqui se validan reglas y se coordinan los dao.
+// las pantallas llaman al repositorio. aqui se validan reglas y se coordinan los dao.
 class SazonRepository(private val db: SazonDatabase) {
 
     suspend fun login(id: String, pin: String): EmpleadoEntity? {
@@ -49,7 +49,7 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().guardar(plato)
     }
 
-    // borra un plato por su id; los pedidos viejos no se afectan porque guardan su propia copia.
+    // borra un plato por su id. los pedidos viejos no se afectan porque guardan su propia copia.
     suspend fun borrarPlato(id: Long) {
         db.platoDao().borrarPorId(id)
     }
@@ -58,14 +58,14 @@ class SazonRepository(private val db: SazonDatabase) {
         db.platoDao().cambiarActivo(id,activo)
     }
 
-    // no deja apagar al ultimo admin activo (la app quedaria sin acceso al panel); devuelve false si se bloqueo.
+    // no deja apagar al ultimo admin activo porque la app se quedaria sin panel. devuelve false si se bloqueo.
     suspend fun cambiarActivoEmpleadoSeguro(id: String, activo: Boolean): Boolean {
         val dao = db.empleadoDao()
         if (!activo) {
             val empleado = dao.buscarPorId(id)
             val esAdmin = empleado != null &&
                 (empleado.rol == "Administrador" || empleado.id.startsWith("ADM-"))
-            // es admin y es el unico activo -> no se deja apagar.
+            // si es admin y es el unico activo, no se deja apagar.
             if (esAdmin && dao.contarAdminsActivos() <= 1) {
                 return false
             }
@@ -74,12 +74,12 @@ class SazonRepository(private val db: SazonDatabase) {
         return true
     }
 
-    // cambia el PIN solo si el actual es correcto; devuelve si se logro.
+    // cambia el PIN solo si el actual es correcto. devuelve si se logro.
     suspend fun cambiarPin(id: String, pinActual: String, pinNuevo: String): Boolean {
         return db.empleadoDao().actualizarPin(id.trim(), pinActual, pinNuevo) > 0
     }
 
-    // trae un pedido por su numero (no una lista)
+    // trae un pedido por su numero, no una lista.
     suspend fun buscarPedidoPorId(id: Long): PedidoEntity? {
         return db.pedidoDao().buscarPorId(id)
     }
@@ -105,12 +105,12 @@ class SazonRepository(private val db: SazonDatabase) {
         return db.pedidoItemDao().observarPorPedido(pedidoId)
     }
 
-    // entregas de domicilio del modulo reparto (ahora si en Room).
+    // entregas de domicilio del modulo reparto, ahora guardadas en Room.
     fun observarEntregas(): Flow<List<EntregaConEstadoPedido>> {
         return db.entregaDao().observarTodas()
     }
 
-    // marca o deshace la entrega (true = Entregada, false = En camino).
+    // marca la entrega como entregada o la devuelve a en camino.
     suspend fun cambiarEntregada(id: Long, entregada: Boolean) {
         db.entregaDao().cambiarEntregada(id, entregada)
     }
@@ -162,7 +162,7 @@ class SazonRepository(private val db: SazonDatabase) {
         sembrarEntregasDeEjemplo()
     }
 
-    // pedidos de ejemplo si la base esta vacia; al cargar uno real ya no se siembran y se mezclan.
+    // pedidos de ejemplo si la base esta vacia. al cargar uno real ya no se siembran y se mezclan.
     private suspend fun sembrarPedidosDeEjemplo() {
         val pedidoDao = db.pedidoDao()
         if (pedidoDao.contar() > 0) return
@@ -217,7 +217,7 @@ class SazonRepository(private val db: SazonDatabase) {
                 linea(pisco, 1, "bien frio")
             )
         )
-        // este queda PENDIENTE: la cocina tiene algo real para marcar "Listo".
+        // este queda PENDIENTE: la cocina tiene algo real para marcar como listo.
         crearPedidoDeEjemplo(
             estado = "PENDIENTE",
             mesa = "1",
@@ -240,7 +240,7 @@ class SazonRepository(private val db: SazonDatabase) {
             precioUnit = plato.precio
         )
 
-    // el total del ejemplo suma directo los precios de sus renglones (ya incluyen IGV).
+    // el total del ejemplo suma directo los precios de sus renglones, que ya incluyen IGV.
     private suspend fun crearPedidoDeEjemplo(
         estado: String,
         mesa: String,
@@ -263,8 +263,8 @@ class SazonRepository(private val db: SazonDatabase) {
         )
     }
 
-    // entregas de domicilio de ejemplo si la tabla esta vacia; el mesero ya puede
-    // practicar el historial (filtrar / marcar / deshacer) sin registrar nada antes.
+    // entregas de domicilio de ejemplo si la tabla esta vacia. el mesero ya puede
+    // practicar el historial, filtrar, marcar y deshacer, sin registrar nada antes.
     private suspend fun sembrarEntregasDeEjemplo() {
         val entregaDao = db.entregaDao()
         if (entregaDao.contar() > 0) return
@@ -293,7 +293,7 @@ class SazonRepository(private val db: SazonDatabase) {
                 meseroNombre = "Ricardo Sanchez"
             )
         )
-        // estas dos quedan EN CAMINO: hay algo real para marcar "Entregada" o deshacer.
+        // estas dos quedan en camino: hay algo real para marcar como entregada o deshacer.
         entregaDao.insertar(
             EntregaEntity(
                 direccion = "Parque Kennedy, Av. José Larco 900, Miraflores",

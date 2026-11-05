@@ -70,14 +70,14 @@ fun MeseroPedidosScreen(
 ){
     val temaOscuro = LocalTemaOscuro.current
 
-    // room entrega pedidos actualizados; despues se filtran por el mesero conectado.
+    // room entrega pedidos actualizados. despues se filtran por el mesero conectado.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
-    // nombre corto del que entro ("Ricardo Sanchez" -> "Ricardo").
+    // nombre corto de quien entro. por ejemplo, Ricardo Sanchez queda como Ricardo.
     val primerNombre = empleado?.nombre?.split(" ")?.firstOrNull() ?: "Ricardo"
 
-    // iniciales para el avatar ("Ricardo Sanchez" -> "RS").
+    // iniciales para el avatar. por ejemplo, Ricardo Sanchez queda como RS.
     val iniciales = empleado?.nombre
         ?.split(" ")
         ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
@@ -86,7 +86,7 @@ fun MeseroPedidosScreen(
 
     var filtroEstado by remember { mutableStateOf("Todos") }
 
-    // "Mis pedidos": solo los de este mesero; sin sesion (preview) se muestran todos.
+    // en Mis pedidos solo salen los de este mesero. sin sesion, en la preview, se muestran todos.
     val idMesero = empleado?.id
     val misPedidos = if (idMesero == null) pedidos else pedidos.filter { it.meseroID == idMesero }
     val ahora = ahoraMillis()
@@ -273,7 +273,7 @@ fun MeseroPedidosScreen(
                     }
                 }
 
-                // tarjeta de acceso al modulo de reparto (misma fila, tema verde).
+                // tarjeta de acceso al modulo de reparto, en la misma fila y con tema verde.
                 Box(
                     modifier = Modifier
                         .weight(1f)

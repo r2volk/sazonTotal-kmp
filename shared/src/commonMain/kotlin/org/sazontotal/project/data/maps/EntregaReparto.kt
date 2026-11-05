@@ -3,10 +3,7 @@ package org.sazontotal.project.data.maps
 import org.sazontotal.project.data.db.EntregaEntity
 
 /**
- * una entrega de domicilio registrada en la pantalla de reparto.
- *
- * MODELO DE PANTALLA: la fila real vive en Room como EntregaEntity; App.kt
- * convierte entre ambos con los maps de aqui abajo y la UI sigue igual.
+ * entrega de domicilio para las pantallas. la fila real vive en Room como EntregaEntity.
  */
 data class EntregaReparto(
     val id: Long,
@@ -38,7 +35,7 @@ fun EntregaEntity.aEntregaReparto(): EntregaReparto = EntregaReparto(
     pedidoId = pedidoId
 )
 
-// pasa el modelo de pantalla a fila de Room; el id va en 0 para que room genere el suyo.
+// pasa el modelo de pantalla a fila de Room. el id va en 0 para que room genere el suyo.
 fun EntregaReparto.aEntregaEntity(): EntregaEntity = EntregaEntity(
     id = 0L,
     direccion = direccion,

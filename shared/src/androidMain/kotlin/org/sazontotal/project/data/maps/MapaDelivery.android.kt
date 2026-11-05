@@ -57,7 +57,7 @@ actual fun MapaDelivery(modifier: Modifier, destino: Coordenada?, direccion: Str
     }
 }
 
-// Estilo local: el SDK conserva rutas, marcadores, etiquetas y controles existentes.
+// estilo local: el SDK conserva rutas, marcadores, etiquetas y controles existentes.
 private const val ESTILO_MAPA_OSCURO = """
 [
   {"elementType":"geometry","stylers":[{"color":"#18181c"}]},

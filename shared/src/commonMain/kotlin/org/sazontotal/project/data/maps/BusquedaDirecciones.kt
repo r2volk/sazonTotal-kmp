@@ -13,7 +13,7 @@ enum class FuenteDireccion(val etiqueta: String) {
     GOOGLE("Google Maps"), OSM("OpenStreetMap"), DISPOSITIVO("Geocodificador del dispositivo")
 }
 
-/** La selección conserva la identidad y el punto que devolvió el proveedor. */
+/** la seleccion conserva la identidad y el punto que devolvio el proveedor. */
 data class SugerenciaDireccion(
     val nombre: String,
     val direccion: String,
@@ -103,7 +103,7 @@ fun ordenarSugerencias(consulta: String, lugares: List<SugerenciaDireccion>): Li
     return unicas.take(7)
 }
 
-/** Publica cada respuesta sin esperar a los proveedores lentos; la cancelación se propaga. */
+/** publica cada respuesta sin esperar a los proveedores lentos. la cancelacion se propaga. */
 internal suspend fun buscarEnParalelo(
     consulta: String,
     proveedores: List<suspend () -> List<SugerenciaDireccion>>,

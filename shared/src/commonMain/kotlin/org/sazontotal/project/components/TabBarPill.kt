@@ -63,7 +63,7 @@ fun TabBarPill(
             items.getOrNull(selectedIndex)?.content()
         }
 
-        // bottom navigation moderna (pill)
+        // barra de navegacion inferior tipo pill
         Box(
             modifier = Modifier
                 .fillMaxWidth()

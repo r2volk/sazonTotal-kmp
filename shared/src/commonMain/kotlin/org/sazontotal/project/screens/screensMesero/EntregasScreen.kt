@@ -52,7 +52,7 @@ import org.sazontotal.project.data.maps.ESTADO_CANCELADA
 import org.sazontotal.project.data.maps.EntregaReparto
 import org.sazontotal.project.utils.ahoraMillis
 
-// paleta propia del modulo de reparto (igual que RepartoScreen).
+// paleta propia del modulo de reparto, igual que RepartoScreen.
 private val VerdeModulo = Color(0xFF7BE382)
 private val VerdeModuloOscuro = Color(0xFF143D2B)
 private val Ambar = Color(0xFFFFB340)
@@ -63,11 +63,8 @@ private const val FILTRO_EN_CAMINO = ESTADO_EN_CAMINO
 private const val FILTRO_ENTREGADAS = ESTADO_ENTREGADA
 
 /**
- * entregas de domicilio del dia: lista filtrable (Todas / En camino /
- * Entregadas) con direccion, distancia/tiempo, quien la registro y su estado.
- *
- * la lista viene de Room (App.kt la observa con un Flow). acciones por
- * tarjeta: marcar entregada, deshacer (volver a En camino) y eliminar.
+ * lista de entregas del dia con filtros por estado. los datos vienen de Room.
+ * desde cada tarjeta se puede marcar entregada, deshacer o eliminar.
  */
 @Composable
 fun EntregasScreen(
@@ -100,7 +97,7 @@ fun EntregasScreen(
             onBack = backEntregas
         )
 
-        // filtros de la lista (solo si hay entregas que filtrar).
+        // filtros de la lista, solo cuando hay entregas que filtrar.
         if (entregas.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -190,7 +187,7 @@ private fun resumenDe(entregas: List<EntregaReparto>): String {
     else "${entregas.size} entregas · $enCamino en camino"
 }
 
-// tiempo relativo simple para la tarjeta ("hace 15 min", "hace 1 h").
+// tiempo relativo simple para la tarjeta, por ejemplo hace 15 min o hace 1 h.
 private fun textoHaceCuanto(fecha: Long): String {
     val minutos = ((ahoraMillis() - fecha) / 60000L).coerceAtLeast(0)
     return when {
@@ -349,7 +346,7 @@ private fun EntregaCard(
                 )
             }
             Spacer(modifier = Modifier.size(8.dp))
-            // chip de estado (En camino / Entregada).
+            // chip de estado: En camino o Entregada.
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))

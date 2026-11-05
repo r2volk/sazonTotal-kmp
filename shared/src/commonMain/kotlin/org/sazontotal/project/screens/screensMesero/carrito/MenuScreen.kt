@@ -68,7 +68,7 @@ fun MenuScreen(
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroCategoria by remember { mutableStateOf("Todos") }
 
-    // el menu consulta solo platos activos; cantidades y mesa se comparten en memoria.
+    // el menu consulta solo platos activos. cantidades y mesa se comparten en memoria.
     val platosEnVivo = repositorio?.observarPlatos()
     val platos = platosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
 
@@ -196,7 +196,7 @@ fun MenuScreen(
             )
         }
 
-        // grid con scroll (6 cards para probar, se ven ~4 por vez)
+        // grilla con scroll. hay 6 cards de prueba y se ven unas 4 a la vez.
         Column(
             modifier = Modifier
                 .weight(1f)

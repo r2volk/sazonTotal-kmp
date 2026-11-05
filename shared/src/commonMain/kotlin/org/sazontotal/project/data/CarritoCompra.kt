@@ -14,7 +14,7 @@ class CarritoCompra {
         private set
 
     private fun nuevaSolicitudId(): String = "${Random.nextLong()}-${Random.nextLong()}"
-    // id del plato -> cuantos pidio. si no esta anotado, es 0.
+    // cantidad pedida de cada plato. si no aparece, es 0.
     val cantidades: SnapshotStateMap<Long, Int> = mutableStateMapOf()
 
     // copia del plato al agregarlo: conserva nombre, categoria y precio aunque lo borren del menu.
@@ -27,7 +27,7 @@ class CarritoCompra {
     }
 
     fun sumar(plato: PlatoEntity) {
-        // no se reemplaza la copia mientras el plato siga en el carrito, asi el precio no cambia a mitad de la comanda.
+        // mientras el plato siga en el carrito no se reemplaza su copia, asi el precio no cambia.
         if (platosGuardados[plato.id] == null) {
             platosGuardados[plato.id] = plato
         }

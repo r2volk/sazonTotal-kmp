@@ -45,7 +45,7 @@ kotlin {
             implementation(libs.maps.compose)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
-            // Solo para el boton atras del sistema (BackHandler) en Navegacion.android.kt.
+            // solo para el boton atras del sistema (BackHandler) en Navegacion.android.kt.
             implementation(libs.androidx.activity.compose)
             // motor HTTP de ktor para Android (usa OkHttp por debajo).
             implementation(libs.ktor.client.okhttp)

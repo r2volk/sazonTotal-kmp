@@ -2,10 +2,10 @@ package org.sazontotal.project.data.maps
 
 import kotlin.math.*
 
-/** Resuelve una dirección con el geocodificador disponible en la plataforma. */
+/** resuelve una direccion con el geocodificador disponible en la plataforma. */
 expect suspend fun geocodificarDireccionLocal(direccion: String): Coordenada?
 
-/** Busca direcciones parecidas para usarlas como sugerencias cuando Places no responde. */
+/** busca direcciones parecidas para usarlas como sugerencias cuando Places no responde. */
 expect suspend fun sugerirDireccionesLocales(textoParcial: String): List<SugerenciaDireccion>
 
 fun distanciaEnKilometros(a: Coordenada, b: Coordenada): Double {

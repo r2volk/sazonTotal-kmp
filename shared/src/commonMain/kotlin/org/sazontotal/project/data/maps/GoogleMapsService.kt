@@ -34,10 +34,10 @@ import kotlin.math.sqrt
 // error con mensaje amable cuando falla algun servicio de Google Maps.
 class ErrorMaps(mensaje: String) : Exception(mensaje)
 
-// verde de la marca para el pin de la sede en el mapa estatico (0xRRGGBB).
+// verde de la marca para el pin de la sede en el mapa estatico, en formato 0xRRGGBB.
 private const val VERDE_PIN = "0x30D158"
 
-// un punto geografico (latitud y longitud, coordenadas WGS84).
+// un punto geografico con latitud y longitud en coordenadas WGS84.
 data class Coordenada(val latitud: Double, val longitud: Double)
 
 // resultado del calculo de distancia: texto listo para mostrar.
@@ -48,17 +48,8 @@ data class ResultadoDistancia(
 )
 
 /**
- * cliente de los servicios de Google Maps Platform, mismo patron del
- * GeminiService: HTTP puro con Ktor, sin SDKs nativos.
- *
- * servicios usados:
- *  - Geocoding API: direccion escrita -> coordenadas
- *  - Places Autocomplete (New): sugerencias mientras se escribe
- *  - Distance Matrix API: km y minutos entre la sede y el cliente
- *  - Maps Static API: URL de la imagen del mapa con los dos pines
- *
- * Las búsquedas siempre consultan proveedores reales. Si Google no está disponible,
- * Photon y el geocodificador de plataforma publican sus resultados en paralelo.
+ * cliente de Google Maps con Ktor. usa Geocoding, Places, Distance Matrix y Maps Static.
+ * si Google no responde, busca con Photon y el geocodificador de la plataforma.
  */
 class GoogleMapsService(
     private val apiKey: String,
@@ -66,14 +57,14 @@ class GoogleMapsService(
 ) {
     private val cliente = HttpClient {
         expectSuccess = false // el estado HTTP se revisa a mano tras cada respuesta
-        // geocoding y distance matrix deben responder rapido; con 20 segundos basta.
+        // geocoding y distance matrix deben responder rapido. con 20 segundos basta.
         install(HttpTimeout) {
             connectTimeoutMillis = 15_000
             requestTimeoutMillis = 20_000
         }
     }
 
-    // Sin clave, la búsqueda continúa con los proveedores públicos y de plataforma.
+    // sin clave, la busqueda continua con los proveedores publicos y de plataforma.
     private val modoDemo: Boolean
         get() = apiKey.isBlank() || apiKey.startsWith("PEGA_")
 
@@ -88,7 +79,7 @@ class GoogleMapsService(
         { sugerirDireccionesLocales(consulta) }
     ), onResultados)
 
-    // Autocomplete está pensado para prefijos, nombres de lugares y direcciones.
+    // la busqueda por autocompletado esta pensada para prefijos, nombres de lugares y direcciones.
     suspend fun autocompletar(textoParcial: String): List<SugerenciaDireccion> {
         if (modoDemo || placesNoDisponible) return emptyList()
         val cuerpo = buildJsonObject {
@@ -119,7 +110,7 @@ class GoogleMapsService(
         return leerSugerenciasGoogle(json)
     }
 
-    // Fuente real de respaldo: conserva nombre, dirección y coordenadas OSM.
+    // fuente real de respaldo: conserva nombre, direccion y coordenadas OSM.
     suspend fun autocompletarPhoton(textoParcial: String): List<SugerenciaDireccion> {
         if (textoParcial.trim().length < 3) return emptyList()
         val respuesta = cliente.get("https://photon.komoot.io/api/") {
@@ -148,12 +139,12 @@ class GoogleMapsService(
                     if (lat != null && lon != null && coordenadaValida(lat, lon)) return Coordenada(lat, lon)
                 }
             } catch (e: CancellationException) { throw e }
-            catch (_: Exception) { /* Resolver el mismo lugar por dirección, sin escoger otro resultado. */ }
+            catch (_: Exception) { /* resolver el mismo lugar por direccion, sin escoger otro resultado. */ }
         }
         return geocodificar(lugar.textoCompleto)
     }
 
-    // convierte la direccion elegida en coordenadas (Geocoding API).
+    // convierte la direccion elegida en coordenadas usando Geocoding API.
     suspend fun geocodificar(direccion: String): Coordenada {
         if (modoDemo) throw ErrorMaps("Selecciona un resultado que incluya una ubicación.")
 
@@ -161,7 +152,7 @@ class GoogleMapsService(
             parameter("address", consultaDireccion(direccion))
             parameter("components", "country:PE")
             parameter("region", "pe")
-            parameter("language", "es")  // la direccion formateada viene en español
+            parameter("language", "es")  // la direccion formateada viene en espanol
             parameter("key", apiKey)
         }
         val textoRespuesta = respuesta.bodyAsText()
@@ -170,7 +161,7 @@ class GoogleMapsService(
             throw ErrorMaps(mensajeErrorDe(textoRespuesta, respuesta.status.value))
         }
 
-        // la respuesta trae {"status":"OK","results":[{"geometry":{"location":{"lat":..,"lng":..}}}]}
+        // la respuesta trae el estado y la ubicacion dentro de results.
         val raiz = leerJson(textoRespuesta)
         val estado = raiz?.get("status")?.jsonPrimitive?.contentOrNull ?: ""
         if (estado == "ZERO_RESULTS") {
@@ -191,7 +182,7 @@ class GoogleMapsService(
         return Coordenada(latitud = latitud, longitud = longitud)
     }
 
-    // distancia y tiempo reales desde la sede hasta el cliente (Distance Matrix API).
+    // distancia y tiempo reales desde la sede hasta el cliente usando Distance Matrix API.
     suspend fun distancia(hasta: Coordenada): ResultadoDistancia {
         if (modoDemo) {
             val km = haversineKm(sede, hasta)
@@ -218,7 +209,7 @@ class GoogleMapsService(
             throw ErrorMaps(mensajeErrorDe(textoRespuesta, respuesta.status.value))
         }
 
-        // la respuesta trae {"status":"OK","rows":[{"elements":[{"status","distance","duration"}]}]}
+        // la respuesta trae filas con la distancia y la duracion de cada tramo.
         val raiz = leerJson(textoRespuesta)
             ?: throw ErrorMaps("Google Maps no respondió bien. Intenta la ruta otra vez.")
         val estadoGeneral = raiz.get("status")?.jsonPrimitive?.contentOrNull ?: ""
@@ -234,7 +225,7 @@ class GoogleMapsService(
             throw ErrorMaps("La ruta hasta esa dirección no se pudo calcular. Prueba con otra.")
         }
 
-        // se prefieren los valores crudos (metros/segundos) para formatear igual que el demo;
+        // se prefieren los valores crudos en metros y segundos para formatear igual que el demo.
         // el texto de Google queda de respaldo por si el valor crudo no viene.
         val metros = punto.getJsonObjectOrNull("distance")
             ?.get("value")?.jsonPrimitive?.contentOrNull?.toDoubleOrNull()
@@ -267,7 +258,7 @@ class GoogleMapsService(
         )
     }
 
-    /** Obtiene distancia y duración por calles desde OSRM como respaldo sin clave. */
+    /** obtiene distancia y duracion por calles desde OSRM como respaldo sin clave. */
     suspend fun distanciaPorCarretera(hasta: Coordenada): ResultadoDistancia {
         val respuesta = cliente.get(
             "https://router.project-osrm.org/route/v1/driving/" +
@@ -304,8 +295,8 @@ class GoogleMapsService(
     }
 
     // URL de la imagen del mapa estatico: un pin verde en la sede y uno rojo
-    // en el cliente, unidos por una linea punteada (Maps Static API).
-    // devuelve "" si no hay key: la pantalla muestra el mini-mapa dibujado a mano.
+    // en el cliente, unidos por una linea punteada con Maps Static API.
+    // devuelve una cadena vacia si no hay key. la pantalla muestra el mini-mapa dibujado a mano.
     fun urlMapaEstatico(cliente: Coordenada, zoom: Int = 13): String {
         if (modoDemo) return ""
 
@@ -322,14 +313,14 @@ class GoogleMapsService(
     private fun pinDe(coordenada: Coordenada, colorHex: String, letra: String): String =
         "color:$colorHex|label:$letra|${coordenada.latitud},${coordenada.longitud}"
 
-    // parseo defensivo: devuelve nulo (no excepcion) si el JSON viene incompleto.
+    // parseo defensivo: devuelve nulo en vez de lanzar una excepcion si el JSON viene incompleto.
     private fun leerJson(texto: String): JsonObject? = try {
         Json.parseToJsonElement(texto).jsonObject
     } catch (e: Exception) {
         null
     }
 
-    // convierte el JSON de error de Google ("error": {"message"}) en texto de español.
+    // convierte el mensaje de error de Google en texto de espanol.
     private fun mensajeErrorDe(json: String, codigo: Int): String = try {
         val detalle = Json.parseToJsonElement(json).jsonObject
             .getJsonObject("error")?.get("message")?.jsonPrimitive?.contentOrNull
@@ -344,7 +335,7 @@ class GoogleMapsService(
         "Error al llamar a Google Maps (código $codigo)."
     }
 
-    // los servicios antiguos de Maps no usan HTTP 4xx: el error llega en el campo "status".
+    // los servicios antiguos de Maps no usan HTTP 4xx. el error llega en el campo status.
     private fun mensajeEstadoGeocoding(estado: String): String {
         return when {
             estado.isBlank() -> "Google Maps no respondió bien. Intenta de nuevo."
@@ -369,7 +360,7 @@ class GoogleMapsService(
 
 }
 
-// distancia en km entre dos coordenadas (formula de haversine).
+// distancia en km entre dos coordenadas con la formula de haversine.
 // funciones de kotlin.math: iguales en Android, iOS y demas plataformas.
 private fun haversineKm(a: Coordenada, b: Coordenada): Double {
     val tierra = 6371.0

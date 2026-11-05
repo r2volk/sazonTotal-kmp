@@ -54,7 +54,7 @@ fun EditarPlato(
     onEliminar: (Long) -> Unit = {}
 ) {
     val temaOscuro = LocalTemaOscuro.current
-    // con plato el formulario arranca lleno (editar); con nulo, vacio (crear); al cambiar se reinicia.
+    // con plato el formulario arranca lleno para editar. con nulo arranca vacio para crear. al cambiar se reinicia.
     var nombre by remember(plato) { mutableStateOf(plato?.nombre ?: "") }
     var categoria by remember(plato) { mutableStateOf(plato?.categoria ?: "Platos") }
     var precio by remember(plato) { mutableStateOf(plato?.precio?.toString() ?: "") }
@@ -63,7 +63,7 @@ fun EditarPlato(
     var mostrarCategorias by remember { mutableStateOf(false) }
     // aviso cuando falta algo o el precio no es un numero valido.
     var error by remember { mutableStateOf<String?>(null) }
-    // etiquetas elegidas (pueden ser varias). al editar se marcan las guardadas.
+    // etiquetas elegidas. pueden ser varias y al editar se marcan las guardadas.
     var etiquetasElegidas by remember(plato) {
         mutableStateOf(
             plato?.etiquetas
@@ -250,7 +250,7 @@ fun EditarPlato(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // aviso de validacion (solo aparece si falta algo o el precio no cuadra).
+        // aviso de validacion, solo aparece si falta algo o el precio no cuadra.
         if (error != null) {
             Text(
                 text = error!!,
@@ -266,7 +266,7 @@ fun EditarPlato(
                 .padding(bottom = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // eliminar solo existe al editar (al crear no hay nada que borrar).
+            // eliminar solo existe al editar, porque al crear no hay nada que borrar.
             if (plato != null) {
                 Box(
                     modifier = Modifier
@@ -306,7 +306,7 @@ fun EditarPlato(
                         if (error == null) {
                             onGuardar(
                                 PlatoEntity(
-                                    // con el mismo id actualiza (REPLACE); con 0 crea uno nuevo.
+                                    // con el mismo id actualiza la fila con REPLACE. con 0 crea uno nuevo.
                                     id = plato?.id ?: 0,
                                     nombre = nombre.trim(),
                                     precio = precioNumero ?: 0.0,

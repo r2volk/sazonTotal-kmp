@@ -68,7 +68,7 @@ fun DashboardAdmin(
     val empleadosActivos = empleados.count { it.activo }
     val pendientes = pedidos.count { it.estado == "PENDIENTE" }
 
-    // iniciales para el avatar ("Karina Castillo" -> "KC").
+    // iniciales para el avatar. por ejemplo, Karina Castillo queda como KC.
     val iniciales = nombreAdmin
         .split(" ")
         .mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }

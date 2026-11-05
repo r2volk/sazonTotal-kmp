@@ -64,11 +64,11 @@ fun ReportesScreen(
     var periodo by remember { mutableStateOf("week") }
     val ahora = remember { ahoraMillis() }
 
-    // un dia en ms; las ventanas miden hacia atras y solo cuentan pedidos con fecha real.
+    // un dia en ms. las ventanas miden hacia atras y solo cuentan pedidos con fecha real.
     val DIA = 86_400_000L
     val anioActual = partesFecha(ahora).third
 
-    // semana y mes son ventanas rodantes; el anual son los 12 meses calendario
+    // semana y mes son ventanas rodantes. el anual son los 12 meses calendario
     val largoVentana = when (periodo) {
         "month" -> 28 * DIA
         else -> 7 * DIA
@@ -385,7 +385,7 @@ private fun graficoStatReporte(
     val colorBarra = colorDeTema(Colores.GrisDeshabilitado, temaOscuro, UsoColor.BORDE)
     val colorBarraDestacada = if (temaOscuro) Color(0xFF34C759) else colorDeTema(Color(0xFF34C759), false)
 
-    // sin ventas no se dibuja una grafica vacia; se avisa que no hay.
+    // sin ventas no se dibuja una grafica vacia. se avisa que no hay.
     if (!hayVentas) {
         Column(
             modifier = Modifier

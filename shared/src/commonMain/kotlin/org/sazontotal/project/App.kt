@@ -44,7 +44,7 @@ fun App() {
         var entregaDeliveryPendiente by remember { mutableStateOf<EntregaReparto?>(null) }
 
         var errorLogin by remember { mutableStateOf<String?>(null) }
-        // en preview no hay base de datos, por eso puede ser nula (pantallas sin datos).
+        // en preview no hay base de datos, por eso puede ser nula y las pantallas se quedan sin datos.
 
         val db = remember {
             try { buildDatabase() } catch (e: Exception) { null }
@@ -88,8 +88,8 @@ fun App() {
             }
         }
 
-        // entregas del modulo reparto: ya viven en Room; este estado es solo el reflejo
-        // de la tabla para las pantallas (el repositorio la observa con un Flow).
+        // entregas del modulo reparto: ya viven en Room. este estado es solo el reflejo
+        // de la tabla para las pantallas. el repositorio la observa con un Flow.
         var entregasReparto by remember { mutableStateOf<List<EntregaReparto>>(emptyList()) }
 
         // al iniciar se agregan las cuentas y datos de demostracion que falten.
@@ -127,7 +127,7 @@ fun App() {
                 }
                 else -> "login"
             }
-            // al volver atras el carrito sigue abierto (mismo pedido en curso), salvo al salir del ticket.
+            // al volver atras el carrito sigue abierto porque es el mismo pedido en curso, salvo al salir del ticket.
             if (pantallaActual == "pedidoConcretado") {
                 carrito.limpiar()
             }
@@ -142,7 +142,7 @@ fun App() {
                         // el repositorio consulta empleados activos y valida el id con el pin.
                         val empleado = repositorio?.login(empleadoIdIngresado, pinIngresado)
                         if (empleado != null) {
-                            // el rol define el area (mesero/cocina) y el ID el tipo: ADM-, MSR- o CCN-.
+                            // el rol define el area de mesero o cocina, y el ID define el tipo: ADM-, MSR- o CCN-.
                             empleadoLogueado = empleado
                             pantallaActual = if (empleado.id.startsWith("ADM-")) {
                                 "dashboardAdmin"
@@ -273,7 +273,7 @@ fun App() {
                     }
                 },
                 onDeshacerEntrega = { id ->
-                    // por si marco entregada por error: vuelve a En camino.
+                    // por si marco entregada por error: vuelve a en camino.
                     scope.launch { repositorio?.cambiarEntregada(id, false) }
                 },
                 onEliminarEntrega = { id ->

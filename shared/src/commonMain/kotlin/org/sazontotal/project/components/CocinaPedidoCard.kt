@@ -159,7 +159,7 @@ fun CocinaPedidoCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // si cocina ya lo marco, se muestra como preparado (sin boton).
+        // si cocina ya lo marco, se muestra como preparado y sin boton.
         if (yaListo) {
             Text(
                 text = "✓ Listo",

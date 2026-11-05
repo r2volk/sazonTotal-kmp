@@ -10,12 +10,12 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 
-/** Device theme shared by screens, controls and navigation. */
+/** tema compartido por pantallas, controles y navegacion. */
 val LocalTemaOscuro = staticCompositionLocalOf { true }
 
 enum class UsoColor { TEXTO, FONDO, BORDE }
 
-/** Semantic pairs used by every role, including colored cards, states and actions. */
+/** pares semanticos usados por todos los roles, incluidas tarjetas de color, estados y acciones. */
 data class PaletaAcento(
     val superficie: Color,
     val tinta: Color,
@@ -40,7 +40,7 @@ fun paletaAcento(color: Color, oscuro: Boolean): PaletaAcento {
         }
         (sector * 60f + 360f) % 360f
     }
-    // Each family has a deliberate surface/ink pair; no near-white pastel conversion.
+    // cada familia tiene su par de superficie y tinta. sin conversion a pasteles casi blancos.
     val (clara, oscura, tintaClara, tintaOscura, fuerteClara, fuerteOscura) = when {
         matiz < 8f || matiz >= 350f -> TonosAcento(0xFFF3C3C9, 0xFF4B1D27, 0xFF801C2D, 0xFFFFA5B0, 0xFFB42332, 0xFFB42332)
         matiz < 65f -> TonosAcento(0xFFF6D69E, 0xFF46310D, 0xFF693B08, 0xFFFFCF7C, 0xFF8C510B, 0xFFFFB340)
@@ -58,7 +58,7 @@ fun paletaAcento(color: Color, oscuro: Boolean): PaletaAcento {
     )
 }
 
-/** All existing screen colors are resolved through the same neutral/accent system. */
+/** todos los colores de pantalla se resuelven con el mismo sistema neutro/acento. */
 fun colorDeTema(color: Color, oscuro: Boolean, uso: UsoColor = UsoColor.TEXTO): Color {
     if (color == Color.Unspecified || color.alpha == 0f) return color
     val maximo = maxOf(color.red, color.green, color.blue)
@@ -79,7 +79,7 @@ fun colorDeTema(color: Color, oscuro: Boolean, uso: UsoColor = UsoColor.TEXTO): 
         return color
     }
     if (!neutro) return paletaAcento(color, oscuro).tinta.copy(alpha = color.alpha)
-    // Black stays black on the existing bright action buttons.
+    // el negro se mantiene en los botones de accion claros.
     if (uso == UsoColor.TEXTO && maximo == 0f) return color
     if (!oscuro) {
         val tinta = when {
@@ -101,7 +101,7 @@ fun colorDeTema(color: Color, oscuro: Boolean, uso: UsoColor = UsoColor.TEXTO): 
     return tinta
 }
 
-/** Explicit foreground/background pairs for the persistent bottom navigation. */
+/** pares explicitos de primer plano/fondo para la barra inferior persistente. */
 data class ColoresNavegacion(
     val superficie: Color,
     val borde: Color,

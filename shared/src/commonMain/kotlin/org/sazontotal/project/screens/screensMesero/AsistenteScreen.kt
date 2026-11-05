@@ -62,12 +62,8 @@ import org.sazontotal.project.utils.ahoraMillis
 import kotlinx.coroutines.launch
 
 /**
- * chat con la IA de Gemini. pregunta al asistente por recomendaciones,
- * ingredientes, precios o maridajes; el contexto (menu, alergenos, top
- * ventas) sale de la base de datos del restaurante en cada respuesta.
- *
- * el historial se conserva solo mientras la pantalla vive: el boton de
- * editar (nueva conversacion) empieza desde cero.
+ * chat con la IA de Gemini. usa el menu, los alergenos y los platos mas vendidos
+ * como contexto. la conversacion se guarda solo mientras la pantalla sigue abierta.
  */
 @Composable
 fun AsistenteScreen(
@@ -81,7 +77,7 @@ fun AsistenteScreen(
     var consulta by remember { mutableStateOf("") }
     var enviando by remember { mutableStateOf(false) }
 
-    // historial de la conversacion; arranca con el saludo personalizado del asistente.
+    // historial de la conversacion. arranca con el saludo personalizado del asistente.
     val mensajes = remember { mutableStateListOf<MensajeChat>() }
     val saludoInicial = "Hola ${primerNombre(empleado?.nombre ?: "mesero")}, soy tu asistente. " +
         "Pregúntame por recomendaciones, ingredientes o maridajes."
@@ -89,7 +85,7 @@ fun AsistenteScreen(
         if (mensajes.isEmpty()) mensajes.add(MensajeChat(MensajeChat.Rol.ASISTENTE, saludoInicial))
     }
 
-    // datos del restaurante que fluyen hacia el prompt de la IA (igual que las demas pantallas).
+    // datos del restaurante que fluyen hacia el prompt de la IA, igual que en las demas pantallas.
     val platos = repositorio?.observarPlatos()?.collectAsState(emptyList())?.value ?: emptyList()
     val topPlatos = repositorio
         ?.observarTopPlatosEnRango(desde = 0L, hasta = ahoraMillis())
@@ -143,7 +139,7 @@ fun AsistenteScreen(
         }
     }
 
-    // auto scroll del chat al llegar mensajes nuevos (o mientras escribe la IA).
+    // auto scroll del chat al llegar mensajes nuevos o mientras la IA escribe.
     val scrollChat = rememberScrollState()
     LaunchedEffect(mensajes.size, enviando) {
         scrollChat.animateScrollTo(scrollChat.maxValue)
@@ -241,7 +237,7 @@ fun AsistenteScreen(
                     BurbujaMesero(texto = mensaje.texto)
                 }
             }
-            // indicador "escribiendo..." solo mientras espera la respuesta de la API.
+            // muestra el indicador de escritura solo mientras espera la respuesta de la API.
             if (enviando) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     BurbujaAsistente(
@@ -341,12 +337,12 @@ fun AsistenteScreen(
     }
 }
 
-// primer nombre del empleado para el saludo ("Ricardo Sanchez" -> "Ricardo").
+// primer nombre del empleado para el saludo. por ejemplo, Ricardo Sanchez queda como Ricardo.
 private fun primerNombre(nombreCompleto: String): String =
     nombreCompleto.trim().split(" ").firstOrNull().orEmpty().ifBlank { "mesero" }
 
 // burbuja del asistente: izquierda. contenidoPersonalizado permite poner los tres
-// puntitos del "escribiendo..." en el mismo estilo visual de la burbuja.
+// los puntitos del indicador de escritura siguen el estilo de la burbuja.
 @Composable
 private fun BurbujaAsistente(
     texto: String,

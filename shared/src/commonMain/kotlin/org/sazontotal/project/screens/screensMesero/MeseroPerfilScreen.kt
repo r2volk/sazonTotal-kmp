@@ -21,14 +21,14 @@ fun MeseroPerfilScreen(
 ) {
     val temaOscuro = LocalTemaOscuro.current
 
-    // iniciales para el avatar ("Ricardo Sanchez" -> "RS").
+    // iniciales para el avatar. por ejemplo, Ricardo Sanchez queda como RS.
     val iniciales = empleado?.nombre
         ?.split(" ")
         ?.mapNotNull { palabra -> palabra.firstOrNull()?.uppercase() }
         ?.take(2)
         ?.joinToString("") ?: "??"
 
-    // pedidos tomados por este mesero (se buscan por su id).
+    // pedidos tomados por este mesero, buscados por su id.
     // el contador del perfil se calcula con los pedidos persistidos del mesero.
     val pedidosEnVivo = repositorio?.observarPedidos()
     val pedidos = pedidosEnVivo?.collectAsState(initial = emptyList())?.value ?: emptyList()
