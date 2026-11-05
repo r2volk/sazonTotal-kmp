@@ -1,292 +1,408 @@
-# SazónTotal
+<div align="center">
 
-Aplicación multiplataforma para la operación de un restaurante. Permite administrar empleados y menú, registrar pedidos, seguir su preparación y consultar ventas. La interfaz y la lógica principal están compartidas entre Android e iOS.
+# Sazón Total
 
-Este documento sirve como guía del proyecto y como contexto para cualquier persona o asistente de IA que vaya a leerlo o modificarlo. Describe el comportamiento actual y distingue las decisiones intencionales de las funciones pendientes.
+**La atención del restaurante, desde la comanda hasta la entrega.**
 
-## Índice
+Aplicación móvil para meseros, cocina y administración, con pedidos en mesa, Delivery y asistencia con inteligencia artificial.
 
-1. [Alcance del proyecto](#alcance-del-proyecto)
-2. [Tecnologías y configuración](#tecnologías-y-configuración)
-3. [Estructura del código](#estructura-del-código)
-4. [Perfiles y navegación](#perfiles-y-navegación)
-5. [Flujo de pedidos](#flujo-de-pedidos)
-6. [Reglas de negocio](#reglas-de-negocio)
-7. [Persistencia y datos de demostración](#persistencia-y-datos-de-demostración)
-8. [Accesos de demostración](#accesos-de-demostración)
-9. [Compilar y ejecutar](#compilar-y-ejecutar)
-10. [Pruebas](#pruebas)
-11. [Decisiones vigentes y limitaciones conocidas](#decisiones-vigentes-y-limitaciones-conocidas)
-12. [Orientación para futuros cambios](#orientación-para-futuros-cambios)
+**Kotlin Multiplatform · Compose Multiplatform · Room · Gemini**
 
-## Alcance del proyecto
+[Producto](#producto) · [Roles](#roles) · [Delivery](#delivery) · [Arquitectura](#arquitectura) · [Datos](#datos) · [Contexto para desarrollo](#contexto-para-desarrollo)
 
-SazónTotal representa un sistema de atención de restaurante con tres perfiles:
+</div>
 
-- **Administrador:** gestiona empleados, menú, pedidos e informes.
-- **Mesero:** selecciona una mesa, prepara pedidos, los envía a cocina y consulta su historial.
-- **Cocina:** revisa los pedidos pendientes y marca cuándo están listos.
+<table>
+  <tr>
+    <th align="center">Atención en mesa</th>
+    <th align="center">Preparación en cocina</th>
+    <th align="center">Administración</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/paleta/13-menu-claro.png" width="225" alt="Menú del mesero con categorías, precios y controles para armar la comanda"></td>
+    <td align="center"><img src="docs/paleta/03-cocina-oscura.png" width="225" alt="Cola de cocina en modo oscuro con cantidades, nota general y acción Listo"></td>
+    <td align="center"><img src="docs/paleta/28-admin-claro.png" width="225" alt="Panel de administración en modo claro con indicadores y accesos de gestión"></td>
+  </tr>
+</table>
 
-El proyecto prioriza que el flujo se pueda demostrar y utilizar desde la interfaz. No depende de un servidor web ni de una API remota: los datos se guardan localmente mediante Room y SQLite en cada instalación.
+## Producto
 
-## Tecnologías y configuración
+Sazón Total conecta las tareas de atención, preparación y gestión de un restaurante en una misma aplicación. El mesero toma la comanda, cocina recibe los platos y sus cantidades, y el administrador consulta la operación, mantiene el menú y gestiona el personal. El flujo de Delivery añade elección de dirección, ruta, tarifa y seguimiento de la entrega.
 
-| Componente | Configuración actual |
-| --- | --- |
-| Lenguaje | Kotlin Multiplatform, Kotlin `2.4.10` |
-| Interfaz | Compose Multiplatform `1.11.1` |
-| Material 3 | `1.11.0-alpha07` |
-| Persistencia | Room `2.7.1` y SQLite Bundled `2.5.0` |
-| Generación de código Room | KSP `2.3.10` |
-| Android Gradle Plugin | `9.4.1` |
-| Android compile SDK | `36` |
-| Android target SDK | `36` |
-| Android min SDK | `24` |
-| Target JVM del módulo compartido Android | `11` |
+El proyecto comparte interfaz y lógica entre Android e iOS mediante Kotlin y Compose Multiplatform. La revisión visual documentada se realizó en Android. El mapa interactivo tiene implementación Android; en iOS existe un marcador visual que informa de esa disponibilidad.
 
-Las versiones están centralizadas en `gradle/libs.versions.toml`. Evitar duplicar o fijar versiones en otros archivos sin una razón concreta.
+Los datos operativos se guardan **localmente en Room y SQLite**. Los tres roles consultan la base de la misma instalación: no existe un backend propio ni sincronización de pedidos entre dispositivos. Gemini y los servicios de direcciones y rutas sí requieren comunicación con proveedores externos.
 
-El módulo `shared` genera el framework estático `Shared` para `iosArm64` y `iosSimulatorArm64`. El código de interfaz común se ejecuta dentro de Compose Multiplatform en ambas plataformas.
+| Capacidad | Qué permite hacer |
+|---|---|
+| Atención en mesa | Elegir mesa, buscar platos, ajustar cantidades, escribir una nota general y confirmar la comanda. |
+| Cocina | Revisar pedidos por preparar y listos, con cantidades y observaciones de cada comanda. |
+| Delivery | Elegir una dirección, consultar distancia y tiempo, calcular la tarifa y seguir una entrega vinculada a su pedido. |
+| Administración | Gestionar menú y disponibilidad, crear y activar/desactivar empleados, consultar pedidos y anularlos cuando corresponde. |
+| Reportes | Consultar ventas de pedidos entregados, comparación con el período anterior y platos más vendidos. |
+| Asistente IA | Consultar recomendaciones, ingredientes y maridajes con contexto del menú y una regla local para restricciones alimentarias. |
+| Apariencia | Seguir automáticamente el tema claro u oscuro del dispositivo. |
 
-## Estructura del código
+## Roles
 
-```text
-.
-├── androidApp/                         # Aplicación y punto de entrada Android
-├── iosApp/iosApp.xcodeproj/             # Proyecto de Xcode
-├── shared/
-│   └── src/
-│       ├── commonMain/kotlin/           # Interfaz, lógica y modelos compartidos
-│       ├── androidMain/kotlin/          # Implementaciones específicas de Android
-│       ├── iosMain/kotlin/              # Implementaciones específicas de iOS
-│       └── commonTest/kotlin/            # Pruebas de lógica común
-└── gradle/libs.versions.toml             # Catálogo central de versiones
-```
+El acceso utiliza **ID de empleado y PIN de cuatro dígitos**. La cuenta debe estar activa. El prefijo del ID determina el panel inicial; el campo de rol también se utiliza para mostrar y filtrar información.
 
-Dentro de `shared/src/commonMain/kotlin/org/sazontotal/project/`:
+| Perfil | Prefijo | Pantallas y acciones principales |
+|---|---|---|
+| **Mesero** | `MSR-` | Pedidos, filtros de estado, menú, categorías, búsqueda, carrito, selección de mesa, nota general, confirmación y ticket, historial, Delivery, entregas, asistente, perfil y cambio de PIN. |
+| **Cocina** | `CCN-` | Pedidos por preparar y listos, detalle de cantidades, nota general, cambio a Listo, perfil y cambio de PIN. |
+| **Administrador** | `ADM-` | Indicadores, todos los pedidos, búsqueda y filtros, anulación, gestión de platos y disponibilidad, creación de empleados, activación/desactivación y reportes. |
 
-| Ruta | Responsabilidad |
-| --- | --- |
-| `App.kt` | Crea la base y el repositorio; conserva sesión, ruta actual, mesa y carrito; conecta las pantallas. |
-| `data/db/` | Entidades Room, DAO, base de datos y factories de plataforma. |
-| `data/repository/SazonRepository.kt` | Acceso a datos, validaciones de negocio, cambios de estado y seed. |
-| `data/CarritoCompra.kt` | Cantidades, nota general, snapshots de platos y total compartido entre menú y carrito. |
-| `screens/` | Dashboards y pantallas de cada perfil. |
-| `screens/screensAdmin/` | Informes, pedidos, personal y edición del menú. |
-| `screens/screensMesero/carrito/` | Menú, carrito y confirmación/ticket del pedido. |
-| `screens/screensCocina/` | Cola de cocina y perfil. |
-| `components/` | Componentes Compose reutilizados por varias pantallas. |
-| `enums/` | Estados representados como enums para la interfaz. |
-| `utils/` | Moneda, fecha/hora y abstracciones de navegación de plataforma. |
+Mesero utiliza las pestañas **Pedidos, Historial y Perfil**; cocina utiliza **Pedidos y Perfil**. El cierre de sesión limpia el carrito sin confirmar y restablece el destino de la siguiente comanda.
 
-El nombre del paquete Kotlin común es `org.sazontotal.project`.
-
-### Puntos de entrada por plataforma
-
-- Android inicia en `androidApp/src/main/kotlin/org/sazontotal/project/MainActivity.kt`. Inicializa el contexto Android requerido por Room y presenta `App()`.
-- iOS inicia en `iosApp/iosApp/iOSApp.swift`; `ContentView.swift` hospeda `MainViewController()` desde `shared/src/iosMain/kotlin/org/sazontotal/project/MainViewController.kt`.
-- Room, fecha/hora y el comportamiento de retroceso usan declaraciones `expect` en código común y sus implementaciones `actual` en `androidMain` e `iosMain`.
-
-La interfaz no usa una capa ViewModel separada: `App.kt` conserva el estado global con Compose, cada pantalla mantiene su estado visual local y `SazonRepository` centraliza las operaciones de datos y las validaciones principales.
-
-## Perfiles y navegación
-
-El punto de coordinación de la aplicación es `App.kt`. La navegación se mantiene con una cadena en `pantallaActual`; las rutas actuales son:
-
-| Ruta | Pantalla |
-| --- | --- |
-| `login` | Inicio de sesión |
-| `dashboardAdmin` | Dashboard de administrador |
-| `gestionPersonal` | Gestión del personal |
-| `editarMenu` | Menú de administración |
-| `todosLosPedidos` | Pedidos de administración |
-| `reportesAdmin` | Reportes |
-| `dashboardMesero` | Dashboard de mesero |
-| `menuMesero` | Menú para tomar pedidos |
-| `carritoMesero` | Carrito y selección de mesa |
-| `pedidoConcretado` | Confirmación y ticket |
-| `dashboardCocina` | Dashboard de cocina |
-| `asistente` | Maqueta visual del asistente |
-| `cambioPin` | Cambio de PIN |
-
-El ID determina el perfil al entrar:
-
-- `ADM-...` abre el dashboard de administrador.
-- `MSR-...` abre el dashboard de mesero.
-- `CCN-...` abre el dashboard de cocina.
-
-El campo `rol` de empleado se usa para mostrar y filtrar la información; la ruta inicial se determina por el prefijo del ID.
-
-Los dashboards de mesero y cocina usan pestañas. El de mesero tiene **Pedidos**, **Historial** y **Perfil**; el de cocina tiene **Pedidos** y **Perfil**.
-
-`App.kt` conserva la sesión actual, la ruta de pantalla, la mesa seleccionada y el carrito mediante estado Compose (`remember`). Los pedidos confirmados, en cambio, se persisten en Room. Si se cierra el proceso de la aplicación, no se conserva como pedido un carrito que todavía no se haya confirmado.
-
-Al cerrar sesión, o al volver desde un dashboard a la pantalla de acceso, se descarta el carrito sin confirmar y se restablecen la mesa y la dirección.
+La gestión del personal permite **crear y activar/desactivar** cuentas. No incluye edición de empleados. La operación de desactivación protege al último administrador activo.
 
 ## Flujo de pedidos
 
-### Delivery
+1. El mesero elige una mesa o prepara un destino Delivery.
+2. Busca productos por nombre o categoría y agrega las cantidades al carrito.
+3. Revisa importes y escribe, si corresponde, una única nota general.
+4. Confirma el pedido. Se guardan su cabecera y sus platos; para Delivery se guarda también la entrega vinculada en la misma transacción.
+5. Se muestra el ticket y cocina recibe la comanda pendiente.
+6. Cocina la marca como lista. El mesero confirma que se sirvió en mesa o que salió a reparto, según el destino.
 
-Desde **Reparto**, el mesero selecciona una sugerencia de dirección, calcula la ruta y continúa al menú. La tarifa es de S/ 3 por cada kilómetro iniciado: hasta 1 km cuesta S/ 3, más de 1 y hasta 2 km cuesta S/ 6, y así sucesivamente. Al confirmar, se crea el pedido para cocina con su entrega vinculada. Cuando cocina lo marque listo, el mesero pulsa **Enviar con motorizado** y después **Marcar entregado**. Solo entonces cuenta como venta en reportes.
+```mermaid
+stateDiagram-v2
+    state "Pendiente" as PENDIENTE
+    state "Listo" as LISTO
+    state "En camino" as EN_CAMINO
+    state "Entregado" as ENTREGADO
+    state "Anulado" as ANULADO
 
-La dirección de los nuevos deliverys se guarda en el campo `mesa` con el prefijo `Delivery: ` y la entrega se vincula al pedido. Los registros antiguos de la tabla `entregas` son independientes y no se convierten en pedidos; se pueden consultar desde **Entregas anteriores**.
-
-1. El mesero agrega platos y cantidades desde `MenuScreen`.
-2. El carrito conserva el detalle de los platos seleccionados, la cantidad, una nota general y el precio de ese momento. Esto evita que el pedido cambie si el plato se edita o se elimina del menú mientras está en el carrito.
-3. Se selecciona una mesa del **1 al 15**. La selección por defecto es la mesa `4` y se comparte entre menú y carrito.
-4. Al confirmar se crea una cabecera `PedidoEntity` con el ID del mesero, la mesa, el total, la fecha y estado `PENDIENTE`; también se guardan sus `PedidoItemEntity`.
-5. Cocina ve los pedidos pendientes y cambia su estado a `LISTO`.
-6. El mesero marca el pedido `ENTREGADO`. Los pedidos entregados aparecen en su Historial.
-
-El botón de confirmación queda inactivo si el carrito está vacío, el repositorio o el menú no están listos, la mesa no es válida o alguno de los platos se desactivó. El carrito conserva una copia del plato para seguir mostrándolo y permitir quitarlo. El repositorio vuelve a comprobar que haya renglones válidos y que los platos sigan activos antes de insertar.
-
-El guardado inserta primero la cabecera y luego sus renglones. Si falla la inserción de renglones, el repositorio intenta borrar la cabecera para no dejar un pedido incompleto; Room no expone aquí una transacción multiplataforma común.
-
-## Reglas de negocio
-
-### Empleados
-
-- El PIN debe tener exactamente cuatro dígitos ASCII (`0`–`9`). La regla se aplica en la interfaz y en `SazonRepository`.
-- Solo un empleado con `activo = true` puede iniciar sesión.
-- El estado activo/inactivo se guarda en la columna `empleados.activo`.
-- No se permite desactivar al último administrador activo.
-- Los IDs nuevos usan los prefijos `ADM-`, `MSR-` y `CCN-`. Un ID duplicado no debe reemplazar otro empleado.
-
-### Estados de pedido
-
-Los estados guardados en Room son strings y sus valores válidos son:
-
-| Estado | Significado |
-| --- | --- |
-| `PENDIENTE` | Pedido enviado y pendiente de preparación. |
-| `LISTO` | Cocina terminó; espera la entrega del mesero. |
-| `EN_CAMINO` | Pedido delivery enviado con el motorizado; aún no cuenta como venta. |
-| `ENTREGADO` | Pedido servido al cliente. Cuenta como venta. |
-| `ANULADO` | Pedido anulado por administración. No cuenta como venta. |
-
-Flujo habitual: `PENDIENTE` → `LISTO` → `ENTREGADO`. Administración puede anular pedidos que todavía no estén entregados ni anulados.
-
-### Precios e IGV
-
-- `PlatoEntity.precio` representa el precio final, **con IGV incluido**.
-- El total de una comanda es la suma de `precio × cantidad`; no se vuelve a agregar 18 %.
-- El ticket calcula el valor sin IGV como `total / 1.18` y el IGV incluido como `total - valor sin IGV`.
-- Los precios y totales se representan como `Double` y se muestran con dos decimales mediante `utils/Moneda.kt`.
-- Los informes cuentan como venta solo pedidos `ENTREGADO`.
-
-### Reportes y fechas
-
-- **Semana:** ventana móvil de los últimos siete días.
-- **Mes:** ventana móvil de 28 días.
-- **Año:** año calendario local, de enero a diciembre.
-- El top de platos se calcula para el período seleccionado, igual que el resto del reporte.
-- Las fechas se interpretan en la zona horaria local mediante las implementaciones de `utils/Reloj.kt` para Android e iOS.
-
-### Notas de comanda
-
-El carrito permite escribir una sola nota general por pedido. Para conservar el esquema existente, se guarda en el primer renglón y cocina y mesero la muestran como nota de la comanda. Los pedidos antiguos conservan sus notas originales.
-
-## Persistencia y datos de demostración
-
-La base Room es `SazonDatabase`, versión `7`, con cuatro entidades:
-
-| Entidad | Tabla | Datos principales |
-| --- | --- | --- |
-| `EmpleadoEntity` | `empleados` | ID, nombre, PIN, rol, teléfono y estado activo. |
-| `PlatoEntity` | `platos` | Nombre, descripción, precio final, categoría, disponibilidad y etiquetas. |
-| `PedidoEntity` | `pedidos` | Mesa, mesero, estado, total y fecha. |
-| `PedidoItemEntity` | `pedido_items` | Plato, nombre y precio guardados al ordenar, cantidad y nota. |
-
-Los DAO están en `data/db/`; `SazonRepository` es la capa usada por las pantallas para consultar y modificar datos. Las pantallas observan datos mediante `Flow` y `collectAsState`.
-
-El seed de `SazonRepository.seedIfEmpty()` crea estos empleados si sus IDs no existen:
-
-| ID | Nombre | Rol | PIN |
-| --- | --- | --- | --- |
-| `ADM-001` | Karina Castillo | Administrador | `1234` |
-| `MSR-001` | Ricardo Sanchez | Mesero | `4321` |
-| `CCN-001` | Joaquin Gutierrez | Cocina | `4321` |
-
-Si la tabla de platos está vacía, crea cuatro platos de demostración: Ceviche clásico, Lomo saltado, Pisco sour y Suspiro limeño. Los pedidos de ejemplo se crean solo si no hay pedidos. Incluyen:
-
-- Tres pedidos entregados: Mesa 2 (hace 10 días), Mesa 3 (hace 40 minutos) y Mesa 7 (hace 25 minutos).
-- Un pedido `LISTO`: Mesa 5 (hace 12 minutos).
-- Un pedido `PENDIENTE`: Mesa 1 (hace 3 minutos).
-
-Los seeds no sustituyen los datos existentes. Cambiar su contenido no modifica automáticamente una base local ya creada.
-
-El inicio de sesión compara ID y PIN y además exige `activo = true`. La pantalla determina el perfil por el prefijo del ID. Si un empleado se desactiva, el cambio se actualiza en Room y deja de poder iniciar sesión. La función segura de cambio impide desactivar al último administrador activo.
-
-### Migraciones
-
-`DatabaseFactory.kt` utiliza `fallbackToDestructiveMigration(true)`. Si se cambia la versión o el esquema sin una migración compatible, Room puede borrar la base local y volver a crearla. Considerarlo antes de modificar entidades o incrementar la versión; los datos locales de demo se pueden perder.
-
-## Accesos de demostración
-
-| Perfil | ID | PIN |
-| --- | --- | --- |
-| Administrador | `ADM-001` | `1234` |
-| Mesero | `MSR-001` | `4321` |
-| Cocina | `CCN-001` | `4321` |
-
-Son credenciales de la base de demostración local.
-
-## Compilar y ejecutar
-
-Ejecutar los comandos desde la raíz del repositorio.
-
-### Android
-
-Abre el proyecto en Android Studio o ejecuta:
-
-```bash
-./gradlew :androidApp:assembleDebug
+    [*] --> PENDIENTE: Confirmar comanda
+    PENDIENTE --> LISTO: Cocina termina la preparación
+    LISTO --> ENTREGADO: Atención en mesa
+    LISTO --> EN_CAMINO: Salida de Delivery
+    EN_CAMINO --> ENTREGADO: Confirmar entrega
+    PENDIENTE --> ANULADO: Anulación
+    LISTO --> ANULADO: Anulación
+    EN_CAMINO --> ANULADO: Anulación
+    ENTREGADO --> [*]
+    ANULADO --> [*]
 ```
 
-Para instalar la aplicación en un dispositivo o emulador Android conectado:
+La transición a **En camino** pertenece a Delivery. Una comanda de mesa pasa de **Listo** a **Entregado**; una de Delivery debe pasar primero por **En camino**. Los pedidos anulados no pueden marcarse entregados.
 
-```bash
-./gradlew :androidApp:installDebug
+Las transiciones se validan en [`TipoPedido.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/TipoPedido.kt) y se aplican desde el repositorio con una actualización condicionada al estado anterior.
+
+## Delivery
+
+El módulo de reparto parte de una sede de referencia en **Av. Larco 512, Miraflores, Lima**. El mesero escribe una dirección, revisa las sugerencias y **elige explícitamente una** antes de calcular la ruta. Pulsar la lupa no selecciona automáticamente la primera coincidencia.
+
+Después de elegir, se muestran la distancia, el tiempo estimado, el tramo cobrado y la tarifa. La ruta preparada todavía no constituye una entrega persistida: el registro se crea junto con el pedido y sus platos al confirmar la comanda.
+
+### Tarifa por kilómetro iniciado
+
+El costo es de **S/ 3 por cada kilómetro iniciado**, con un mínimo de **S/ 3**.
+
+```text
+kilómetros cobrados = máximo(1, techo(distancia en km))
+tarifa de Delivery  = kilómetros cobrados × S/ 3
+importe del pedido = subtotal de platos + tarifa de Delivery
 ```
 
-### iOS
+| Distancia real | Tramos cobrados | Tarifa |
+|---|---:|---:|
+| 0,52 km | 1 | S/ 3,00 |
+| 1,00 km | 1 | S/ 3,00 |
+| 1,01 km | 2 | S/ 6,00 |
+| 2,00 km | 2 | S/ 6,00 |
+| 2,01 km | 3 | S/ 9,00 |
 
-En macOS, abre `iosApp/iosApp.xcodeproj` en Xcode, selecciona el esquema `iosApp` y ejecuta en un simulador o dispositivo configurado.
+La distancia debe ser finita y no negativa. La regla está centralizada en [`TarifaDelivery.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/maps/TarifaDelivery.kt).
 
-Para compilar el código compartido de iOS Simulator desde Gradle:
+<table>
+  <tr><th align="center">Ruta en modo claro</th><th align="center">Ruta en modo oscuro</th></tr>
+  <tr>
+    <td align="center"><img src="docs/paleta/47-ruta-clara.png" width="230" alt="Ruta de 0,52 km con tarifa de S/ 3,00 en modo claro"></td>
+    <td align="center"><img src="docs/paleta/48-ruta-oscura.png" width="230" alt="La misma ruta, distancia y tarifa en modo oscuro"></td>
+  </tr>
+</table>
 
-```bash
-./gradlew :shared:compileKotlinIosSimulatorArm64
+### Vínculo entre pedido y entrega
+
+- Cada entrega nueva de Delivery conserva un `pedidoId` identificable y único.
+- El guardado conjunto es transaccional. El `solicitudId` del carrito identifica los reintentos de la misma solicitud Delivery y evita crear otro pedido para esa solicitud.
+- Una entrega vinculada no se puede eliminar de forma independiente.
+- El estado visible de la entrega deriva del pedido: **Preparando, En camino, Entregada o Cancelada**.
+- Las canceladas no cuentan como En camino y no permiten confirmar la entrega.
+- Pueden existir entregas de demostración o históricas sin `pedidoId`; se distinguen de las entregas vinculadas del flujo actual.
+
+Para direcciones y rutas se utilizan Google Maps y respaldos implementados con Photon, geocodificación local y OSRM. Cuando se recurre a una estimación, la interfaz puede mostrar distancia o duración aproximadas. La disponibilidad de estos servicios depende de la conexión y de la configuración de sus proveedores.
+
+## Asistente IA
+
+El asistente está pensado para el **personal del restaurante**. Recibe contexto del menú activo, precios, categorías, descripciones, etiquetas, platos más vendidos, nombre del mesero y mesa actual.
+
+| Tipo de consulta | Comportamiento |
+|---|---|
+| Recomendaciones, ingredientes o maridajes | `AsistenteIA` construye el contexto y `GeminiService` consulta Gemini mediante Ktor, incluyendo el historial actual del diálogo. |
+| Consultas detectadas para evitar alérgenos o restricciones reconocidas | Una regla local preventiva revisa etiquetas explícitas antes de delegar al modelo. |
+| Falta de información sobre una restricción | No se supone que un plato sea apto por ausencia de etiquetas; se indica verificar ingredientes y posibles trazas con cocina. |
+| Carga o error del proveedor | La pantalla muestra el estado de espera o el mensaje de error correspondiente. |
+
+Una etiqueta como **Sin gluten** puede aportar información sobre esa restricción; no demuestra que el plato esté libre de cualquier otro alérgeno. La regla local y la conversación normal mediante Gemini son dos comportamientos complementarios que deben conservarse.
+
+Implementación: [`AsistenteIA.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/ia/AsistenteIA.kt) y [`GeminiService.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/ia/GeminiService.kt).
+
+## Identidad visual
+
+El tema sigue la configuración del dispositivo, sin añadir un selector propio. El diseño utiliza colores planos, superficies neutras, acciones verdes y colores funcionales para estados y contextos específicos.
+
+| Elemento | Tema claro | Tema oscuro |
+|---|---|---|
+| Fondo | Blanco | Negro o gris casi negro |
+| Superficies | Grises claros definidos | Grises oscuros |
+| Selección principal | Verde esmeralda con texto blanco | Verde luminoso con texto negro |
+| Perfil de cocina | Bloque azul con texto blanco | Bloque azul profundo con texto blanco |
+| Perfil de mesero | Bloque verde con texto blanco | Bloque verde profundo con texto blanco |
+| Cerrar sesión | Rojo sólido con texto blanco | Rojo sólido con texto blanco |
+
+<table>
+  <tr><th align="center">Perfil · claro</th><th align="center">Perfil · oscuro</th></tr>
+  <tr>
+    <td align="center"><img src="docs/paleta/05-perfil-cocina-claro.png" width="230" alt="Perfil de cocina con bloque azul y cierre de sesión rojo en modo claro"></td>
+    <td align="center"><img src="docs/paleta/06-perfil-cocina-oscuro.png" width="230" alt="Perfil de cocina con fondo negro, bloque azul profundo y cierre de sesión rojo"></td>
+  </tr>
+</table>
+
+[`SazonTheme.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/theme/SazonTheme.kt) centraliza los esquemas Material, la adaptación de colores por uso y los pares de superficie, texto y acción. Los componentes compartidos mantienen la coherencia entre pantallas y roles. Android adapta también la ventana, las barras del sistema y el estilo del mapa.
+
+## Galería
+
+Las imágenes son capturas reales del emulador Android. Muestran datos de demostración y de las revisiones de interfaz; sus importes e indicadores no representan una cuenta de producción.
+
+<details>
+<summary><strong>Explorar menú, carrito, asistente, personal, platos y reportes</strong></summary>
+
+<table>
+  <tr><th>Pedidos</th><th>Carrito</th><th>Asistente</th></tr>
+  <tr>
+    <td align="center"><img src="docs/paleta/12-mesero-claro.png" width="220" alt="Listado del mesero con filtros, estados y pedidos por mesa"></td>
+    <td align="center"><img src="docs/paleta/15-carrito-oscuro.png" width="220" alt="Carrito con cantidades, nota general, destino y total"></td>
+    <td align="center"><img src="docs/paleta/18-chat-oscuro.png" width="220" alt="Conversación del asistente con accesos de consulta y entrada de mensajes"></td>
+  </tr>
+  <tr><th>Personal</th><th>Gestión de platos</th><th>Reportes</th></tr>
+  <tr>
+    <td align="center"><img src="docs/paleta/29-personal-claro.png" width="220" alt="Listado de empleados con filtros por rol y controles de activación"></td>
+    <td align="center"><img src="docs/paleta/37-plato-claro.png" width="220" alt="Formulario de plato con categoría, precio, descripción y disponibilidad"></td>
+    <td align="center"><img src="docs/paleta/42-reportes-oscuros.png" width="220" alt="Reportes con ventas, gráfico del período y ranking de platos"></td>
+  </tr>
+</table>
+
+</details>
+
+La [galería de verificación](docs/paleta/VERIFICACION.md#capturas-reales) reúne **48 capturas**, organizadas en pares claro/oscuro, incluyendo formularios, filtros, validaciones, historial, entregas y pedidos de los tres roles.
+
+## Arquitectura
+
+La aplicación utiliza estado Compose y un repositorio común. `App.kt` crea y comparte la base y el repositorio, conserva la sesión y coordina la navegación. Las pantallas observan datos mediante `Flow` y mantienen su estado visual local. No hay una capa ViewModel propia separada.
+
+```mermaid
+flowchart TB
+    App["App.kt<br/>Sesión, navegación y carrito"] --> UI["Compose Multiplatform<br/>Pantallas y componentes"]
+    App -. "crea y comparte" .-> Repo["SazonRepository<br/>Operaciones y validaciones"]
+    UI --> Repo
+    Repo --> DAO["DAO de Room"]
+    DAO --> DB[("SQLite local")]
+    DAO -. "Flow de datos" .-> UI
+    UI --> IA["AsistenteIA<br/>Regla local y contexto"]
+    IA --> Gemini["GeminiService · Ktor"]
+    UI --> Maps["Direcciones y rutas"]
+    Maps --> Servicios["Google Maps · Photon · OSRM"]
 ```
 
-## Pruebas
+### Organización del repositorio
 
-Las pruebas comunes están en `shared/src/commonTest`. Actualmente se valida la regla de PIN de cuatro dígitos. Se pueden ejecutar en los hosts configurados con:
-
-```bash
-./gradlew :shared:testAndroidHostTest
-./gradlew :shared:iosSimulatorArm64Test
+```text
+sazonTotal-kmp/
+├── androidApp/                  Aplicación y entrada Android
+├── iosApp/                      Contenedor SwiftUI y proyecto Xcode
+├── shared/src/
+│   ├── commonMain/kotlin/       Interfaz, modelos y lógica compartida
+│   ├── androidMain/kotlin/      Room, mapa y utilidades Android
+│   ├── iosMain/kotlin/          Implementaciones y adaptaciones iOS
+│   └── commonTest/kotlin/       Pruebas comunes
+├── docs/paleta/                 Capturas e informe visual actual
+└── gradle/libs.versions.toml    Catálogo de dependencias
 ```
 
-Una compilación de verificación de los módulos compartido y Android usa:
+Las rutas siguientes parten de `shared/src/commonMain/kotlin/org/sazontotal/project/`:
 
-```bash
-./gradlew :shared:assembleAndroidMain :shared:compileKotlinIosSimulatorArm64 :androidApp:assembleDebug --no-configuration-cache
+| Punto de entrada | Responsabilidad |
+|---|---|
+| [`App.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/App.kt) | Sesión, rutas, destino, carrito compartido y conexión entre pantallas. |
+| [`data/repository/SazonRepository.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/repository/SazonRepository.kt) | Acceso a datos, validaciones, transiciones y datos iniciales. |
+| [`data/db/`](shared/src/commonMain/kotlin/org/sazontotal/project/data/db/) | Cinco entidades, DAO, transacciones, migración y creación de la base. |
+| [`data/CarritoCompra.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/CarritoCompra.kt) | Cantidades, copia de productos, nota general e identidad de solicitud. |
+| [`data/TipoPedido.kt`](shared/src/commonMain/kotlin/org/sazontotal/project/data/TipoPedido.kt) | Distinción mesa/Delivery y transiciones permitidas. |
+| [`data/maps/`](shared/src/commonMain/kotlin/org/sazontotal/project/data/maps/) | Direcciones, rutas, entrega y tarifa. |
+| [`data/ia/`](shared/src/commonMain/kotlin/org/sazontotal/project/data/ia/) | Conversación, contexto, restricciones alimentarias y cliente Gemini. |
+| [`theme/`](shared/src/commonMain/kotlin/org/sazontotal/project/theme/) y [`components/`](shared/src/commonMain/kotlin/org/sazontotal/project/components/) | Sistema de colores y componentes compartidos. |
+| [`screens/`](shared/src/commonMain/kotlin/org/sazontotal/project/screens/) | Login, paneles y pantallas organizadas por rol. |
+| [`utils/`](shared/src/commonMain/kotlin/org/sazontotal/project/utils/) | Moneda, reloj y navegación de plataforma. |
+
+Los puntos de entrada de plataforma son [`MainActivity.kt`](androidApp/src/main/kotlin/org/sazontotal/project/MainActivity.kt) en Android y [`MainViewController.kt`](shared/src/iosMain/kotlin/org/sazontotal/project/MainViewController.kt), hospedado en SwiftUI, en iOS. Las implementaciones específicas utilizan `expect`/`actual` cuando corresponde.
+
+### Tecnologías
+
+Versiones declaradas en el [catálogo del proyecto](gradle/libs.versions.toml):
+
+| Tecnología | Versión | Uso |
+|---|---|---|
+| Kotlin | `2.4.10` | Código y lógica multiplataforma. |
+| Compose Multiplatform | `1.11.1` | Interfaz declarativa compartida. |
+| Material 3 | `1.11.0-alpha07` | Componentes y esquemas de interfaz. |
+| Room | `2.7.1` | Persistencia, consultas reactivas y transacciones. |
+| SQLite Bundled | `2.5.0` | Motor de base de datos. |
+| Ktor | `3.2.2` | Clientes HTTP para IA y servicios de mapas. |
+| Maps Compose | `7.0.0` | Mapa interactivo Android. |
+| KSP | `2.3.10` | Generación de código de Room. |
+
+Android configura SDK mínimo `24`, compile SDK `36` y target SDK `36`. El módulo compartido genera el framework estático `Shared` para `iosArm64` e `iosSimulatorArm64`.
+
+## Datos
+
+La base actual es **`SazonDatabase`, versión 9**, con cinco tablas. Los pedidos confirmados sobreviven al cierre de la aplicación; sesión, ruta de navegación y carrito sin confirmar viven en memoria Compose.
+
+```mermaid
+erDiagram
+    EMPLEADOS ||--o{ PEDIDOS : registra
+    PEDIDOS ||--|{ PEDIDO_ITEMS : contiene
+    PLATOS o|--o{ PEDIDO_ITEMS : origen
+    PEDIDOS o|--o| ENTREGAS : vincula
+
+    EMPLEADOS {
+        string id PK
+        string nombre
+        string rol
+        boolean activo
+    }
+    PLATOS {
+        long id PK
+        string nombre
+        double precio
+        string categoria
+        boolean activo
+    }
+    PEDIDOS {
+        long id PK
+        string mesa
+        string meseroID
+        string estado
+        double total
+        long fecha
+        string solicitudId
+    }
+    PEDIDO_ITEMS {
+        long id PK
+        long pedidoId
+        long platoId
+        string nombrePlato
+        int cantidad
+        double precioUnit
+        string nota
+    }
+    ENTREGAS {
+        long id PK
+        long pedidoId
+        string direccion
+        string kmTexto
+        string minutosTexto
+        boolean entregada
+    }
 ```
 
-## Decisiones vigentes y limitaciones conocidas
+El diagrama resume **relaciones lógicas de la aplicación**, no declaraciones de claves foráneas de Room. `solicitudId` tiene un índice único en pedidos; `pedidoId` tiene un índice único y es nullable en entregas.
 
-- `AsistenteScreen.kt` envía consultas a Gemini con contexto del menú y platos más vendidos. Requiere conexión y una clave válida configurada en `data/ia/ApiKey.kt`.
-- Los datos de turnos y promedios de los perfiles de mesero y cocina permanecen fijos por decisión actual. No sustituirlos ni eliminarlos sin autorización.
-- Los controles de cámara en los formularios de empleado y plato son marcadores visuales; no hay flujo de selección ni almacenamiento de imágenes. Mantenerlos sin cambios salvo petición expresa.
-- Si la inicialización de la base falla, `App.kt` puede continuar con un repositorio nulo para permitir previews. El comportamiento de error de inicio de sesión asociado está pendiente y debe consultarse antes de cambiarlo.
-- La navegación se coordina desde `App.kt` mediante `pantallaActual`. La sesión, la mesa seleccionada y el carrito se mantienen en estado Compose durante la ejecución.
-- El carrito mantiene una copia local del plato seleccionado mientras dura la comanda; el estado del pedido y los renglones se guardan en Room al confirmar.
+| Decisión | Consecuencia |
+|---|---|
+| Copia del nombre y precio en cada renglón | Editar o eliminar un producto del menú no reescribe los pedidos históricos. |
+| Destino Delivery codificado en `mesa` como `Delivery: <dirección>` | Debe interpretarse mediante las funciones de `TipoPedido.kt`; no es un número de mesa. |
+| Una nota general en el carrito | Por compatibilidad con el esquema, se guarda en el primer renglón; no hay un campo de nota general en la cabecera. |
+| Total final en el pedido | El total persistido incluye el Delivery cuando corresponde. La entrega conserva distancia y tiempo como texto; no tiene una columna propia de tarifa. |
+| Migración explícita de 8 a 9 | Incorpora el vínculo de entrega y la identidad de solicitud con sus índices únicos. |
+| `fallbackToDestructiveMigration(true)` | Un cambio de esquema sin una migración compatible puede recrear y vaciar la base. |
 
-## Orientación para futuros cambios
+### Datos de demostración
 
-- Priorizar los flujos visibles de la aplicación y preservar las reglas de negocio descritas arriba.
-- Mantener el código directo y fácil de leer. No reducir líneas a costa de nombres claros ni hacer refactors amplios solo por estilo.
-- Antes de cambiar un comportamiento, revisar el recorrido completo entre pantalla, repositorio, DAO y modelo Room.
-- No tratar las maquetas, estadísticas fijas ni controles señalados como limitaciones como código accidental sin confirmar primero con el responsable del proyecto.
-- No modificar credenciales, seed, esquema, migraciones, navegación o cálculos monetarios sin revisar el impacto en las pruebas y datos locales.
+`seedIfEmpty()` agrega las cuentas de demostración que falten, sin reemplazar empleados existentes. Si el catálogo está vacío, crea Ceviche clásico, Lomo saltado, Pisco sour y Suspiro limeño. Los pedidos y las entregas de ejemplo se agregan cuando sus respectivas tablas están vacías.
+
+Las cuentas iniciales usan los IDs `ADM-001`, `MSR-001` y `CCN-001`. Los datos sembrados permiten recorrer los tres roles y los estados de la operación. Modificar el seed no actualiza automáticamente los registros de una instalación ya existente.
+
+## Reglas que deben conservarse
+
+| Regla | Contrato del comportamiento actual |
+|---|---|
+| Precios y moneda | Los importes se presentan en soles peruanos. Los precios incluyen IGV; no se añade de nuevo. |
+| Cantidades y totales | El carrito suma precio por cantidad y añade la tarifa de Delivery una sola vez cuando corresponde. |
+| Disponibilidad | El repositorio valida que los platos sigan activos al confirmar el pedido. |
+| Nota de comanda | Existe una sola nota general. No reintroducir notas por plato en el flujo de toma de pedidos. |
+| Confirmación | El envío bloquea la interacción mientras guarda. Pedido, platos y entrega vinculada se persisten conjuntamente. |
+| Reintentos Delivery | Mantener `solicitudId`, búsqueda de la solicitud existente e índices únicos; no crear otra entrega para el mismo pedido. |
+| Estado de entrega | Derivar el estado del pedido vinculado y conservar la protección de las canceladas. |
+| Borrado de entregas | No eliminar de forma independiente una entrega con `pedidoId`. |
+| Ticket | Mantener la protección inicial de 700 ms frente a un segundo toque que active otra pantalla. |
+| Personal | Exigir PIN de cuatro dígitos, cuenta activa y protección del último administrador. No hay edición de empleados. |
+| Asistente | Conservar tanto las consultas normales a Gemini como la regla local preventiva de restricciones alimentarias. |
+| Reportes | Contar como venta únicamente los pedidos `ENTREGADO`. Pendientes, listos, en camino y anulados no suman ventas. |
+
+Los reportes de **Semana** usan una ventana móvil de siete días; **Mes**, una ventana de 28 días agrupada en cuatro semanas; **Año**, los doce meses del año calendario actual. La comparación usa la ventana anterior equivalente o el año anterior. El ranking se consulta para el período correspondiente.
+
+## Estado de implementación
+
+| Área | Alcance actual |
+|---|---|
+| Android | Interfaz recorrida en emulador, incluida la alternancia de temas y el mapa interactivo. |
+| iOS | Contenedor SwiftUI y código compartido disponibles. Sin mapa interactivo y sin revisión de ejecución iOS en la última pasada visual. |
+| Datos entre dispositivos | Persistencia local por instalación. No hay sincronización ni servidor propio. |
+| Fotos de empleados y platos | Los controles de cámara son marcadores visuales; no incluyen selección ni almacenamiento de imágenes. |
+| Métricas del perfil | Turnos y tiempos medios de preparación permanecen fijos. Los contadores de pedidos sí consultan los datos persistidos. |
+| Empleados | Creación y activación/desactivación implementadas; edición fuera del alcance actual. |
+| Gemini y rutas | Integraciones reales sujetas a conexión, configuración y disponibilidad de los proveedores. |
+| Previews | `App.kt` admite un repositorio nulo si no puede inicializar la base, para permitir vistas previas. |
+
+## Verificación
+
+La última revisión visual documentada utilizó un emulador Android de **1080 × 2400 px** y produjo **48 capturas reales** de pantallas y estados en ambos temas. El [informe completo](docs/paleta/VERIFICACION.md) recoge las vistas abiertas, las comprobaciones, los archivos modificados y los límites de esa revisión.
+
+| Comprobación | Resultado documentado |
+|---|---|
+| Compilación de la APK Android | Correcta. |
+| Pruebas comunes en el host Android | 11 aprobadas: 4 de reglas comunes y 7 de colores. |
+| Reglas comunes cubiertas | PIN, distinción mesa/Delivery, transiciones y tarifa por kilómetro iniciado. |
+| Colores cubiertos | Pares de superficie y texto, acciones, navegación, contornos, transparencias y perfiles. |
+| Revisión visual | Tres roles, filtros, formularios, validación, carrito, historial, asistente, entregas, ruta y tarifa. |
+| Conservación de datos en la revisión | No se crearon pedidos ni empleados ni se guardaron formularios de gestión. |
+
+Estas comprobaciones no constituyen una prueba integral de todos los servicios. En esa revisión no se ejecutó iOS, no se regeneró el ticket, no se volvió a comprobar una respuesta remota de Gemini ni se validó visualmente la superposición del teclado del sistema. Las pruebas de colores cubren pares concretos; no certifican la accesibilidad completa de la aplicación.
+
+## Contexto para desarrollo
+
+Para continuar el proyecto, el recorrido recomendado es **pantalla → repositorio → DAO → entidad**, además de `App.kt` para entender sesión, destino y navegación.
+
+- Las rutas se coordinan con `pantallaActual` en `App.kt`; el carrito compartido se crea allí y se pasa a menú y carrito.
+- Las carpetas `screensAdmin`, `screensMesero` y `screensCocina` agrupan las responsabilidades de cada rol. Algunas pantallas contienen tanto presentación como callbacks y operaciones.
+- Un cambio visual debe apoyarse en `SazonTheme`, `colorDeTema`, `paletaAcento` y los componentes existentes, conservando las validaciones y las operaciones conectadas a las pantallas.
+- Un cambio de pedido o Delivery requiere revisar también `TipoPedido.kt`, `TarifaDelivery.kt`, `CarritoCompra`, el repositorio y los DAO; la información debe seguir siendo consistente desde la comanda hasta la entrega.
+- Los pedidos antiguos conservan sus copias de nombre, precio y notas. Las entregas históricas sin vínculo no deben confundirse con pedidos Delivery nuevos.
+- Las estadísticas fijas y los controles de cámara descritos arriba son decisiones del alcance actual; no representan funciones ya implementadas.
+- Los cambios de entidades, índices y versión de Room requieren considerar la migración y los datos de instalaciones existentes.
+
+<details>
+<summary><strong>Referencia breve de compilación y pruebas</strong></summary>
+
+Desde la raíz del proyecto, Android puede compilarse y comprobarse con:
+
+```bash
+./gradlew :androidApp:assembleDebug :shared:testAndroidHostTest
+```
+
+Android Studio abre el proyecto raíz. El contenedor iOS se encuentra en `iosApp/iosApp.xcodeproj` y se abre con Xcode en macOS. Las integraciones de Gemini y mapas necesitan su configuración local de proveedor.
+
+</details>
