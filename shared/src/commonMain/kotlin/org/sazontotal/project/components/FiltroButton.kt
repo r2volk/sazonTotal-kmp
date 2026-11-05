@@ -1,5 +1,6 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.paletaAcento
 import org.sazontotal.project.theme.LocalTemaOscuro
 import org.sazontotal.project.theme.UsoColor
 import org.sazontotal.project.theme.colorDeTema
@@ -30,10 +31,11 @@ fun FiltroButton(
     fondoTextoColor: Color = Colores.GrisMedio,
 ){
     val temaOscuro = LocalTemaOscuro.current
+    val paleta = paletaAcento(if (fondoTextoColor == Colores.GrisMedio) textoColor else fondoTextoColor, temaOscuro)
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(colorDeTema(if (activo) fondoTextoColor else Color.Transparent, temaOscuro, UsoColor.FONDO))
+            .background(if (activo) paleta.fuerte else Color.Transparent)
             .then(
                 if (!activo) {
                     Modifier.border(1.dp
@@ -49,7 +51,7 @@ fun FiltroButton(
     ) {
         Text(
             text = texto,
-            color = colorDeTema(if (activo) textoColor else Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
+            color = if (activo) paleta.sobreFuerte else colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )

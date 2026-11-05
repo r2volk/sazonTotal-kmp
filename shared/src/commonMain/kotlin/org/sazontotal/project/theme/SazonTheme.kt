@@ -15,58 +15,90 @@ val LocalTemaOscuro = staticCompositionLocalOf { true }
 
 enum class UsoColor { TEXTO, FONDO, BORDE }
 
-/** Adapts presentation colors without changing layout, data or functional states. */
+/** Semantic pairs used by every role, including colored cards, states and actions. */
+data class PaletaAcento(
+    val superficie: Color,
+    val tinta: Color,
+    val fuerte: Color,
+    val sobreFuerte: Color
+)
+
+private data class TonosAcento(
+    val clara: Long, val oscura: Long, val tintaClara: Long, val tintaOscura: Long,
+    val fuerteClara: Long, val fuerteOscura: Long
+)
+
+fun paletaAcento(color: Color, oscuro: Boolean): PaletaAcento {
+    val mayor = maxOf(color.red, color.green, color.blue)
+    val menor = minOf(color.red, color.green, color.blue)
+    val delta = mayor - menor
+    val matiz = if (delta < 0.035f) 140f else {
+        val sector = when (mayor) {
+            color.red -> (color.green - color.blue) / delta
+            color.green -> (color.blue - color.red) / delta + 2f
+            else -> (color.red - color.green) / delta + 4f
+        }
+        (sector * 60f + 360f) % 360f
+    }
+    // Each family has a deliberate surface/ink pair; no near-white pastel conversion.
+    val (clara, oscura, tintaClara, tintaOscura, fuerteClara, fuerteOscura) = when {
+        matiz < 8f || matiz >= 350f -> TonosAcento(0xFFF3C3C9, 0xFF4B1D27, 0xFF801C2D, 0xFFFFA5B0, 0xFFB42332, 0xFFB42332)
+        matiz < 65f -> TonosAcento(0xFFF6D69E, 0xFF46310D, 0xFF693B08, 0xFFFFCF7C, 0xFF8C510B, 0xFFFFB340)
+        matiz < 170f -> TonosAcento(0xFFBFE3CD, 0xFF113D2B, 0xFF124E2D, 0xFF75E5A3, 0xFF17683F, 0xFF30D158)
+        matiz < 240f -> TonosAcento(0xFFBEDCF5, 0xFF123652, 0xFF194C76, 0xFF91CEFF, 0xFF1764A0, 0xFF79C2FC)
+        matiz < 285f -> TonosAcento(0xFFD8CAF2, 0xFF32234C, 0xFF493177, 0xFFD0B6FF, 0xFF65419E, 0xFFC4A6FF)
+        else -> TonosAcento(0xFFEFC6DF, 0xFF472039, 0xFF72264F, 0xFFFFAFD9, 0xFF9B3670, 0xFFF59BCC)
+    }
+    val fuerte = Color(if (oscuro) fuerteOscura else fuerteClara)
+    return PaletaAcento(
+        superficie = Color(if (oscuro) oscura else clara),
+        tinta = Color(if (oscuro) tintaOscura else tintaClara),
+        fuerte = fuerte,
+        sobreFuerte = if (fuerte.luminance() > 0.30f) Color.Black else Color.White
+    )
+}
+
+/** All existing screen colors are resolved through the same neutral/accent system. */
 fun colorDeTema(color: Color, oscuro: Boolean, uso: UsoColor = UsoColor.TEXTO): Color {
     if (color == Color.Unspecified || color.alpha == 0f) return color
-    if (oscuro) {
-        if (uso == UsoColor.FONDO || (uso == UsoColor.TEXTO && color.copy(alpha = 1f) == Color.Black)) return color
-        // Secondary labels and icons must remain readable even on disabled surfaces.
-        val fondo = if (uso == UsoColor.BORDE) Colores.GrisMedio else Colores.GrisDeshabilitado
-        val minimo = if (uso == UsoColor.BORDE) 3f else 4.5f
-        var tinta = color
-        repeat(48) {
-            if ((tinta.luminance() + 0.05f) / (fondo.luminance() + 0.05f) >= minimo) return tinta
-            tinta = Color(tinta.red + (1f - tinta.red) * 0.06f,
-                tinta.green + (1f - tinta.green) * 0.06f,
-                tinta.blue + (1f - tinta.blue) * 0.06f, color.alpha)
-        }
-        return tinta
-    }
     val maximo = maxOf(color.red, color.green, color.blue)
     val minimo = minOf(color.red, color.green, color.blue)
-    val neutro = maximo - minimo < 0.035f
+    val neutro = maximo - minimo < 0.035f || (maximo > 0f && (maximo - minimo) / maximo < 0.18f)
     if (uso == UsoColor.FONDO) {
+        if (!neutro && maximo < 0.52f) return paletaAcento(color, oscuro).superficie.copy(alpha = color.alpha)
+        if (oscuro) return color
         if (maximo == 0f || color.copy(alpha = 1f) == Color(0xFF121212)) return Color.White.copy(alpha = color.alpha)
         if (neutro && maximo < 0.5f) {
             val superficie = when {
-                maximo < 0.095f -> Color(0xFFFAFAFC)
-                maximo < 0.15f -> Color(0xFFF0F1F4)
-                maximo < 0.22f -> Color(0xFFE3E6EB)
-                else -> Color(0xFFD6D6DF)
+                maximo < 0.15f -> Color(0xFFE9EDF2)
+                maximo < 0.22f -> Color(0xFFDDE3EB)
+                else -> Color(0xFFCDD5DF)
             }
             return superficie.copy(alpha = color.alpha)
         }
-        if (!neutro && maximo < 0.52f) {
-            return Color(
-                0.87f + 0.13f * color.red / maximo,
-                0.87f + 0.13f * color.green / maximo,
-                0.87f + 0.13f * color.blue / maximo,
-                color.alpha
-            )
-        }
         return color
     }
-    if (uso == UsoColor.BORDE && neutro) return Color(0xFF77818E).copy(alpha = color.alpha)
-    if (neutro && maximo > 0.92f) return Color(0xFF1B1B1F).copy(alpha = color.alpha)
-    if (neutro && maximo > 0f) return Color(0xFF50545D).copy(alpha = color.alpha)
-    // Keep hue; only darken foreground accents that would disappear on white.
-    val contrasteMinimo = if (uso == UsoColor.BORDE) 3f else 6.5f
-    var resultado = color
-    repeat(32) {
-        if (1.05f / (resultado.luminance() + 0.05f) >= contrasteMinimo) return resultado
-        resultado = Color(resultado.red * 0.92f, resultado.green * 0.92f, resultado.blue * 0.92f, color.alpha)
+    if (!neutro) return paletaAcento(color, oscuro).tinta.copy(alpha = color.alpha)
+    // Black stays black on the existing bright action buttons.
+    if (uso == UsoColor.TEXTO && maximo == 0f) return color
+    if (!oscuro) {
+        val tinta = when {
+            uso == UsoColor.BORDE -> Color(0xFF707D8D)
+            maximo > 0.92f -> Color(0xFF18212B)
+            else -> Color(0xFF414E5E)
+        }
+        return tinta.copy(alpha = color.alpha)
     }
-    return resultado
+    val fondo = if (uso == UsoColor.BORDE) Colores.GrisMedio else Colores.GrisDeshabilitado
+    val contrasteMinimo = if (uso == UsoColor.BORDE) 3f else 4.5f
+    var tinta = color
+    repeat(48) {
+        if ((tinta.luminance() + 0.05f) / (fondo.luminance() + 0.05f) >= contrasteMinimo) return tinta
+        tinta = Color(tinta.red + (1f - tinta.red) * 0.06f,
+            tinta.green + (1f - tinta.green) * 0.06f,
+            tinta.blue + (1f - tinta.blue) * 0.06f, color.alpha)
+    }
+    return tinta
 }
 
 /** Explicit foreground/background pairs for the persistent bottom navigation. */
@@ -84,7 +116,7 @@ fun coloresNavegacion(oscuro: Boolean) = if (oscuro) ColoresNavegacion(
     inactivo = Color(0xFFC2CAD3)
 ) else ColoresNavegacion(
     superficie = Color(0xFFE9ECF0), borde = Color(0xFF77818E),
-    seleccion = Color(0xFF166534), sobreSeleccion = Color.White,
+    seleccion = paletaAcento(Colores.VerdePrimario, false).fuerte, sobreSeleccion = Color.White,
     inactivo = Color(0xFF424C59)
 )
 
@@ -102,16 +134,16 @@ fun SazonTheme(oscuro: Boolean = isSystemInDarkTheme(), content: @Composable () 
         outline = colorDeTema(Colores.GrisDeshabilitado, true, UsoColor.BORDE), error = colorDeTema(Colores.Rojo, true),
         errorContainer = Color(0xFF3A1414), onErrorContainer = colorDeTema(Colores.Rojo, true)
     ) else lightColorScheme(
-        primary = colorDeTema(Colores.VerdePrimario, false), onPrimary = Color.White,
-        primaryContainer = Color(0xFFE1F5E6), onPrimaryContainer = Color(0xFF145C2C),
-        secondary = colorDeTema(Colores.VerdePrimario, false), onSecondary = Color.White,
+        primary = paletaAcento(Colores.VerdePrimario, false).fuerte, onPrimary = Color.White,
+        primaryContainer = Color(0xFFBFE3CD), onPrimaryContainer = Color(0xFF124E2D),
+        secondary = paletaAcento(Colores.VerdePrimario, false).fuerte, onSecondary = Color.White,
         background = Color.White, onBackground = Color(0xFF1B1B1F),
-        surface = Color(0xFFF5F5F7), onSurface = Color(0xFF1B1B1F),
-        surfaceVariant = Color(0xFFECECF0), onSurfaceVariant = Color(0xFF50545D),
-        surfaceContainer = Color(0xFFF5F5F7), surfaceContainerLow = Color(0xFFFAFAFC),
-        surfaceContainerHigh = Color(0xFFF0F0F4), surfaceContainerHighest = Color(0xFFE3E6EB),
+        surface = Color(0xFFE9EDF2), onSurface = Color(0xFF1B1B1F),
+        surfaceVariant = Color(0xFFDDE3EB), onSurfaceVariant = Color(0xFF414E5E),
+        surfaceContainer = Color(0xFFE9EDF2), surfaceContainerLow = Color(0xFFF3F5F8),
+        surfaceContainerHigh = Color(0xFFDDE3EB), surfaceContainerHighest = Color(0xFFCDD5DF),
         outline = Color(0xFF77818E), error = Color(0xFFB3261E),
-        errorContainer = Color(0xFFFCE5E2), onErrorContainer = Color(0xFF8C1D18)
+        errorContainer = Color(0xFFF3C3C9), onErrorContainer = Color(0xFF801C2D)
     )
     CompositionLocalProvider(LocalTemaOscuro provides oscuro) {
         MaterialTheme(colorScheme = colores, content = content)

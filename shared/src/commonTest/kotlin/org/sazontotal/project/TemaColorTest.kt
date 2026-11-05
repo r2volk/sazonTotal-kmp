@@ -2,9 +2,11 @@ package org.sazontotal.project
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.compositeOver
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.sazontotal.project.theme.paletaAcento
 import org.sazontotal.project.theme.Colores
 import org.sazontotal.project.theme.UsoColor
 import org.sazontotal.project.theme.coloresNavegacion
@@ -14,6 +16,27 @@ class TemaColorTest {
     private fun contraste(a: Color, b: Color): Float =
         (maxOf(a.luminance(), b.luminance()) + 0.05f) /
             (minOf(a.luminance(), b.luminance()) + 0.05f)
+
+    @Test
+    fun familiasDeColorTienenSuperficiesVisiblesYAccionesLegibles() {
+        val familias = listOf(Colores.VerdePrimario, Color(0xFF64A8F5),
+            Color(0xFFB39DFF), Colores.Ambar, Colores.Rojo, Color(0xFFF59BCC))
+        familias.forEach { acento -> listOf(false, true).forEach { oscuro ->
+            val p = paletaAcento(acento, oscuro)
+            assertTrue(contraste(p.tinta, p.superficie) >= 4.5f, "Texto de $acento, oscuro=$oscuro")
+            assertTrue(contraste(p.sobreFuerte, p.fuerte) >= 4.5f, "Acción de $acento, oscuro=$oscuro")
+            val fondo = if (oscuro) Color.Black else Color.White
+            assertTrue(contraste(p.superficie, fondo) >= 1.3f, "Superficie de $acento casi invisible")
+        } }
+        listOf(Colores.VerdePrimario, Color(0xFF64A8F5)).forEach { acento ->
+            listOf(false, true).forEach { oscuro ->
+                val p = paletaAcento(acento, oscuro)
+                val hero = if (oscuro) p.superficie else p.fuerte
+                assertTrue(contraste(Color.White, hero) >= 4.5f)
+                assertTrue(contraste(Color.White, Color.White.copy(alpha = 0.12f).compositeOver(hero)) >= 4.5f)
+            }
+        }
+    }
 
     @Test
     fun oscuroConservaFondosYBotonesPeroHaceLegiblesLosTextosSecundarios() {
@@ -51,6 +74,8 @@ class TemaColorTest {
         }
         val carrito = colorDeTema(Color(0xFF2B2113), false, UsoColor.FONDO)
         assertTrue(carrito.red > carrito.blue, "El acceso al carrito debe conservar su tono cálido")
+        assertEquals(paletaAcento(Colores.Ambar, false).superficie,
+            colorDeTema(Color(0xFF4A2620), false, UsoColor.FONDO))
     }
 
     @Test

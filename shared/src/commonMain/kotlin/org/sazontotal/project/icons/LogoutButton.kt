@@ -1,5 +1,6 @@
 package org.sazontotal.project.icons
 
+import org.sazontotal.project.theme.paletaAcento
 import org.sazontotal.project.theme.LocalTemaOscuro
 import org.sazontotal.project.theme.UsoColor
 import org.sazontotal.project.theme.colorDeTema
@@ -27,18 +28,19 @@ fun LogoutButton(
     modifier: Modifier = Modifier
 ) {
     val temaOscuro = LocalTemaOscuro.current
+    val paleta = paletaAcento(Colores.Rojo, temaOscuro)
     Box(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(colorDeTema(Color(0xFF3A1A1A), temaOscuro, UsoColor.FONDO))
+            .background(paleta.fuerte)
             .clickable { onLogout() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = "Cerrar sesión",
-            tint = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
+            tint = paleta.sobreFuerte,
             modifier = Modifier.size(size * 0.55f)
         )
     }

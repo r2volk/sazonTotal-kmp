@@ -1,5 +1,6 @@
 package org.sazontotal.project.components
 
+import org.sazontotal.project.theme.paletaAcento
 import org.sazontotal.project.theme.LocalTemaOscuro
 import org.sazontotal.project.theme.UsoColor
 import org.sazontotal.project.theme.colorDeTema
@@ -37,8 +38,6 @@ import org.sazontotal.project.theme.Colores
 
 private val PerfilSuperficie = Color(0xFF141417)
 private val PerfilDivisor = Color(0xFF2A2A2E)
-private val PerfilChipFondo = Color(0xFF191A1D)
-private val PerfilRojoFondo = Color(0xFF2A0D0D)
 
 data class PerfilStat(
     val valor: String,
@@ -112,12 +111,14 @@ private fun PerfilHeroCard(
     accent: Color
 ) {
     val temaOscuro = LocalTemaOscuro.current
+    val paleta = paletaAcento(accent, temaOscuro)
+    val fondoHero = if (temaOscuro) paleta.superficie else paleta.fuerte
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(colorDeTema(accent.copy(alpha = 0.10f), temaOscuro, UsoColor.FONDO))
-            .border(1.dp, colorDeTema(accent.copy(alpha = 0.22f), temaOscuro, UsoColor.BORDE), RoundedCornerShape(28.dp))
+            .background(fondoHero)
+            .border(1.dp, paleta.tinta, RoundedCornerShape(28.dp))
             .padding(horizontal = 20.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -126,13 +127,13 @@ private fun PerfilHeroCard(
             modifier = Modifier
                 .size(88.dp)
                 .clip(CircleShape)
-                .background(colorDeTema(accent.copy(alpha = 0.14f), temaOscuro, UsoColor.FONDO))
-                .border(2.dp, colorDeTema(accent, temaOscuro, UsoColor.BORDE), CircleShape),
+                .background(Color.White.copy(alpha = 0.12f))
+                .border(2.dp, Color.White.copy(alpha = 0.75f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = iniciales,
-                color = colorDeTema(accent, temaOscuro, UsoColor.TEXTO),
+                color = Color.White,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -140,7 +141,7 @@ private fun PerfilHeroCard(
 
         Text(
             text = nombre,
-            color = colorDeTema(Color.White, temaOscuro, UsoColor.TEXTO),
+            color = Color.White,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -152,12 +153,12 @@ private fun PerfilHeroCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(colorDeTema(accent.copy(alpha = 0.18f), temaOscuro, UsoColor.FONDO))
+                    .background(Color.White.copy(alpha = 0.12f))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = rol,
-                    color = colorDeTema(accent, temaOscuro, UsoColor.TEXTO),
+                    color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -165,12 +166,12 @@ private fun PerfilHeroCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(colorDeTema(PerfilChipFondo, temaOscuro, UsoColor.FONDO))
+                    .background(Color.White.copy(alpha = 0.12f))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = "ID: $empleadoId",
-                    color = colorDeTema(Colores.TextoTenue, temaOscuro, UsoColor.TEXTO),
+                    color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -223,12 +224,13 @@ private fun PerfilStatsCard(stats: List<PerfilStat>) {
 @Composable
 private fun CerrarSesionButton(onClick: () -> Unit) {
     val temaOscuro = LocalTemaOscuro.current
+    val paleta = paletaAcento(Colores.Rojo, temaOscuro)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
             .clip(RoundedCornerShape(50))
-            .background(colorDeTema(PerfilRojoFondo, temaOscuro, UsoColor.FONDO))
+            .background(paleta.fuerte)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -236,13 +238,13 @@ private fun CerrarSesionButton(onClick: () -> Unit) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = null,
-            tint = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
+            tint = paleta.sobreFuerte,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Cerrar sesión",
-            color = colorDeTema(Colores.Rojo, temaOscuro, UsoColor.TEXTO),
+            color = paleta.sobreFuerte,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold
         )
